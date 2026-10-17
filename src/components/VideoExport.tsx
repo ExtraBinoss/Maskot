@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useEffect, useRef, useState } from "react";
 import { useStore } from "jotai";
 import { ArrowDownToLine, X } from "lucide-react";
@@ -7,6 +8,8 @@ import { timelineDuration } from "../mascot/mascot-catalog";
 import s from "../styles/motion.module.css";
 
 export function VideoExport() {
+  const { t, i18n } = useTranslation();
+
   const store = useStore();
   const dialog = useRef<HTMLDialogElement>(null);
   const controller = useRef<AbortController | null>(null);
@@ -62,7 +65,7 @@ export function VideoExport() {
         }}
       >
         <ArrowDownToLine size={15} />
-        Exporter le montage
+        {t("Exporter le montage")}
       </button>
       <dialog
         ref={dialog}
@@ -74,22 +77,25 @@ export function VideoExport() {
         }}
       >
         <header>
-          <h2 id="video-title">Emporte le mouvement.</h2>
-          <button aria-label="Fermer l’export vidéo" onClick={close}>
+          <h2 id="video-title">{t("Emporte le mouvement.")}</h2>
+          <button aria-label={t("Fermer l’export vidéo")} onClick={close}>
             <X size={18} />
           </button>
         </header>
         <p>
-          WebM · 1024 × 1024 · 30 images/s
+          {t("WebM · 1024 × 1024 · 30 images/s")}
           <br />
-          {timelineDuration(store.get(presetAtom).timeline).toFixed(1)}{" "}
-          secondes, du début à la fin du montage.
+          {timelineDuration(store.get(presetAtom).timeline).toLocaleString(
+            i18n.resolvedLanguage,
+            { minimumFractionDigits: 1, maximumFractionDigits: 1 },
+          )}{" "}
+          {t("secondes, du début à la fin du montage.")}
         </p>
         <fieldset disabled={progress !== null}>
-          <legend>Fond de la vidéo</legend>
+          <legend>{t("Fond de la vidéo")}</legend>
           {[
-            { value: "#f9f9f9", label: "Clair" },
-            { value: "#1c1c20", label: "Sombre" },
+            { value: "#f9f9f9", label: t("Clair") },
+            { value: "#1c1c20", label: t("Sombre") },
           ].map((option) => (
             <label key={option.value}>
               <input
@@ -105,19 +111,22 @@ export function VideoExport() {
         </fieldset>
         {error && (
           <p role="alert" className={s.exportError}>
-            {error}
+            {t(error)}
           </p>
         )}
         {progress !== null ? (
           <>
             <progress
-              aria-label="Progression de l’export vidéo"
+              aria-label={t("Progression de l’export vidéo")}
               max={1}
               value={progress}
             />
             <div className={s.progressRow}>
-              <span>Création de la vidéo… {Math.round(progress * 100)} %</span>
-              <button onClick={close}>Annuler</button>
+              <span>
+                {t("Création de la vidéo…")}
+                {Math.round(progress * 100)} %
+              </span>
+              <button onClick={close}>{t("Annuler")}</button>
             </div>
           </>
         ) : (
@@ -126,7 +135,7 @@ export function VideoExport() {
             onClick={() => void exportVideo()}
           >
             <ArrowDownToLine size={16} />
-            Exporter en WebM
+            {t("Exporter en WebM")}
           </button>
         )}
       </dialog>

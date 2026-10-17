@@ -50,7 +50,9 @@ export const frameAtom = atom(
 export const reducedMotionAtom = atom(false);
 export const boardAtom = atom(false);
 export const surfaceAtom = atom<PreviewSurface>("paper");
-export const statusAtom = atom("");
+export const statusAtom = atom<
+  string | { key: string; values: Record<string, string | number> }
+>("");
 export type WorkspaceView = "static" | "motion" | "about";
 export const viewAtom = atom<WorkspaceView>("static");
 export const motionPanelAtom = atom<"movements" | "sequence">("movements");

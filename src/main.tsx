@@ -1,4 +1,5 @@
 import { StrictMode } from "react";
+import "./i18n";
 import { createRoot } from "react-dom/client";
 import { Provider } from "jotai";
 import { LazyMotion, domAnimation, MotionConfig } from "motion/react";

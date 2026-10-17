@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useAtom } from "jotai";
 import { EXPRESSIONS } from "../mascot/engine/expressions";
 import { EXPRESSION_LABELS } from "../mascot/mascot-catalog";
@@ -8,20 +9,25 @@ import { ScrollShadow } from "./ScrollShadow";
 import s from "../styles/settings.module.css";
 
 export function Expressions() {
+  const { t } = useTranslation();
+
   const [look, setLook] = useAtom(lookAtom);
   const player = usePlayer();
   return (
     <section className={s.section}>
       <h3>
-        Expressions<span>{EXPRESSIONS.length} humeurs</span>
+        {t("Expressions")}
+        <span>{t("{{count}} humeurs", { count: EXPRESSIONS.length })}</span>
       </h3>
-      <ScrollShadow label="Expressions">
+      <ScrollShadow label={t("Expressions")}>
         <div className={s.expressionGrid}>
           {EXPRESSIONS.map(({ id }) => (
             <button
               key={id}
               className={s.previewChoice}
-              aria-label={`Expression ${EXPRESSION_LABELS[id]}`}
+              aria-label={t("Expression {{label}}", {
+                label: t(EXPRESSION_LABELS[id]),
+              })}
               aria-pressed={look.expression === id}
               onClick={() => {
                 setLook({ ...look, expression: id });
@@ -32,7 +38,7 @@ export function Expressions() {
                 look={{ ...look, expression: id }}
                 size={46}
               />
-              <span>{EXPRESSION_LABELS[id]}</span>
+              <span>{t(EXPRESSION_LABELS[id])}</span>
             </button>
           ))}
         </div>

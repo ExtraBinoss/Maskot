@@ -1,4 +1,5 @@
-import { lazy, Suspense, useId, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { useId, useState } from "react";
 import { useAtom, useSetAtom, useStore } from "jotai";
 import { m } from "motion/react";
 import { Plus } from "lucide-react";
@@ -11,6 +12,7 @@ import {
 import { customColorsAtom } from "../state/palette";
 import { PALETTE } from "../mascot/mascot-catalog";
 import { normalizeHex } from "../lib/color";
+import ColorPickerEditor from "./ColorPickerEditor";
 import {
   Popover,
   PopoverContent,
@@ -19,9 +21,9 @@ import {
 } from "./ui/popover";
 import s from "../styles/settings.module.css";
 
-const ColorPickerEditor = lazy(() => import("./ColorPickerEditor"));
-
 export function ColorControl() {
+  const { t } = useTranslation();
+
   const [look, setLook] = useAtom(lookAtom);
   const [customColors, addColor] = useAtom(customColorsAtom);
   const setStatus = useSetAtom(statusAtom);
@@ -38,10 +40,10 @@ export function ColorControl() {
   return (
     <section className={s.section}>
       <h3>
-        Couleur
+        {t("Couleur")}
         <input
           className={s.colorInput}
-          aria-label="Couleur personnalisée au format hexadécimal"
+          aria-label={t("Couleur personnalisée au format hexadécimal")}
           value={value}
           aria-invalid={!valid}
           aria-describedby={!valid ? errorId : undefined}
@@ -68,14 +70,12 @@ export function ColorControl() {
         >
           <PopoverTrigger
             render={
-              <m.button
+              <button
                 className={s.pickerTrigger}
-                aria-label="Choisir une couleur personnalisée"
-                whileHover={{ scale: 1.08 }}
-                whileTap={{ scale: 0.9 }}
+                aria-label={t("Choisir une couleur personnalisée")}
               >
                 <Plus size={12} />
-              </m.button>
+              </button>
             }
           />
           <PopoverContent
@@ -84,32 +84,24 @@ export function ColorControl() {
             className={s.colorPopover}
           >
             <PopoverTitle className={s.pickerTitle}>
-              Une couleur bien à toi
+              {t("Couleur")}
             </PopoverTitle>
-            <Suspense
-              fallback={
-                <p className="py-8 text-center text-xs text-muted-foreground">
-                  Un petit instant…
-                </p>
-              }
-            >
-              <ColorPickerEditor
-                value={look.color}
-                onAdd={(color) => {
-                  if ([...PALETTE, ...customColors].includes(color)) {
-                    setStatus("Cette couleur est déjà dans ta palette.");
-                  } else addColor(color);
-                  setOpen(false);
-                }}
-              />
-            </Suspense>
+            <ColorPickerEditor
+              value={look.color}
+              onAdd={(color) => {
+                if ([...PALETTE, ...customColors].includes(color)) {
+                  setStatus("Cette couleur est déjà dans ta palette.");
+                } else addColor(color);
+                setOpen(false);
+              }}
+            />
           </PopoverContent>
         </Popover>
         {[...PALETTE, ...customColors].map((color) => (
           <m.button
             key={color}
             style={{ background: color }}
-            aria-label={"Couleur " + color}
+            aria-label={t("Couleur {{color}}", { color })}
             aria-pressed={look.color.toLowerCase() === color}
             onClick={() => select(color)}
             initial={{ opacity: 0, scale: 0.8 }}
@@ -122,7 +114,7 @@ export function ColorControl() {
       </div>
       {!valid && (
         <p id={errorId} className={s.error}>
-          Utilise une couleur comme #FF5A1F.
+          {t("Utilise une couleur comme #FF5A1F.")}
         </p>
       )}
     </section>

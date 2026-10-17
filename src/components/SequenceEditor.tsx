@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 // Horizontal montage adapted from Bloub's Timeline / TimelineTrack (MIT).
 import { useRef, useState, type PointerEvent } from "react";
 import { useAtom, useAtomValue, useStore } from "jotai";
@@ -23,6 +24,8 @@ import s from "../styles/motion.module.css";
 const timeLabel = (seconds: number) =>
   `${Math.floor(seconds / 60)}:${String(Math.floor(seconds % 60)).padStart(2, "0")}`;
 function Playback() {
+  const { t } = useTranslation();
+
   const [playing, setPlaying] = useAtom(playingAtom);
   const elapsed = useAtomValue(elapsedAtom);
   const duration = useAtomValue(durationAtom);
@@ -35,7 +38,7 @@ function Playback() {
       <button
         className={s.playButton}
         disabled={board}
-        aria-label={playing ? "Mettre en pause" : "Animer la mascotte"}
+        aria-label={playing ? t("Mettre en pause") : t("Animer la mascotte")}
         onClick={() => {
           if (!sequencing) player.playSequence();
           else setPlaying(!playing);
@@ -66,6 +69,8 @@ function Cursor({ scale }: { scale: number }) {
   );
 }
 function Seek() {
+  const { t } = useTranslation();
+
   const elapsed = useAtomValue(elapsedAtom),
     duration = useAtomValue(durationAtom);
   const player = usePlayer();
@@ -73,7 +78,7 @@ function Seek() {
     <input
       className={s.seek}
       type="range"
-      aria-label="Position dans la séquence"
+      aria-label={t("Position dans la séquence")}
       min={0}
       max={duration}
       step={0.01}
@@ -100,6 +105,8 @@ type Drag = {
 };
 
 export default function SequenceEditor() {
+  const { t, i18n } = useTranslation();
+
   const [steps, setSteps] = useAtom(timelineAtom);
   const look = useAtomValue(lookAtom),
     active = useAtomValue(activeStepAtom),
@@ -173,11 +180,14 @@ export default function SequenceEditor() {
   };
   const tickStep = zoom >= 1.4 ? 1 : 2;
   return (
-    <section className={s.timeline} aria-label="Chorégraphie">
+    <section className={s.timeline} aria-label={t("Chorégraphie")}>
       <Playback />
       <header className={s.timelineHeader}>
         <h2>
-          Mon montage <span>{steps.length} mouvements · en boucle</span>
+          {t("Mon montage")}
+          <span>
+            {t("{{count}} mouvements · en boucle", { count: steps.length })}
+          </span>
         </h2>
         <VideoExport />
       </header>
@@ -237,8 +247,11 @@ export default function SequenceEditor() {
                   <button
                     className={s.card}
                     data-card={index}
-                    aria-label={`Aller au mouvement ${index + 1} : ${STATE_LABELS[step.state]}`}
-                    title={`${STATE_LABELS[step.state]} · ${step.duration} s`}
+                    aria-label={t("Aller au mouvement {{index}} : {{label}}", {
+                      index: index + 1,
+                      label: t(STATE_LABELS[step.state]),
+                    })}
+                    title={`${t(STATE_LABELS[step.state])} · ${step.duration} s`}
                     aria-keyshortcuts="Alt+ArrowLeft Alt+ArrowRight ArrowLeft ArrowRight Delete"
                     onPointerDown={(e) => {
                       if (e.button !== 0) return;
@@ -289,12 +302,22 @@ export default function SequenceEditor() {
                         Math.max(26, step.duration * scale * 0.55),
                       )}
                     />
-                    <span>{step.duration.toFixed(1).replace(".", ",")} s</span>
-                    <span className="sr-only">{STATE_LABELS[step.state]}</span>
+                    <span>
+                      {step.duration.toLocaleString(i18n.resolvedLanguage, {
+                        minimumFractionDigits: 1,
+                        maximumFractionDigits: 1,
+                      })}{" "}
+                      s
+                    </span>
+                    <span className="sr-only">
+                      {t(STATE_LABELS[step.state])}
+                    </span>
                   </button>
                   <button
                     className={s.remove}
-                    aria-label={`Retirer le mouvement ${index + 1}`}
+                    aria-label={t("Retirer le mouvement {{index}}", {
+                      index: index + 1,
+                    })}
                     disabled={steps.length === 1}
                     onClick={() => remove(index)}
                   >
@@ -303,11 +326,15 @@ export default function SequenceEditor() {
                   <button
                     className={s.resize}
                     role="slider"
-                    aria-label={`Durée du mouvement ${index + 1}`}
+                    aria-label={t("Durée du mouvement {{index}}", {
+                      index: index + 1,
+                    })}
                     aria-valuemin={0.6}
                     aria-valuemax={10}
                     aria-valuenow={step.duration}
-                    aria-valuetext={`${step.duration} secondes`}
+                    aria-valuetext={t("{{count}} secondes", {
+                      count: step.duration,
+                    })}
                     onPointerDown={(e) => {
                       e.currentTarget.setPointerCapture(e.pointerId);
                       resizeRef.current = {
@@ -356,7 +383,7 @@ export default function SequenceEditor() {
               <Plus size={18} />
               <select
                 value=""
-                aria-label="Ajouter un mouvement"
+                aria-label={t("Ajouter un mouvement")}
                 disabled={steps.length >= 32}
                 onChange={(e) => {
                   const state = e.currentTarget.value as StateId;
@@ -367,11 +394,11 @@ export default function SequenceEditor() {
                 }}
               >
                 <option value="" disabled>
-                  Ajouter
+                  {t("Ajouter")}
                 </option>
                 {SEQUENCE.map((state) => (
                   <option key={state} value={state}>
-                    {STATE_LABELS[state]}
+                    {t(STATE_LABELS[state])}
                   </option>
                 ))}
               </select>
@@ -382,13 +409,13 @@ export default function SequenceEditor() {
       </div>
       <div className={s.timelineTools}>
         <span className={s.keyboardHint}>
-          Glisser · étirer · Alt + ← → pour déplacer
+          {t("Glisser · étirer · Alt + ← → pour déplacer")}
         </span>
         <label className={s.zoom}>
           <ZoomIn size={13} />
           <input
             type="range"
-            aria-label="Zoom de la timeline"
+            aria-label={t("Zoom de la timeline")}
             min={0.5}
             max={2.5}
             step={0.1}
@@ -399,7 +426,7 @@ export default function SequenceEditor() {
         </label>
         <Counter />
         <button
-          aria-label="Jouer la séquence"
+          aria-label={t("Jouer la séquence")}
           className={s.replay}
           onClick={player.playSequence}
         >

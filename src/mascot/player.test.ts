@@ -108,6 +108,25 @@ describe("React/Jotai mascot playback", () => {
     expect(callbacks.size).toBe(1);
     unmount();
   });
+  it("follows the pointer in About without changing the saved look, including reduced motion", () => {
+    const { store, player } = setup(true);
+    store.set(viewAtom, "about");
+    const saved = store.get(presetAtom);
+    const resting = store.get(frameAtom);
+    const rect = new DOMRect(700, 0, 800, 800);
+    player.aim({ clientX: 100, clientY: 200, pointerType: "mouse" }, rect);
+    const left = store.get(frameAtom);
+    expect(left.eyes).not.toEqual(resting.eyes);
+    player.aim({ clientX: 1400, clientY: 600, pointerType: "mouse" }, rect);
+    expect(store.get(frameAtom).eyes).not.toEqual(left.eyes);
+    expect(store.get(presetAtom)).toBe(saved);
+    expect(store.get(followAtom)).toBe(false);
+    expect(callbacks.size).toBe(0);
+    store.set(viewAtom, "static");
+    const still = store.get(frameAtom);
+    player.aim({ clientX: 100, clientY: 200, pointerType: "mouse" }, rect);
+    expect(store.get(frameAtom)).toBe(still);
+  });
   it("releases frames and listeners, including a StrictMode remount", () => {
     const { player, unmount } = setup();
     hidden = true;

@@ -177,7 +177,12 @@ export function createMascotPlayer(store: LabStore, env: PlayerEnvironment) {
       raf = env.requestFrame(tick);
   };
   const release = () => {
-    engine.setLook(null, store.get(playingAtom) ? clock : clock - 1);
+    engine.setLook(
+      store.get(viewAtom) === "about"
+        ? { yaw: -25, pitch: 0, mix: 1, spin: 0, wander: 0 }
+        : null,
+      store.get(playingAtom) ? clock : clock - 1,
+    );
     draw();
   };
   const applyLook = () => {
@@ -308,9 +313,11 @@ export function createMascotPlayer(store: LabStore, env: PlayerEnvironment) {
       event: { clientX: number; clientY: number; pointerType: string },
       rect: DOMRect,
     ) => {
+      const about = store.get(viewAtom) === "about";
+      const playing = store.get(playingAtom);
       if (
-        !store.get(followAtom) ||
-        !store.get(playingAtom) ||
+        (!store.get(followAtom) && !about) ||
+        (!playing && !about) ||
         event.pointerType === "touch" ||
         !rect.width ||
         !rect.height
@@ -334,8 +341,9 @@ export function createMascotPlayer(store: LabStore, env: PlayerEnvironment) {
           spin: 0,
           wander: 0,
         },
-        clock,
+        playing ? clock : clock - 1,
       );
+      if (!playing) draw();
     },
   };
 }

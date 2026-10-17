@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 // Layout adapted from Bloub's App.vue / Timeline.vue (MIT). See licenses/NOTICE.txt.
 import { useEffect, type RefObject } from "react";
 import { useAtom, useAtomValue } from "jotai";
@@ -27,6 +28,8 @@ export default function MotionPanel({
 }: {
   svgRef: RefObject<SVGSVGElement | null>;
 }) {
+  const { t, i18n } = useTranslation();
+
   const look = useAtomValue(lookAtom);
   const state = useAtomValue(stateAtom);
   const [steps, setSteps] = useAtom(timelineAtom);
@@ -44,23 +47,23 @@ export default function MotionPanel({
       <aside
         className={w.inspector}
         id="settings"
-        aria-label="Réglages de Maskot"
+        aria-label={t("Réglages de Maskot")}
       >
         <div className={w.panelScroll}>
           <header className={s.paletteHeader}>
-            <h2>Animation</h2>
+            <h2>{t("Animation")}</h2>
             <div className={s.boardToggle}>
               <button
-                title="Vue mascotte"
-                aria-label="Vue mascotte"
+                title={t("Vue mascotte")}
+                aria-label={t("Vue mascotte")}
                 aria-pressed={!board}
                 onClick={() => setBoard(false)}
               >
                 <Maximize2 size={14} />
               </button>
               <button
-                title="Planche des mouvements"
-                aria-label="Planche des mouvements"
+                title={t("Planche des mouvements")}
+                aria-label={t("Planche des mouvements")}
                 aria-pressed={board}
                 onClick={() => setBoard(true)}
               >
@@ -68,12 +71,12 @@ export default function MotionPanel({
               </button>
             </div>
           </header>
-          <div className={s.movements} aria-label="Mouvements">
+          <div className={s.movements} aria-label={t("Mouvements")}>
             {SEQUENCE.map((id) => (
               <button
                 key={id}
                 className={s.movement}
-                aria-label={STATE_LABELS[id]}
+                aria-label={t(STATE_LABELS[id])}
                 aria-pressed={state === id}
                 onClick={() => {
                   setBoard(false);
@@ -90,47 +93,48 @@ export default function MotionPanel({
                   portrait={false}
                   size={68}
                 />
-                <span>{STATE_LABELS[id]}</span>
+                <span>{t(STATE_LABELS[id])}</span>
               </button>
             ))}
           </div>
           <p className={s.hint}>
-            Un clic pour ajouter au montage. Glisse une vignette pour la
-            déplacer.
+            {t(
+              "Un clic pour ajouter au montage. Glisse une vignette pour la déplacer.",
+            )}
           </p>
           <div className={s.options}>
             <div className={s.optionRow}>
-              <span>Lecture</span>
+              <span>{t("Lecture")}</span>
               <div className={s.playbackOptions}>
                 <button
-                  aria-label="Mouvement précédent"
+                  aria-label={t("Mouvement précédent")}
                   onClick={() => player.next(-1)}
                 >
                   <ChevronLeft size={15} />
                 </button>
                 <button
-                  aria-label="Mouvement suivant"
+                  aria-label={t("Mouvement suivant")}
                   onClick={() => player.next(1)}
                 >
                   <ChevronRight size={15} />
                 </button>
                 <select
                   value={speed}
-                  aria-label="Vitesse de lecture"
+                  aria-label={t("Vitesse de lecture")}
                   onChange={(e) => setSpeed(Number(e.currentTarget.value))}
                 >
                   {[0.25, 0.5, 1, 1.5, 2].map((value) => (
                     <option key={value} value={value}>
-                      {String(value).replace(".", ",")}×
+                      {value.toLocaleString(i18n.resolvedLanguage)}×
                     </option>
                   ))}
                 </select>
               </div>
             </div>
             <label className={s.optionRow}>
-              Suivre le curseur
+              {t("Suivre le curseur")}
               <Switch
-                label="Suivre le curseur"
+                label={t("Suivre le curseur")}
                 checked={follow}
                 disabled={board}
                 onCheckedChange={setFollow}
@@ -139,8 +143,9 @@ export default function MotionPanel({
             <SurfacePicker />
             {reduced && (
               <p className={s.hint}>
-                La lecture démarre en pause selon ta préférence de mouvements
-                réduits.
+                {t(
+                  "La lecture démarre en pause selon ta préférence de mouvements réduits.",
+                )}
               </p>
             )}
           </div>

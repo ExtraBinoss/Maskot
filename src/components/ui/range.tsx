@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useId, useState } from "react";
 import { RotateCcw } from "lucide-react";
 import { Slider } from "./slider";
@@ -28,6 +29,8 @@ export function Range({
   defaultValue?: number;
   showLabel?: boolean;
 }) {
+  const { t } = useTranslation();
+
   const id = useId();
   const [draft, setDraft] = useState({ source: value, text: String(value) });
   const text = draft.source === value ? draft.text : String(value);
@@ -59,7 +62,9 @@ export function Range({
                     <Button
                       variant="ghost"
                       size="icon-xs"
-                      aria-label={`Réinitialiser ${label.toLowerCase()}`}
+                      aria-label={t("Réinitialiser {{label}}", {
+                        label: label.toLocaleLowerCase(),
+                      })}
                       className={styles.rangeReset}
                       onClick={() => {
                         setDraft({
@@ -74,7 +79,7 @@ export function Range({
                   }
                 />
                 <TooltipContent>
-                  Valeur par défaut : {defaultValue}
+                  {t("Valeur par défaut :")} {defaultValue}
                   {suffix}
                 </TooltipContent>
               </Tooltip>
@@ -85,7 +90,7 @@ export function Range({
                 className={styles.rangeInput}
                 type="text"
                 inputMode="decimal"
-                aria-label={`Valeur — ${label}`}
+                aria-label={t("Valeur — {{label}}", { label })}
                 value={text}
                 onChange={(event) =>
                   setDraft({ source: value, text: event.currentTarget.value })

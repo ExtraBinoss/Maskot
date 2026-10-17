@@ -36,6 +36,7 @@ export const MascotThumbnail = memo(function MascotThumbnail({
   );
   return (
     <BeamySvg
+      label="Maskot"
       frame={frame}
       morph={morph}
       color={color}

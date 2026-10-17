@@ -1,79 +1,83 @@
-import { ArrowUpRight, CodeXml } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { m } from "motion/react";
+import { ButtonGroup } from "./ui/button-group";
 import { ThemePicker } from "./ThemePicker";
 import s from "../styles/about.module.css";
 
 export default function About() {
+  const { t, i18n } = useTranslation();
   return (
     <m.section
       id="about"
       className={s.about}
-      aria-label="À propos de Maskot"
-      initial={{ opacity: 0, x: -16 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ duration: 0.45, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
+      aria-label={t("À propos de Maskot")}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.25 }}
     >
       <div className={s.content}>
-        <span className={s.tag}>A LITTLE CHARACTER STUDIO</span>
-        <h2>
-          Grok bot inspired.
-          <br />
-          <span>Made to be yours.</span>
-        </h2>
-        <p className={s.description}>
-          Une silhouette, deux yeux, tout un caractère. Crée ton petit
-          compagnon, trouve son regard et donne-lui vie.
-        </p>
-        <section className={s.preferences} aria-label="Préférences">
-          <h3>Apparence</h3>
-          <div className={s.themeRow}>
-            <span>Le thème de l’atelier</span>
-            <ThemePicker />
+        <h2>Maskot</h2>
+        <section className={s.preferences} aria-label={t("Préférences")}>
+          <div className={s.language}>
+            <h3>{t("Langue")}</h3>
+            <ButtonGroup aria-label={t("Langue")} className={s.languagePicker}>
+              {(
+                [
+                  { id: "en", label: "English" },
+                  { id: "fr", label: "Français" },
+                ] as const
+              ).map(({ id, label }) => (
+                <button
+                  key={id}
+                  lang={id}
+                  aria-pressed={i18n.resolvedLanguage === id}
+                  onClick={() => void i18n.changeLanguage(id)}
+                >
+                  {label}
+                </button>
+              ))}
+            </ButtonGroup>
           </div>
+          <ThemePicker />
         </section>
-        <section className={s.links}>
-          <h3>À propos</h3>
-          <a
-            href="https://github.com/ExtraBinoss/Maskot"
-            target="_blank"
-            rel="noreferrer"
-          >
-            <CodeXml size={17} />
-            <span>Voir le projet sur GitHub</span>
-            <ArrowUpRight size={14} />
-          </a>
-          <a href="https://plinka.eu" target="_blank" rel="noreferrer">
-            <span>Un petit outil signé Plinka</span>
-            <ArrowUpRight size={14} />
-          </a>
-        </section>
-        <p className={s.credits}>
-          Inspiré du Grok bot et de{" "}
-          <a
-            href="https://github.com/jeremy-prt/bloub"
-            target="_blank"
-            rel="noreferrer"
-          >
-            Bloub, par Jérémy Perret
-          </a>
-          . Moteur adapté de Beam.{" "}
-          <a href="/licenses/NOTICE.txt" target="_blank" rel="noreferrer">
-            Crédits & licences ↗
-          </a>
-        </p>
         <footer className={s.footer}>
-          <p>
-            Créé avec <span aria-label="amour">♥</span> par{" "}
+          <div className={s.links}>
             <a
-              href="https://x.com/ExtraBinoss"
+              href="https://github.com/ExtraBinoss/Maskot"
               target="_blank"
               rel="noreferrer"
+              aria-label="GitHub"
             >
-              @ExtraBinoss
+              <img
+                className={s.github}
+                src="/github.svg"
+                alt=""
+                width="22"
+                height="22"
+              />
             </a>
-          </p>
-          <a href="https://plinka.eu" target="_blank" rel="noreferrer">
-            © {new Date().getFullYear()} Plinka <ArrowUpRight size={12} />
+            <a
+              href="https://plinka.eu"
+              target="_blank"
+              rel="noreferrer"
+              aria-label="Plinka"
+            >
+              <img
+                src="/plinka.svg"
+                alt=""
+                width="28"
+                height="28"
+                decoding="async"
+              />
+            </a>
+          </div>
+          <a
+            className={s.credits}
+            href="/licenses/NOTICE.txt"
+            target="_blank"
+            rel="noreferrer"
+          >
+            {t("Crédits & licences")}
           </a>
         </footer>
       </div>
@@ -82,7 +86,7 @@ export default function About() {
         href="https://plinka.eu"
         target="_blank"
         rel="noreferrer"
-        aria-label="Maskot, un projet Plinka"
+        aria-label={t("Maskot, un projet Plinka")}
       >
         maskot.
       </a>

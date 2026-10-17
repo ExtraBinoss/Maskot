@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { lazy, Suspense, useEffect, useRef } from "react";
 import { useAtomValue, useStore } from "jotai";
 import { m } from "motion/react";
@@ -11,7 +12,13 @@ import s from "../styles/workspace.module.css";
 const MotionPanel = lazy(() => import("./MotionPanel"));
 const About = lazy(() => import("./About"));
 function Feedback() {
+  const { t } = useTranslation();
+
   const status = useAtomValue(statusAtom);
+  const invalidField =
+    typeof status === "string"
+      ? status.match(/^Réglage des yeux invalide : (\w+)\.$/)?.[1]
+      : undefined;
   const store = useStore();
   useEffect(() => {
     if (!status) return;
@@ -25,16 +32,22 @@ function Feedback() {
       className={s.toast}
       data-active={!!status}
       role="status"
-      aria-label="Messages de l’atelier"
+      aria-label={t("Messages de l’atelier")}
       aria-live="polite"
       aria-atomic="true"
     >
-      {status}
+      {invalidField
+        ? t("Réglage des yeux invalide : {{field}}.", { field: invalidField })
+        : typeof status === "string"
+          ? t(status)
+          : t(status.key, status.values)}
     </p>
   );
 }
 
 export function Workspace() {
+  const { t } = useTranslation();
+
   const view = useAtomValue(viewAtom);
   const store = useStore();
   const svgRef = useRef<SVGSVGElement>(null);
@@ -70,28 +83,32 @@ export function Workspace() {
   }, [store]);
   return (
     <main className={s.workspace} data-view={view}>
-      <h1 className="sr-only">Maskot — A little character studio</h1>
+      <h1 className="sr-only">{t("Maskot — A little character studio")}</h1>
       <a
         className={s.skipLink}
         href={view === "about" ? "#about" : "#settings"}
       >
-        Aller aux réglages
+        {t("Aller aux réglages")}
       </a>
       <Canvas svgRef={svgRef} />
       <Sidebar />
       {view === "about" ? (
-        <Suspense fallback={<p className={s.loading}>Un petit instant…</p>}>
+        <Suspense
+          fallback={<p className={s.loading}>{t("Un petit instant…")}</p>}
+        >
           <About />
         </Suspense>
       ) : view === "motion" ? (
-        <Suspense fallback={<p className={s.loading}>Un petit instant…</p>}>
+        <Suspense
+          fallback={<p className={s.loading}>{t("Un petit instant…")}</p>}
+        >
           <MotionPanel svgRef={svgRef} />
         </Suspense>
       ) : (
         <aside
           className={s.inspector}
           id="settings"
-          aria-label="Réglages de Maskot"
+          aria-label={t("Réglages de Maskot")}
         >
           <div className={s.panelScroll} ref={panelRef}>
             <m.div

@@ -1,4 +1,4 @@
-import { useEffect, useSyncExternalStore } from "react";
+import { useLayoutEffect, useRef, useSyncExternalStore } from "react";
 import { useAtomValue } from "jotai";
 import { atomWithStorage, createJSONStorage } from "jotai/utils";
 
@@ -53,12 +53,35 @@ export function useIsDark() {
 
 export function ThemeSync() {
   const dark = useIsDark();
-  useEffect(() => {
-    document.documentElement.classList.toggle("dark", dark);
-    document.documentElement.style.colorScheme = dark ? "dark" : "light";
-    document
-      .querySelector('meta[name="theme-color"]')
-      ?.setAttribute("content", dark ? "#1c1c1e" : "#fbfbfd");
+  const initial = useRef(true);
+  useLayoutEffect(() => {
+    const apply = () => {
+      document.documentElement.classList.toggle("dark", dark);
+      document.documentElement.style.colorScheme = dark ? "dark" : "light";
+      document
+        .querySelector('meta[name="theme-color"]')
+        ?.setAttribute("content", dark ? "#1c1c1e" : "#fbfbfd");
+    };
+    if (
+      initial.current ||
+      document.documentElement.classList.contains("dark") === dark ||
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) {
+      initial.current = false;
+      apply();
+      return;
+    }
+    if (document.startViewTransition) {
+      const transition = document.startViewTransition(apply);
+      void transition.ready.catch(() => {});
+      void transition.finished.catch(() => {});
+      return () => transition.skipTransition();
+    }
+    apply();
+    document.documentElement.animate([{ opacity: 0.65 }, { opacity: 1 }], {
+      duration: 180,
+      easing: "ease-out",
+    });
   }, [dark]);
   return null;
 }

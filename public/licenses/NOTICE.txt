@@ -20,3 +20,7 @@ Texte de la licence : /licenses/Mediabunny-MPL-2.0.txt
 Color Picker: adapted from ReUI by Keenthemes Inc (MIT).
 https://reui.io/components/color-picker
 See ReUI-LICENSE.txt.
+
+GitHub mark: Octicons by GitHub, Inc. (MIT).
+https://github.com/primer/octicons
+See Octicons-MIT.txt.

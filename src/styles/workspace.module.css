@@ -33,12 +33,13 @@
   flex-direction: column;
   gap: 4px;
   padding: 6px;
+  overflow: hidden;
 }
 .sidebar button {
   position: relative;
-  display: grid;
-  place-items: center;
-  width: 40px;
+  display: flex;
+  align-items: center;
+  width: 100%;
   height: 40px;
   border-radius: 12px;
   background: transparent;
@@ -47,6 +48,18 @@
     background 160ms,
     color 160ms;
 }
+.navIcon {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  min-width: 40px;
+  height: 40px;
+}
+.navLabel {
+  white-space: nowrap;
+  font-size: 13px;
+  padding-right: 12px;
+}
 .sidebar button:hover {
   background: color-mix(in srgb, var(--foreground) 5%, transparent);
   color: var(--foreground);
@@ -54,20 +67,6 @@
 .sidebar button[aria-current="page"] {
   background: var(--primary);
   color: var(--primary-foreground);
-}
-.navTooltip {
-  pointer-events: none;
-  position: absolute;
-  left: calc(100% + 15px);
-  background: var(--popover);
-  color: var(--foreground);
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow-popover);
-  font-size: 13px;
-  white-space: nowrap;
-  padding: 7px 12px;
-  border-radius: 10px;
-  transform-origin: left center;
 }
 .inspector {
   position: absolute;
@@ -135,22 +134,36 @@
   display: flex;
   gap: 3px;
   padding: 3px;
-  border-radius: 20px;
-  background: color-mix(in srgb, var(--foreground) 5%, transparent);
+  border-radius: 11px;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--secondary) 60%, transparent);
 }
 .themePicker button {
-  display: grid;
-  place-items: center;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   background: transparent;
-  width: 30px;
-  height: 28px;
+  padding: 6px 6px;
+  font-size: 12px;
+  height: 32px;
   color: var(--muted-foreground);
-  border-radius: 50%;
+  border-radius: 8px;
 }
 .themePicker button[aria-pressed="true"] {
   color: var(--foreground);
+}
+.themeSelection {
+  position: absolute;
+  inset: 0;
   background: var(--card);
-  box-shadow: 0 1px 5px #0000000a;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px #0001;
+}
+.themePicker button > svg,
+.themePicker button > span:not(.themeSelection) {
+  position: relative;
 }
 .toast {
   position: absolute;
@@ -223,7 +236,7 @@
     border-radius: 17px;
   }
   .sidebar button {
-    width: 36px;
+    width: 100%;
     height: 40px;
   }
   .inspector {

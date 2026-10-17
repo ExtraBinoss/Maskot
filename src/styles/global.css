@@ -180,3 +180,30 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  mix-blend-mode: normal;
+}
+::view-transition-old(root) {
+  animation: themeFadeOut 220ms ease-out both;
+}
+::view-transition-new(root) {
+  animation: themeReveal 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes themeReveal {
+  from {
+    clip-path: circle(0 at var(--theme-x, 50%) var(--theme-y, 50%));
+  }
+  to {
+    clip-path: circle(150vmax at var(--theme-x, 50%) var(--theme-y, 50%));
+  }
+}
+@keyframes themeFadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}

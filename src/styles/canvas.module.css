@@ -43,7 +43,14 @@
   overflow: visible;
 }
 .canvas[data-view="about"] .mascot {
+  --avatar-size: min(520px, 70dvh);
   transform: translate(calc(-50% + 40vw), -50%) scale(2.8);
+}
+@media (min-width: 761px) and (max-width: 1100px) {
+  .canvas[data-view="about"] .mascot {
+    --avatar-size: min(380px, 70dvh);
+    transform: translate(calc(-50% + 50vw), -50%) scale(2.3);
+  }
 }
 .caption {
   position: absolute;
@@ -110,7 +117,8 @@
     transform: translate(-50%, -50%) scale(1);
   }
   .canvas[data-view="about"] .mascot {
-    transform: translate(calc(-50% + 23vw), -5%) scale(1.9);
+    --avatar-size: min(320px, 40dvh, calc(100vw - 80px));
+    transform: translate(calc(-50% + 29vw), -42%) scale(1.5);
     top: 6dvh;
   }
   .caption,

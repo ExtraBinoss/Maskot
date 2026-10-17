@@ -36,7 +36,7 @@ test.afterEach(async ({ page }) => {
 test("keeps Static still, loads tools on demand and reserves the footer for About", async ({
   page,
 }) => {
-  await expect(page).toHaveTitle("Maskot — A little character studio");
+  await expect(page).toHaveTitle("Maskot — Atelier de mascottes");
   const lazyTools = () =>
     page.evaluate(() =>
       performance
@@ -56,16 +56,18 @@ test("keeps Static still, loads tools on demand and reserves the footer for Abou
   expect(await lazyTools()).toEqual(
     expect.arrayContaining([expect.stringMatching(/MotionPanel-/)]),
   );
-  await page.getByRole("button", { name: "About", exact: true }).click();
+  await page.getByRole("button", { name: "À propos", exact: true }).click();
   await expect(page.locator("footer")).toHaveCount(1);
   await expect(
-    page.getByRole("heading", { name: /Grok bot inspired/ }),
+    page.getByRole("heading", { name: "Maskot", exact: true }),
   ).toBeVisible();
-  await expect(page.locator("footer")).toContainText("Plinka");
+  await expect(
+    page.getByRole("link", { name: "Plinka", exact: true }),
+  ).toHaveAttribute("href", "https://plinka.eu");
   await expect(
     page.getByRole("link", { name: "Maskot, un projet Plinka", exact: true }),
   ).toHaveText("maskot.");
-  await page.getByRole("button", { name: "Static", exact: true }).click();
+  await page.getByRole("button", { name: "Statique", exact: true }).click();
   await expect(page.locator("footer")).toHaveCount(0);
   await expect(preview(page)).toBeVisible();
 });
@@ -89,7 +91,7 @@ test("opens Motion with autoplay on a slower CPU without starving the controls",
       .getByRole("region", { name: "Chorégraphie", exact: true })
       .locator("article"),
   ).toHaveCount(4);
-  await page.getByRole("button", { name: "Static", exact: true }).click();
+  await page.getByRole("button", { name: "Statique", exact: true }).click();
   const live = await artwork(page);
   await page.evaluate(() => new Promise((resolve) => setTimeout(resolve, 350)));
   expect(await artwork(page)).not.toBe(live);
@@ -101,7 +103,7 @@ test("edits the real mascot in pause, persists settings, and restores defaults",
   page,
 }) => {
   await expect(
-    page.getByRole("button", { name: "Static", exact: true }),
+    page.getByRole("button", { name: "Statique", exact: true }),
   ).toHaveAttribute("aria-current", "page");
   await expect(page.locator("footer")).toHaveCount(0);
   await expect(
@@ -181,7 +183,7 @@ test("plays, pauses, changes speed and protects interactive controls from Space"
       .getByLabel("Mouvements", { exact: true })
       .getByRole("button", { name: "Réflexion", exact: true }),
   ).toHaveAttribute("aria-pressed", "true");
-  await page.getByRole("button", { name: "Static", exact: true }).click();
+  await page.getByRole("button", { name: "Statique", exact: true }).click();
   const color = page.getByLabel("Couleur personnalisée au format hexadécimal");
   await color.fill("#12");
   await color.focus();
@@ -456,7 +458,7 @@ test("renders mobile and dark mode without page overflow or network font depende
       .toBe(true);
   }
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.getByRole("button", { name: "About", exact: true }).click();
+  await page.getByRole("button", { name: "À propos", exact: true }).click();
   await page.getByRole("button", { name: "Thème sombre", exact: true }).click();
   await expect(page.locator("html")).toHaveClass("dark");
   await page.reload();
@@ -486,9 +488,9 @@ test("renders mobile and dark mode without page overflow or network font depende
       { family: "Space Grotesk Variable", status: "loaded" },
     ]),
   );
-  await page.getByRole("button", { name: "About", exact: true }).click();
+  await page.getByRole("button", { name: "À propos", exact: true }).click();
   await page.getByRole("button", { name: "Thème clair", exact: true }).click();
-  await page.getByRole("button", { name: "Static", exact: true }).click();
+  await page.getByRole("button", { name: "Statique", exact: true }).click();
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.screenshot({
     path: "artifacts/desktop-light.png",
@@ -507,7 +509,7 @@ test("opens About as a page and animates the same mascot to the right", async ({
   expect(Math.abs(navBox!.y + navBox!.height / 2 - 500)).toBeLessThan(2);
   const original = await preview(page).elementHandle();
   const before = await preview(page).boundingBox();
-  await page.getByRole("button", { name: "About", exact: true }).click();
+  await page.getByRole("button", { name: "À propos", exact: true }).click();
   await expect(
     page.getByRole("complementary", { name: "Réglages de Maskot" }),
   ).toHaveCount(0);
@@ -523,10 +525,10 @@ test("opens About as a page and animates the same mascot to the right", async ({
     ),
   ).toBe(true);
   await expect(
-    page.getByRole("link", { name: "Un petit outil signé Plinka" }),
+    page.getByRole("link", { name: "Plinka", exact: true }),
   ).toHaveAttribute("href", "https://plinka.eu");
   await page.screenshot({ path: "artifacts/about-desktop.png" });
-  await page.getByRole("button", { name: "Static", exact: true }).click();
+  await page.getByRole("button", { name: "Statique", exact: true }).click();
   await expect
     .poll(async () =>
       Math.abs((await preview(page).boundingBox())!.x - before!.x),
@@ -535,6 +537,187 @@ test("opens About as a page and animates the same mascot to the right", async ({
   const live = await artwork(page);
   await page.waitForTimeout(250);
   expect(await artwork(page)).not.toBe(live);
+});
+
+test("keeps About on one screen and follows the pointer without enabling Motion tracking", async ({
+  page,
+}) => {
+  await page.getByRole("button", { name: "À propos", exact: true }).click();
+  const about = page.getByRole("region", { name: "À propos de Maskot" });
+  for (const size of [
+    { width: 1440, height: 900 },
+    { width: 844, height: 390 },
+    { width: 768, height: 700 },
+    { width: 390, height: 700 },
+    { width: 320, height: 568 },
+  ]) {
+    await page.setViewportSize(size);
+    await expect
+      .poll(() =>
+        about.evaluate((el) => ({
+          height: el.clientHeight,
+          scroll: el.scrollHeight,
+          width: el.clientWidth,
+          scrollWidth: el.scrollWidth,
+        })),
+      )
+      .toEqual({
+        height: size.height,
+        scroll: size.height,
+        width: size.width,
+        scrollWidth: size.width,
+      });
+    await expect(
+      about.getByRole("button", { name: "English", exact: true }),
+    ).toBeInViewport();
+    await expect(
+      about.getByRole("button", { name: "Thème clair", exact: true }),
+    ).toBeInViewport();
+    await expect(
+      about.getByRole("link", { name: "Plinka", exact: true }),
+    ).toBeInViewport();
+    await expect(about.locator('img[src="/plinka.svg"]')).toBeVisible();
+  }
+  await expect(about).not.toContainText(
+    /Grok bot inspired|Made to be yours|Créé avec|ExtraBinoss/,
+  );
+  await page.setViewportSize({ width: 1440, height: 900 });
+  const eyes = () =>
+    preview(page)
+      .locator("mask path[transform]")
+      .first()
+      .getAttribute("transform");
+  await page.mouse.move(100, 200);
+  const left = await eyes();
+  await page.mouse.move(1400, 700);
+  await expect.poll(eyes).not.toBe(left);
+  await page.getByRole("button", { name: "Motion", exact: true }).click();
+  await expect(
+    page.getByRole("switch", { name: "Suivre le curseur" }),
+  ).toHaveAttribute("aria-checked", "false");
+});
+
+test("expands the navigation itself with all labels and supports keyboard focus", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  const nav = page.getByRole("navigation", { name: "Navigation Maskot" });
+  const compact = (await nav.boundingBox())!;
+  await nav.hover();
+  await expect(nav).toHaveAttribute("data-expanded", "true");
+  await expect
+    .poll(async () => (await nav.boundingBox())!.width)
+    .toBeGreaterThan(150);
+  for (const name of ["Statique", "Motion", "À propos"]) {
+    await expect(
+      nav.getByRole("button", { name, exact: true }).locator("span").last(),
+    ).toHaveCSS("opacity", "1");
+  }
+  expect(
+    Math.abs((await nav.boundingBox())!.y + compact.height / 2 - 500),
+  ).toBeLessThan(1);
+  await page.mouse.move(700, 30);
+  await expect
+    .poll(async () => (await nav.boundingBox())!.width)
+    .toBeLessThan(55);
+  await nav.getByRole("button", { name: "Statique", exact: true }).focus();
+  await expect(nav).toHaveAttribute("data-expanded", "true");
+  await expect
+    .poll(async () => (await nav.boundingBox())!.width)
+    .toBeGreaterThan(150);
+});
+
+test("switches the whole studio between French and English and remembers the language", async ({
+  page,
+}) => {
+  await page.getByRole("button", { name: "À propos", exact: true }).click();
+  const original = await preview(page).elementHandle();
+  await page.getByRole("button", { name: "English", exact: true }).click();
+  await expect(page.locator("html")).toHaveAttribute("lang", "en");
+  await expect(page).toHaveTitle("Maskot — A little character studio");
+  await expect(
+    page.getByRole("button", { name: "System theme", exact: true }),
+  ).toBeVisible();
+  expect(
+    await original!.evaluate(
+      (node) => node === document.querySelector("[data-mascot-preview] > svg"),
+    ),
+  ).toBe(true);
+  await page.getByRole("button", { name: "Static", exact: true }).click();
+  await page.getByRole("button", { name: "Cloud", exact: true }).click();
+  await expect(
+    page.getByRole("heading", { name: "Eye style 32 looks", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Expression: Happy", exact: true }),
+  ).toHaveCount(1);
+  await page
+    .getByRole("button", { name: "Choose a custom color", exact: true })
+    .click();
+  await expect(
+    page
+      .getByRole("dialog", { name: "Color", exact: true })
+      .getByRole("textbox", { name: "Hex code" }),
+  ).toBeVisible();
+  await page.keyboard.press("Escape");
+  await page.getByRole("button", { name: "Motion", exact: true }).click();
+  await expect(
+    page.getByRole("button", { name: "Export timeline", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("switch", { name: "Follow cursor", exact: true }),
+  ).toBeVisible();
+  await page.reload();
+  await expect(page.locator("html")).toHaveAttribute("lang", "en");
+  await expect(
+    page.getByRole("button", { name: "Cloud", exact: true }),
+  ).toHaveAttribute("aria-pressed", "true");
+  await page.getByRole("button", { name: "About", exact: true }).click();
+  await page.getByRole("button", { name: "Français", exact: true }).click();
+  await page.getByRole("button", { name: "Statique", exact: true }).click();
+  await expect(
+    page.getByRole("button", { name: "Nuage", exact: true }),
+  ).toHaveAttribute("aria-pressed", "true");
+  await expect(page.locator("html")).toHaveAttribute("lang", "fr");
+});
+
+test("animates theme changes and respects reduced motion", async ({ page }) => {
+  await page.emulateMedia({
+    reducedMotion: "no-preference",
+    colorScheme: "light",
+  });
+  await page.reload();
+  await page.getByRole("button", { name: "À propos", exact: true }).click();
+  await page.evaluate(() => {
+    const native = document.startViewTransition.bind(document);
+    const state = window as typeof window & { themeTransitions: number };
+    state.themeTransitions = 0;
+    document.startViewTransition = (
+      ...args: Parameters<Document["startViewTransition"]>
+    ) => {
+      state.themeTransitions++;
+      return native(...args);
+    };
+  });
+  await page.getByRole("button", { name: "Thème sombre", exact: true }).click();
+  await expect(page.locator("html")).toHaveClass("dark");
+  expect(
+    await page.evaluate(
+      () =>
+        (window as typeof window & { themeTransitions: number })
+          .themeTransitions,
+    ),
+  ).toBe(1);
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.getByRole("button", { name: "Thème clair", exact: true }).click();
+  await expect(page.locator("html")).not.toHaveClass("dark");
+  expect(
+    await page.evaluate(
+      () =>
+        (window as typeof window & { themeTransitions: number })
+          .themeTransitions,
+    ),
+  ).toBe(1);
 });
 
 test("scrolls the complete eye and mood catalogs and persists the new styles", async ({
@@ -655,7 +838,7 @@ test("exports a real WebM with the complete montage and lazy-loads the encoder",
   await page
     .getByRole("button", { name: "Exporter le montage", exact: true })
     .click();
-  await expect(page.getByRole("dialog")).toContainText("1.2 secondes");
+  await expect(page.getByRole("dialog")).toContainText("1,2 secondes");
   const pending = page.waitForEvent("download");
   await page
     .getByRole("button", { name: "Exporter en WebM", exact: true })
@@ -813,8 +996,8 @@ test("blinks naturally in Static and morphs eyes, silhouette and paint", async (
   expect(frames.after.color).toBe("#8b5cf6");
   const motion = page.getByRole("button", { name: "Motion", exact: true });
   await motion.hover();
-  await expect(motion.locator("span")).toHaveText("Motion");
-  await expect(motion.locator("span")).toHaveCSS("opacity", "1");
+  await expect(motion.locator("span").last()).toHaveText("Motion");
+  await expect(motion.locator("span").last()).toHaveCSS("opacity", "1");
 });
 
 test("morphs the property thumbnails and eye previews in place", async ({
@@ -1057,6 +1240,102 @@ test("edits slider values with the input, keyboard and reset controls", async ({
 });
 
 for (const width of [1440, 390]) {
+  test(`opens the complete picker in its final position without loading at ${width}px`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await page.emulateMedia({ reducedMotion: "no-preference" });
+    await page.reload();
+    const trigger = page.getByRole("button", {
+      name: "Choisir une couleur personnalisée",
+      exact: true,
+    });
+    await trigger.scrollIntoViewIfNeeded();
+    await trigger.evaluate((button) => {
+      const panel = button.closest("#settings")!.querySelector("div")!;
+      panel.scrollTop +=
+        button.getBoundingClientRect().top - (window.innerHeight - 180);
+    });
+    // Once the studio is ready, opening this control needs no additional code.
+    await page.route("**/*.js", (route) => route.abort());
+    await page.evaluate(() => {
+      type Frame = {
+        x: number;
+        y: number;
+        height: number;
+        side: string | null;
+        complete: boolean;
+      };
+      const state = window as typeof window & {
+        pickerOpening: { raf: number; frames: Frame[] };
+      };
+      state.pickerOpening = { raf: 0, frames: [] };
+      const sample = () => {
+        const popup = document.querySelector<HTMLElement>(
+          '[data-slot="popover-content"][data-open]',
+        );
+        const positioner = popup?.closest<HTMLElement>('[role="presentation"]');
+        if (
+          popup &&
+          positioner &&
+          Number(getComputedStyle(positioner).opacity) > 0 &&
+          Number(getComputedStyle(popup).opacity) > 0
+        ) {
+          const rect = popup.getBoundingClientRect();
+          state.pickerOpening.frames.push({
+            x: rect.x,
+            y: rect.y,
+            height: rect.height,
+            side: popup.getAttribute("data-side"),
+            complete:
+              !!popup.querySelector('[data-slot="color-picker-area"]') &&
+              !popup.textContent?.includes("Un petit instant"),
+          });
+        }
+        state.pickerOpening.raf = requestAnimationFrame(sample);
+      };
+      sample();
+    });
+    await trigger.click();
+    const popup = page.getByRole("dialog", { name: "Couleur", exact: true });
+    await expect(
+      popup.getByRole("slider", { name: "Couleur", exact: true }),
+    ).toBeVisible();
+    await expect
+      .poll(() =>
+        page.evaluate(
+          () =>
+            (window as typeof window & { pickerOpening: { frames: unknown[] } })
+              .pickerOpening.frames.length,
+        ),
+      )
+      .toBeGreaterThan(10);
+    const frames = await page.evaluate(() => {
+      const state = (
+        window as typeof window & {
+          pickerOpening: {
+            raf: number;
+            frames: {
+              x: number;
+              y: number;
+              height: number;
+              side: string | null;
+              complete: boolean;
+            }[];
+          };
+        }
+      ).pickerOpening;
+      cancelAnimationFrame(state.raf);
+      return state.frames;
+    });
+    expect(frames.every((frame) => frame.complete)).toBe(true);
+    expect([...new Set(frames.map((frame) => frame.side))]).toEqual(["top"]);
+    for (const dimension of ["x", "y", "height"] as const) {
+      const values = frames.map((frame) => frame[dimension]);
+      expect(Math.max(...values) - Math.min(...values)).toBeLessThan(1);
+    }
+  });
+
   test(`adds custom colors from the first swatch and restores the palette at ${width}px`, async ({
     page,
   }) => {
@@ -1070,7 +1349,7 @@ for (const width of [1440, 390]) {
       "Choisir une couleur personnalisée",
     );
     await trigger.click();
-    const popup = page.getByRole("dialog", { name: "Une couleur bien à toi" });
+    const popup = page.getByRole("dialog", { name: "Couleur", exact: true });
     await expect(popup).toBeVisible();
     const box = (await popup.boundingBox())!;
     expect(box.x).toBeGreaterThanOrEqual(0);
@@ -1133,7 +1412,7 @@ test("previews a picker drag immediately and commits without repainting the cata
       exact: true,
     })
     .click();
-  const popup = page.getByRole("dialog", { name: "Une couleur bien à toi" });
+  const popup = page.getByRole("dialog", { name: "Couleur", exact: true });
   const area = popup.getByRole("slider", { name: "Couleur", exact: true });
   await expect(area).toBeVisible();
   await expect(

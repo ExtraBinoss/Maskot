@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useAtom } from "jotai";
 import { RotateCcw } from "lucide-react";
 import { lookAtom } from "../state/lab";
@@ -34,20 +35,23 @@ const geometryControls: { key: keyof EyeGeometry; label: string }[] = [
 ];
 
 export default function StaticPanel() {
+  const { t } = useTranslation();
+
   const [look, setLook] = useAtom(lookAtom);
   return (
-    <div aria-label="Apparence de la mascotte">
+    <div aria-label={t("Apparence de la mascotte")}>
       <section className={s.section}>
         <h3>
-          Silhouette<span>{SHAPES.length} formes</span>
+          {t("Silhouette")}
+          <span>{t("{{count}} formes", { count: SHAPES.length })}</span>
         </h3>
-        <ScrollShadow label="Silhouettes">
+        <ScrollShadow label={t("Silhouettes")}>
           <div className={s.shapeGrid}>
             {SHAPES.map(({ id }) => (
               <button
                 key={id}
                 className={s.previewChoice}
-                aria-label={SHAPE_LABELS[id]}
+                aria-label={t(SHAPE_LABELS[id])}
                 aria-pressed={look.shape === id}
                 onClick={() => setLook({ ...look, shape: id })}
               >
@@ -55,7 +59,7 @@ export default function StaticPanel() {
                   look={{ ...look, shape: id }}
                   size={47}
                 />
-                <span>{SHAPE_LABELS[id]}</span>
+                <span>{t(SHAPE_LABELS[id])}</span>
               </button>
             ))}
           </div>
@@ -63,20 +67,21 @@ export default function StaticPanel() {
       </section>
       <section className={s.section}>
         <h3>
-          Style des yeux<span>{EYE_STYLES.length} regards</span>
+          {t("Style des yeux")}
+          <span>{t("{{count}} regards", { count: EYE_STYLES.length })}</span>
         </h3>
-        <ScrollShadow label="Styles des yeux">
+        <ScrollShadow label={t("Styles des yeux")}>
           <div className={s.eyeGrid}>
             {EYE_STYLES.map(({ id, label }) => (
               <button
                 key={id}
                 className={s.eyeChoice}
-                aria-label={label}
+                aria-label={t(label)}
                 aria-pressed={look.eyes === id}
                 onClick={() => setLook({ ...look, eyes: id })}
               >
                 <EyePreview look={look} style={id} />
-                <span>{label}</span>
+                <span>{t(label)}</span>
               </button>
             ))}
           </div>
@@ -87,13 +92,13 @@ export default function StaticPanel() {
       <Accordion className={s.details}>
         <AccordionItem value="geometry" className={s.geometryItem}>
           <AccordionTrigger className={s.geometryTrigger}>
-            Ajuster les yeux
+            {t("Ajuster les yeux")}
           </AccordionTrigger>
           <AccordionContent className={s.geometry}>
             {geometryControls.map(({ key, label }) => (
               <Range
                 key={key}
-                label={label}
+                label={t(label)}
                 suffix=" %"
                 defaultValue={DEFAULT_EYE_GEOMETRY[key] * 100}
                 value={Math.round(look.eyeGeometry[key] * 100)}
@@ -114,15 +119,15 @@ export default function StaticPanel() {
               }
             >
               <RotateCcw size={12} />
-              Réinitialiser les yeux
+              {t("Réinitialiser les yeux")}
             </button>
           </AccordionContent>
         </AccordionItem>
       </Accordion>
       <div className={s.settingRow}>
-        <span>Petites joues rosées</span>
+        <span>{t("Petites joues rosées")}</span>
         <Switch
-          label="Petites joues rosées"
+          label={t("Petites joues rosées")}
           checked={look.blush}
           onCheckedChange={(blush) => setLook({ ...look, blush })}
         />

@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useRef, useState, type RefObject } from "react";
 import { useAtomValue, useStore } from "jotai";
 import { ArrowDown, Download, RotateCcw, Upload } from "lucide-react";
@@ -23,6 +24,8 @@ export function WorkspaceActions({
 }: {
   svgRef: RefObject<SVGSVGElement | null>;
 }) {
+  const { t } = useTranslation();
+
   const store = useStore();
   const player = usePlayer();
   const file = useRef<HTMLInputElement>(null);
@@ -39,10 +42,10 @@ export function WorkspaceActions({
           : await mascotPng(text),
         "maskot-" + store.get(stateAtom) + "." + format,
       );
-      store.set(
-        statusAtom,
-        format.toUpperCase() + " exporté avec un fond transparent.",
-      );
+      store.set(statusAtom, {
+        key: "{{format}} exporté avec un fond transparent.",
+        values: { format: format.toUpperCase() },
+      });
     } catch (error) {
       store.set(
         statusAtom,
@@ -95,8 +98,8 @@ export function WorkspaceActions({
     <div className={s.panelActions}>
       <div className={s.fileActions}>
         <button
-          title="Repartir de zéro"
-          aria-label="Repartir de zéro"
+          title={t("Repartir de zéro")}
+          aria-label={t("Repartir de zéro")}
           onClick={() => {
             store.set(presetAtom, defaultPreset());
             player.choose("idle");
@@ -104,19 +107,19 @@ export function WorkspaceActions({
           }}
         >
           <RotateCcw size={13} />
-          Réinitialiser
+          {t("Réinitialiser")}
         </button>
         <span />
         <button
-          title="Importer un look"
-          aria-label="Importer un look"
+          title={t("Importer un look")}
+          aria-label={t("Importer un look")}
           onClick={() => file.current?.click()}
         >
           <Upload size={14} />
         </button>
         <button
-          title="Exporter le look en JSON"
-          aria-label="Exporter le look"
+          title={t("Exporter le look en JSON")}
+          aria-label={t("Exporter le look")}
           onClick={exportPreset}
         >
           <Download size={14} />
@@ -126,7 +129,7 @@ export function WorkspaceActions({
         <Button
           variant="outline"
           disabled={board || exporting}
-          aria-label="Exporter en SVG"
+          aria-label={t("Exporter en SVG")}
           onClick={() => void exportImage("svg")}
         >
           <ArrowDown />
@@ -134,7 +137,7 @@ export function WorkspaceActions({
         </Button>
         <Button
           disabled={board || exporting}
-          aria-label="Exporter en PNG"
+          aria-label={t("Exporter en PNG")}
           onClick={() => void exportImage("png")}
         >
           <ArrowDown />
@@ -146,7 +149,7 @@ export function WorkspaceActions({
         type="file"
         hidden
         accept=".json,application/json"
-        aria-label="Importer un réglage de mascotte"
+        aria-label={t("Importer un réglage de mascotte")}
         onChange={(event) => void importPreset(event.currentTarget)}
       />
     </div>
