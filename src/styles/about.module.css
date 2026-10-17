@@ -1,98 +1,161 @@
 .about {
-  padding-top: 7px;
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+  pointer-events: none;
+}
+.content {
+  pointer-events: auto;
+  width: min(390px, calc(58vw - 110px));
+  margin: clamp(68px, 12dvh, 145px) 0 220px 108px;
 }
 .tag {
-  display: inline-block;
-  font-size: 8px;
-  letter-spacing: 1.3px;
+  font-size: 9px;
+  letter-spacing: 2px;
   color: var(--muted-foreground);
 }
-.intro h3 {
-  font-size: 27px;
-  font-weight: 450;
-  letter-spacing: -1.25px;
-  line-height: 1.22;
-  margin: 19px 0 25px;
+.content h2 {
+  font-size: clamp(24px, 2.5vw, 38px);
+  font-weight: 500;
+  line-height: 1.18;
+  letter-spacing: -1.7px;
+  margin-top: 16px;
 }
-.intro h3 span {
+.content h2 span {
+  color: var(--primary);
+}
+.description {
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--muted-foreground);
+  margin-top: 20px;
+  max-width: 330px;
+}
+.preferences,
+.links {
+  margin-top: 30px;
+}
+.content h3 {
+  font: 600 14px var(--font-sans);
+  margin-bottom: 10px;
+}
+.themeRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  font-size: 13px;
   color: var(--muted-foreground);
 }
-.intro p,
-.credits p {
-  font-size: 12px;
-  line-height: 1.8;
-  color: var(--muted-foreground);
-  margin-top: 14px;
+.links a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 11px 13px;
+  font-size: 14px;
+  margin-bottom: 6px;
+  background: color-mix(in srgb, var(--card) 35%, transparent);
+}
+.links a span {
+  flex: 1;
+}
+.links a:hover {
+  border-color: var(--muted-foreground);
 }
 .credits {
-  margin-top: 39px;
-}
-.credits h4 {
-  font-size: 12px;
-  font-weight: 500;
-  letter-spacing: -0.25px;
-}
-.credits p a {
-  display: inline;
-  color: var(--foreground);
-}
-.credits p a svg {
-  display: inline;
-  vertical-align: middle;
-  margin-left: 3px;
-}
-.sourceLink,
-.licenseLink {
-  display: flex;
-  align-items: center;
-  gap: 6px;
   font-size: 11px;
-}
-.sourceLink {
-  margin-top: 23px;
-}
-.licenseLink {
-  margin-top: 14px;
+  line-height: 1.7;
   color: var(--muted-foreground);
-  font-size: 10px;
+  margin-top: 18px;
+}
+.credits a,
+.footer p a {
+  text-decoration: underline;
+  text-decoration-color: var(--border);
+  text-underline-offset: 3px;
 }
 .footer {
-  margin-top: 45px;
-  padding-top: 19px;
-  border-top: 1px solid rgb(128 128 140 / 0.13);
+  font-size: 12px;
   color: var(--muted-foreground);
-  font-size: 9px;
+  margin-top: 23px;
 }
-.footerRow {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
+.footer p {
+  margin-bottom: 7px;
 }
-.footerRow a {
-  display: flex;
+.footer p > span {
+  color: #e85663;
+}
+.footer > a {
+  display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
 }
-.footer > p {
-  margin-top: 9px;
-  font-size: 9px;
-}
-.footer p a {
-  color: var(--foreground);
-}
-.footerWordmark {
-  display: block;
-  font: 600 74px/0.95 var(--font-heading);
-  text-align: center;
-  letter-spacing: -6px;
-  color: transparent;
+.wordmark {
+  position: absolute;
+  pointer-events: auto;
+  bottom: -0.09em;
+  left: 100px;
+  font: 700 clamp(90px, 19vw, 300px)/0.82 var(--font-heading);
+  letter-spacing: -0.09em;
+  padding-right: 0.14em;
   background: linear-gradient(
-    to bottom,
-    color-mix(in srgb, var(--foreground) 25%, transparent),
-    color-mix(in srgb, var(--foreground) 3%, transparent)
+    180deg,
+    color-mix(in srgb, var(--foreground) 19%, transparent),
+    transparent 93%
   );
   background-clip: text;
-  -webkit-background-clip: text;
-  margin: 32px -8px 0;
-  padding-bottom: 4px;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+@media (max-height: 760px) and (min-width: 761px) {
+  .content {
+    margin-top: 50px;
+    margin-bottom: 150px;
+  }
+  .content h2 {
+    font-size: 28px;
+  }
+  .description {
+    font-size: 12px;
+  }
+  .preferences,
+  .links {
+    margin-top: 18px;
+  }
+  .wordmark {
+    position: relative;
+    left: 100px;
+    bottom: -0.1em;
+  }
+}
+@media (max-width: 760px) {
+  .content {
+    width: calc(100% - 100px);
+    margin: 36dvh 20px 60px 80px;
+  }
+  .content h2 {
+    font-size: 29px;
+  }
+  .wordmark {
+    position: relative;
+    display: block;
+    left: 76px;
+    width: max-content;
+    bottom: -0.08em;
+    font-size: clamp(75px, 20vw, 140px);
+  }
+}
+@media (max-width: 760px) {
+  .content {
+    margin-top: 45dvh;
+  }
+  .content h2 {
+    font-size: clamp(24px, 7.4vw, 29px);
+  }
 }

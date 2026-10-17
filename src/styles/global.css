@@ -29,14 +29,22 @@
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
+  --accent-soft: color-mix(in srgb, var(--primary) 11%, transparent);
+  --font-ui: "Source Sans 3 Variable", sans-serif;
+  --shadow-panel:
+    inset 0 1px 0 rgb(255 255 255 / 70%), 0 0 0 0.5px rgb(0 0 0 / 3%),
+    0 4px 14px rgb(0 0 0 / 5%);
+  --shadow-popover:
+    inset 0 1px 0 rgb(255 255 255 / 70%), 0 8px 32px rgb(0 0 0 / 16%),
+    0 1px 4px rgb(0 0 0 / 8%);
   --font-heading: "Space Grotesk Variable", sans-serif;
-  --background: #f5f3f0;
+  --background: #fbfbfd;
   --foreground: #1d1d1f;
   --card: #fff;
   --card-foreground: #1d1d1f;
   --popover: #fff;
   --popover-foreground: #1d1d1f;
-  --primary: #29292d;
+  --primary: #2563eb;
   --primary-foreground: #fff;
   --secondary: #f0f0f2;
   --secondary-foreground: #1d1d1f;
@@ -47,7 +55,7 @@
   --destructive: #d32f2f;
   --border: #e5e5e7;
   --input: #e5e5e7;
-  --ring: #7c7b83;
+  --ring: var(--primary);
   --radius: 0.5rem;
   --control-border: rgb(0 0 0 / 13%);
   --control-bg: #fff;
@@ -59,8 +67,8 @@
 .dark {
   color-scheme: dark;
   --background: #1c1c1e;
-  --primary: #eeeef1;
-  --primary-foreground: #242426;
+  --primary: #2563eb;
+  --primary-foreground: #fff;
   --foreground: #f5f5f7;
   --card: #242426;
   --card-foreground: #f5f5f7;

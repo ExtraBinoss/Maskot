@@ -1,6 +1,6 @@
 // Playback adapted from Beam's useMascotPlayer.ts (MPL-2.0).
 import { EXPRESSION_BY_ID } from "./engine/expressions";
-import { SHAPE_BY_ID } from "./engine/skins";
+import { mixHex, SHAPE_BY_ID } from "./engine/skins";
 import { clamp } from "./engine/math";
 import { SEQUENCE } from "./engine/states";
 import type { StateId } from "./engine/bot-types";
@@ -12,6 +12,7 @@ import {
   elapsedAtom,
   followAtom,
   frameAtom,
+  paintAtom,
   lookAtom,
   playingAtom,
   presetAtom,
@@ -57,18 +58,39 @@ export function browserEnvironment(): PlayerEnvironment {
 export function createMascotPlayer(store: LabStore, env: PlayerEnvironment) {
   let engine = createMascotEngine(store.get(lookAtom));
   let clock = 0;
+  let appearanceClock = 0;
+  let appearanceUntil = -1;
+  let paintStart = -10;
+  let paintFrom = store.get(paintAtom);
   let sequenceStart = 0;
   let last: number | null = null;
   let raf: number | null = null;
   let mounted = false;
-  const draw = () => store.set(frameAtom, engine.sample(clock));
+  const draw = () => {
+    const look = store.get(lookAtom);
+    const k = Math.min(1, Math.max(0, (appearanceClock - paintStart) / 0.45));
+    const eased = 1 - (1 - k) ** 5;
+    const paint = store.get(paintAtom);
+    const color =
+      k >= 1 ? look.color : mixHex(paintFrom.color, look.color, eased);
+    const blush =
+      k >= 1
+        ? Number(look.blush)
+        : paintFrom.blush + (Number(look.blush) - paintFrom.blush) * eased;
+    if (color !== paint.color || blush !== paint.blush)
+      store.set(paintAtom, { color, blush });
+    store.set(frameAtom, engine.sample(clock, appearanceClock));
+  };
   const choose = (id: StateId) => {
     store.set(sequencingAtom, false);
     store.set(stateAtom, id);
-    if (store.get(playingAtom)) engine.setState(id, clock);
+    if (store.get(playingAtom)) engine.setState(id, clock, appearanceClock);
     else {
       engine = createMascotEngine(store.get(lookAtom), id);
       clock = 0;
+      appearanceClock = 0;
+      appearanceUntil = -1;
+      paintStart = -10;
     }
     draw();
   };
@@ -84,6 +106,9 @@ export function createMascotPlayer(store: LabStore, env: PlayerEnvironment) {
       engine.setState(steps[i].state, start);
     }
     clock = at;
+    appearanceClock = at;
+    appearanceUntil = -1;
+    paintStart = -10;
     sequenceStart = 0;
     store.set(elapsedAtom, at);
     store.set(activeStepAtom, position.index);
@@ -93,20 +118,24 @@ export function createMascotPlayer(store: LabStore, env: PlayerEnvironment) {
   };
   const tick = (ms: number) => {
     raf = null;
-    if (!mounted || !store.get(playingAtom) || env.isHidden()) return;
+    if (
+      !mounted ||
+      (!store.get(playingAtom) && appearanceClock >= appearanceUntil) ||
+      env.isHidden()
+    )
+      return;
     const delta =
-      last === null
-        ? 0
-        : Math.max(0, Math.min((ms - last) / 1000, 0.064)) *
-          store.get(speedAtom);
+      last === null ? 0 : Math.max(0, Math.min((ms - last) / 1000, 0.064));
     last = ms;
-    clock += delta;
-    if (store.get(sequencingAtom)) {
+    appearanceClock += delta;
+    const playing = store.get(playingAtom);
+    if (playing) clock += delta * store.get(speedAtom);
+    if (playing && store.get(sequencingAtom)) {
       const steps = store.get(timelineAtom);
       const duration = store.get(durationAtom);
       if (clock - sequenceStart >= duration) {
         sequenceStart += duration;
-        engine.setState(steps[0].state, sequenceStart);
+        engine.setState(steps[0].state, sequenceStart, appearanceClock);
         store.set(activeStepAtom, 0);
         store.set(stateAtom, steps[0].state);
       }
@@ -118,18 +147,25 @@ export function createMascotPlayer(store: LabStore, env: PlayerEnvironment) {
         engine.setState(
           steps[position.index].state,
           sequenceStart + position.start,
+          appearanceClock,
         );
       }
       store.set(elapsedAtom, elapsed);
     }
     draw();
-    raf = env.requestFrame(tick);
+    if (playing || appearanceClock < appearanceUntil)
+      raf = env.requestFrame(tick);
+    else last = null;
   };
   const synchronize = () => {
     if (raf !== null) env.cancelFrame(raf);
     raf = null;
     last = null;
-    if (mounted && store.get(playingAtom) && !env.isHidden())
+    if (
+      mounted &&
+      (store.get(playingAtom) || appearanceClock < appearanceUntil) &&
+      !env.isHidden()
+    )
       raf = env.requestFrame(tick);
   };
   const release = () => {
@@ -138,12 +174,17 @@ export function createMascotPlayer(store: LabStore, env: PlayerEnvironment) {
   };
   const applyLook = () => {
     const look = store.get(lookAtom);
-    const at = store.get(playingAtom) ? clock : clock - 1;
+    const animated = !store.get(reducedMotionAtom);
+    const at = animated ? appearanceClock : appearanceClock - 1;
+    paintFrom = store.get(paintAtom);
+    paintStart = at;
     engine.setShape(SHAPE_BY_ID.get(look.shape)!.radii, at);
     engine.setExpression(EXPRESSION_BY_ID.get(look.expression)!, at);
     engine.setEyes(look.eyes, at);
-    engine.setEyeGeometry(look.eyeGeometry);
+    engine.setEyeGeometry(look.eyeGeometry, at);
+    if (animated) appearanceUntil = appearanceClock + 0.45;
     draw();
+    synchronize();
   };
   const mount = () => {
     if (mounted) throw new Error("Le lecteur est déjà monté.");
@@ -163,8 +204,15 @@ export function createMascotPlayer(store: LabStore, env: PlayerEnvironment) {
         const view = store.get(viewAtom);
         store.set(boardAtom, false);
         if (view !== "motion") {
-          store.set(playingAtom, false);
-          if (view === "static") choose("idle");
+          store.set(playingAtom, !store.get(reducedMotionAtom));
+          choose("idle");
+          if (view === "about") {
+            engine.setLook(
+              { yaw: -25, pitch: 0, mix: 1, spin: 0, wander: 0 },
+              -1,
+            );
+            draw();
+          } else release();
         } else store.set(playingAtom, false);
       }),
       store.sub(presetAtom, () => {
@@ -180,10 +228,14 @@ export function createMascotPlayer(store: LabStore, env: PlayerEnvironment) {
       env.onVisibility(synchronize),
       env.onMotion((reduced) => {
         store.set(reducedMotionAtom, reduced);
-        if (reduced) store.set(playingAtom, false);
+        if (reduced) {
+          appearanceUntil = -1;
+          store.set(playingAtom, false);
+        } else if (store.get(viewAtom) !== "motion")
+          store.set(playingAtom, true);
       }),
     ];
-    applyLook();
+    draw();
     synchronize();
     return () => {
       mounted = false;

@@ -5,3 +5,5 @@ Beam adds morphable sparkle/star eyes and a standalone mascot laboratory. Types 
 All body silhouettes share 64 radial samples. Interpolated radii are converted to a closed Catmull–Rom SVG path. The engine is clock-free: timestamped setters and sample(t) drive state transitions, gaze, blinking, particles and depth-sorted orbits. The UI owns playback and browser events.
 
 Maskot precomputes the original eye-fitting solver results for the built-in catalogue at build time. The solver remains the reference and regression tests compare every precomputed correction with it. This changes when the calculations run, while preserving their numerical results.
+
+Maskot additions: 32 radial eye styles with matching morph topology and 32 expressions and 32 body silhouettes.

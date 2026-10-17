@@ -9,7 +9,7 @@ interface BeamySvgProps {
   frame: BotFrame;
   color: string;
   size?: number;
-  blush?: boolean;
+  blush?: boolean | number;
   paper?: string;
   label?: string;
   portrait?: boolean;
@@ -22,7 +22,7 @@ export function BeamySvg({
   color,
   size = 320,
   blush = false,
-  paper = "#fffaf3",
+  paper = "#f9f9f9",
   label = "Mascotte Plinka",
   portrait = false,
   eyeColor,
@@ -143,7 +143,7 @@ export function BeamySvg({
                 ry="5"
                 transform={eye.matrix}
                 fill="#fffaf3"
-                opacity={eye.alpha * 0.22}
+                opacity={eye.alpha * 0.22 * Number(blush)}
               />
             ))}
           </g>

@@ -1,4 +1,5 @@
 import { EXPRESSIONS } from "./engine/expressions";
+import { EYE_STYLES } from "./engine/eye-styles";
 import { SHAPES } from "./engine/skins";
 import { SEQUENCE } from "./engine/states";
 import {
@@ -30,7 +31,7 @@ export function parsePreset(text: string): MascotPreset {
     typeof look.color !== "string" ||
     !/^#[0-9a-f]{6}$/i.test(look.color) ||
     typeof look.eyes !== "string" ||
-    !["sparkle", "star", "capsule"].includes(look.eyes) ||
+    !EYE_STYLES.some((style) => style.id === look.eyes) ||
     typeof look.blush !== "boolean" ||
     !Array.isArray(value.timeline) ||
     !value.timeline.length ||

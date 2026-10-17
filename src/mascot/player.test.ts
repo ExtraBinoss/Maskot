@@ -8,6 +8,7 @@ import {
   frameAtom,
   lookAtom,
   playingAtom,
+  paintAtom,
   presetAtom,
   reducedMotionAtom,
   sequencingAtom,
@@ -80,13 +81,13 @@ describe("React/Jotai mascot playback", () => {
     expect(store.get(frameAtom)).toEqual(paused);
     expect(callbacks.size).toBe(1);
   });
-  it("keeps Static and About idle and owns a loop only in Motion", () => {
+  it("keeps one live idle loop in Static and About and pauses Motion until mounted", () => {
     const store = createLabStore(() => null, false);
     const player = createMascotPlayer(store, env);
     const unmount = player.mount();
     expect(store.get(viewAtom)).toBe("static");
-    expect(store.get(playingAtom)).toBe(false);
-    expect(callbacks.size).toBe(0);
+    expect(store.get(playingAtom)).toBe(true);
+    expect(callbacks.size).toBe(1);
     store.set(viewAtom, "motion");
     expect(callbacks.size).toBe(0);
     player.activateMotion();
@@ -95,11 +96,13 @@ describe("React/Jotai mascot playback", () => {
     tick(0);
     tick(64);
     store.set(viewAtom, "about");
-    expect(callbacks.size).toBe(0);
+    expect(callbacks.size).toBe(1);
+    expect(store.get(stateAtom)).toBe("idle");
+    expect(store.get(frameAtom).eyes).toHaveLength(2);
     store.set(viewAtom, "static");
     expect(store.get(stateAtom)).toBe("idle");
     expect(store.get(sequencingAtom)).toBe(false);
-    expect(callbacks.size).toBe(0);
+    expect(callbacks.size).toBe(1);
     unmount();
   });
   it("releases frames and listeners, including a StrictMode remount", () => {
@@ -217,6 +220,35 @@ describe("React/Jotai mascot playback", () => {
     player.seek(4.8);
     player.seek(0.8);
     expect(store.get(frameAtom)).toEqual(createMascotEngine(look).sample(0.8));
+  });
+  it("morphs shape, eyes, color and proportions in pause without advancing the timeline", () => {
+    const { store } = setup();
+    store.set(playingAtom, false);
+    const before = store.get(frameAtom),
+      oldPaint = store.get(paintAtom);
+    store.set(lookAtom, {
+      ...store.get(lookAtom),
+      shape: "nuage",
+      eyes: "heart",
+      color: "#ff5a1f",
+      eyeGeometry: { ...store.get(lookAtom).eyeGeometry, size: 1.4 },
+    });
+    expect(store.get(frameAtom)).toEqual(before);
+    expect(store.get(paintAtom)).toEqual(oldPaint);
+    expect(callbacks.size).toBe(1);
+    tick(0);
+    tick(64);
+    tick(128);
+    const middle = store.get(frameAtom);
+    expect(middle.bodyPath).not.toBe(before.bodyPath);
+    expect(middle.eyes[0].d).not.toBe(before.eyes[0].d);
+    expect(store.get(paintAtom).color).not.toBe(oldPaint.color);
+    expect(store.get(paintAtom).color).not.toBe("#ff5a1f");
+    for (let ms = 192; ms <= 640; ms += 64) tick(ms);
+    expect(store.get(elapsedAtom)).toBe(0);
+    expect(store.get(playingAtom)).toBe(false);
+    expect(callbacks.size).toBe(0);
+    expect(store.get(paintAtom).color).toBe("#ff5a1f");
   });
   it("reconciles timeline edits only when sequencing", () => {
     const { store, player } = setup();

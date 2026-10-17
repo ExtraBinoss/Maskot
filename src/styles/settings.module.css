@@ -12,7 +12,7 @@
   margin-bottom: 12px;
 }
 .section h3 > span {
-  font-size: 10px;
+  font-size: 11px;
   color: var(--muted-foreground);
   font-weight: 400;
 }
@@ -39,7 +39,7 @@
     color 130ms;
 }
 .previewChoice > span {
-  font-size: 9px;
+  font-size: 11px;
   white-space: nowrap;
 }
 .previewChoice:hover,
@@ -59,12 +59,13 @@
 }
 .eyeGrid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 7px;
 }
 .eyeChoice {
   display: flex;
   align-items: center;
+  flex-direction: column;
   justify-content: center;
   gap: 5px;
   border-radius: 11px;
@@ -74,11 +75,11 @@
   border: 1px solid transparent;
 }
 .eyeChoice > svg {
-  width: 31px;
-  height: 31px;
+  width: 44px;
+  height: 44px;
 }
 .eyeChoice > span {
-  font-size: 10px;
+  font-size: 11px;
 }
 .eyeChoice[aria-pressed="true"] {
   background: color-mix(in srgb, var(--foreground) 5%, transparent);
@@ -92,7 +93,7 @@
   width: 76px;
   outline-offset: 2px;
   padding: 3px 0;
-  font-size: 10px;
+  font-size: 11px;
   font-family: var(--font-heading);
   text-transform: uppercase;
   font-weight: 400;
@@ -152,11 +153,12 @@
 .textButton {
   display: inline-flex;
   align-items: center;
+  flex-direction: column;
   justify-content: center;
   gap: 5px;
   background: transparent;
   color: var(--muted-foreground);
-  font-size: 10px;
+  font-size: 11px;
   padding-block: 4px;
 }
 .settingRow,
@@ -196,4 +198,91 @@
 .surfaces [aria-pressed="true"] {
   outline: 1px solid var(--muted-foreground);
   outline-offset: 3px;
+}
+
+.scrollShadow {
+  max-height: 228px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--foreground) 20%, transparent)
+    transparent;
+  padding: 2px 5px 3px 2px;
+  mask-image: linear-gradient(black, black);
+}
+.scrollShadow[data-top="false"][data-bottom="true"] {
+  mask-image: linear-gradient(black calc(100% - 20px), transparent);
+}
+.scrollShadow[data-top="true"][data-bottom="false"] {
+  mask-image: linear-gradient(transparent, black 20px);
+}
+.scrollShadow[data-top="true"][data-bottom="true"] {
+  mask-image: linear-gradient(
+    transparent,
+    black 20px,
+    black calc(100% - 20px),
+    transparent
+  );
+}
+.scrollShadow::-webkit-scrollbar {
+  width: 4px;
+}
+.scrollShadow::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--foreground) 22%, transparent);
+  border-radius: 4px;
+}
+.scrollShadow .eyeChoice {
+  min-width: 0;
+  padding: 6px 1px 8px;
+}
+.eyeChoice > span {
+  font-size: 10px;
+  text-align: center;
+}
+.previewChoice[aria-pressed="true"],
+.eyeChoice[aria-pressed="true"] {
+  border-color: var(--primary);
+  box-shadow: inset 0 0 0 1px var(--primary);
+  background: var(--card);
+}
+@media (max-width: 760px) {
+  .scrollShadow {
+    max-height: 210px;
+  }
+  .previewChoice > span {
+    font-size: 10px;
+  }
+  .eyeChoice > span {
+    font-size: 9px;
+  }
+}
+.section h3 {
+  font-size: 14px;
+}
+.section h3 > span {
+  font-size: 11px;
+}
+.previewChoice > span,
+.eyeChoice > span {
+  font-size: 12px;
+}
+.eyeChoice > span {
+  font-size: 11px;
+}
+.scrollShadow {
+  background: color-mix(in srgb, var(--card) 8%, transparent);
+  backdrop-filter: blur(8px);
+  border-radius: 12px;
+}
+@media (max-width: 760px) {
+  .previewChoice > span,
+  .eyeChoice > span {
+    font-size: 10px;
+  }
+}
+
+.previewChoice[aria-pressed="true"],
+.eyeChoice[aria-pressed="true"] {
+  background: var(--accent-soft);
+  color: var(--primary);
 }

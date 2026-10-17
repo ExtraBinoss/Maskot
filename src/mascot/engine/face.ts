@@ -1,5 +1,11 @@
-import type { Vec3, EyePose, HeadGaze, Liveliness, LivelinessOptions } from './bot-types';
-import { clamp, createRng, loopNoise } from './math';
+import type {
+  Vec3,
+  EyePose,
+  HeadGaze,
+  Liveliness,
+  LivelinessOptions,
+} from "./bot-types";
+import { clamp, createRng, loopNoise } from "./math";
 
 export const EYE_SPLIT = 15.46;
 
@@ -18,7 +24,11 @@ function spin(u: Vec3, v: Vec3, angle: number): [Vec3, Vec3] {
   ];
 }
 
-export function eyePoses(gaze: HeadGaze, scale: number, split = EYE_SPLIT): [EyePose, EyePose] {
+export function eyePoses(
+  gaze: HeadGaze,
+  scale: number,
+  split = EYE_SPLIT,
+): [EyePose, EyePose] {
   let f: Vec3 = [0, 0, 1];
   let right: Vec3 = [1, 0, 0];
   let down: Vec3 = [0, 1, 0];
@@ -58,6 +68,8 @@ const BLINKS: number[] = (() => {
 
 const BLINK_DUR = 0.18;
 function blinkLid(t: number): number {
+  // Keep blinking in a long-lived studio tab, using the deterministic calendar.
+  if (t >= 900) t %= 900;
   for (let i = 0; i < BLINKS.length; i++) {
     const start = BLINKS[i]!;
     if (t < start) break;
@@ -73,8 +85,10 @@ export function liveliness(t: number, opt: LivelinessOptions = {}): Liveliness {
   const { wander = 1, blink = true, float = true } = opt;
   // Periodes premieres entre elles : la derive ne se repete jamais a l'oeil.
   return {
-    dYaw: (loopNoise(t, 11.3, 0.4) * 5.5 + loopNoise(t, 3.7, 2.1) * 1.6) * wander,
-    dPitch: (loopNoise(t, 9.1, 1.3) * 4.2 + loopNoise(t, 4.3, 0.7) * 1.3) * wander,
+    dYaw:
+      (loopNoise(t, 11.3, 0.4) * 5.5 + loopNoise(t, 3.7, 2.1) * 1.6) * wander,
+    dPitch:
+      (loopNoise(t, 9.1, 1.3) * 4.2 + loopNoise(t, 4.3, 0.7) * 1.3) * wander,
     dRoll: loopNoise(t, 13.7, 3.2) * 2.2 * wander,
     lid: blink ? blinkLid(t) : 1,
     // Au repos la video est quasiment immobile (centre stable a +-0.003, rayon

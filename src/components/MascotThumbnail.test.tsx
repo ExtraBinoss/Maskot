@@ -19,7 +19,7 @@ describe("preview sampling", () => {
     expect(container.innerHTML).not.toBe(before);
     expect(container.innerHTML).toContain("#123456");
     const painted = container.innerHTML;
-    rerender(<MascotThumbnail look={{ ...look, eyes: "capsule" }} />);
+    rerender(<MascotThumbnail look={{ ...look, eyes: "star" }} />);
     expect(create).toHaveBeenCalledTimes(2);
     expect(container.innerHTML).not.toBe(painted);
   });

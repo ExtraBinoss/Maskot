@@ -8,17 +8,17 @@ import type {
   Pose,
   StateId,
   StateDef,
-} from './bot-types';
-import { arcRender } from './decor';
-import { blendExpression } from './expressions';
-import { decalageDesYeux } from './eyefit';
-import { blinkScale, eyePoses, liveliness } from './face';
-import { clamp, easings, lerp, r2 } from './math';
-import { blend, closedPath, radiusAtAngle, toPoints } from './shape';
-import { eyeShapePath } from './eye-shape';
-import type { EyeGeometry, EyeStyle } from './bot-types';
-import { DEFAULT_EYE_GEOMETRY, validateEyeGeometry } from './eye-geometry';
-import { STATE_BY_ID } from './states';
+} from "./bot-types";
+import { arcRender } from "./decor";
+import { blendExpression } from "./expressions";
+import { decalageDesYeux } from "./eyefit";
+import { blinkScale, eyePoses, liveliness } from "./face";
+import { clamp, easings, lerp, r2 } from "./math";
+import { blend, closedPath, radiusAtAngle, toPoints } from "./shape";
+import { blendEyeStyles, eyeShapePath, type EyeStyleMix } from "./eye-shape";
+import type { EyeGeometry, EyeStyle } from "./bot-types";
+import { DEFAULT_EYE_GEOMETRY, validateEyeGeometry } from "./eye-geometry";
+import { STATE_BY_ID } from "./states";
 const NO_LOOK: Look = { yaw: 0, pitch: 0, mix: 0, spin: 0, wander: 1 };
 const lerpLook = (a: Look, b: Look, t: number): Look => ({
   yaw: lerp(a.yaw, b.yaw, t),
@@ -27,7 +27,11 @@ const lerpLook = (a: Look, b: Look, t: number): Look => ({
   spin: lerp(a.spin, b.spin, t),
   wander: lerp(a.wander, b.wander, t),
 });
-const lerpEye = (a: Pose['eyes'][number], b: Pose['eyes'][number], t: number) => ({
+const lerpEye = (
+  a: Pose["eyes"][number],
+  b: Pose["eyes"][number],
+  t: number,
+) => ({
   w: lerp(a.w, b.w, t),
   h: lerp(a.h, b.h, t),
   open: lerp(a.open, b.open, t),
@@ -80,25 +84,35 @@ export class BotEngine {
   private shape: number[] | null = null;
   private shapePrev: number[] | null = null;
   private shapeAt = -10;
+  private shapeSources: Array<{
+    radii: number[] | null;
+    weight: number;
+  }> | null = null;
   private expr: BotExpression | null = null;
   private exprPrev: BotExpression | null = null;
   private exprAt = -10;
+  private expressionSources: Array<{
+    id: string | null;
+    weight: number;
+  }> | null = null;
   private look: Look = NO_LOOK;
   private lookPrev: Look = NO_LOOK;
   private lookAt = -10;
 
   private lookMorph = 0.24;
-  private eyeStyle: EyeStyle = 'capsule';
-  private eyeFrom: EyeStyle = 'capsule';
+  private eyeStyle: EyeStyle = "capsule";
+  private eyeFrom: EyeStyle | EyeStyleMix = "capsule";
   private eyeAt = -10;
   private eyeGeometry: EyeGeometry = { ...DEFAULT_EYE_GEOMETRY };
+  private geometryFrom: EyeGeometry = { ...DEFAULT_EYE_GEOMETRY };
+  private geometryAt = -10;
 
   static readonly SHAPE_MORPH = 0.45;
 
   static readonly LOOK_MORPH = 0.24;
   constructor(
     scale = 100,
-    initial: StateId = 'idle',
+    initial: StateId = "idle",
     shape: number[] | null = null,
     expression: BotExpression | null = null,
   ) {
@@ -109,18 +123,53 @@ export class BotEngine {
   }
   setEyes(style: EyeStyle, now = 0) {
     if (style === this.eyeStyle) return;
-    this.eyeFrom = this.eyeStyle;
+    this.eyeFrom = blendEyeStyles(
+      this.eyeFrom,
+      this.eyeStyle,
+      easings.easeOutQuint(clamp((now - this.eyeAt) / BotEngine.SHAPE_MORPH)),
+    );
     this.eyeStyle = style;
     this.eyeAt = now;
   }
 
-  setEyeGeometry(geometry: EyeGeometry) {
-    this.eyeGeometry = validateEyeGeometry(geometry);
+  setEyeGeometry(geometry: EyeGeometry, now?: number) {
+    const next = validateEyeGeometry(geometry);
+    this.geometryFrom = now === undefined ? next : this.geometryAtTime(now);
+    this.eyeGeometry = next;
+    this.geometryAt = now ?? -10;
+  }
+  private geometryAtTime(now: number): EyeGeometry {
+    const t = easings.easeOutQuint(
+      clamp((now - this.geometryAt) / BotEngine.SHAPE_MORPH),
+    );
+    if (t >= 1) return this.eyeGeometry;
+    return Object.fromEntries(
+      Object.entries(this.eyeGeometry).map(([key, value]) => [
+        key,
+        lerp(this.geometryFrom[key as keyof EyeGeometry], value, t),
+      ]),
+    ) as unknown as EyeGeometry;
   }
 
   setExpression(expression: BotExpression | null, now = 0) {
     if (expression === this.expr) return;
-    this.exprPrev = this.expr;
+    const t = easings.easeOutQuint(
+      clamp((now - this.exprAt) / BotEngine.SHAPE_MORPH),
+    );
+    const previous = this.expressionSources ?? [
+      { id: this.exprPrev?.id ?? null, weight: 1 },
+    ];
+    this.expressionSources =
+      t >= 1
+        ? [{ id: this.expr?.id ?? null, weight: 1 }]
+        : [
+            ...previous.map((entry) => ({
+              ...entry,
+              weight: entry.weight * (1 - t),
+            })),
+            { id: this.expr?.id ?? null, weight: t },
+          ];
+    this.exprPrev = this.exprAtTime(now);
     this.expr = expression;
     this.exprAt = now;
   }
@@ -136,7 +185,23 @@ export class BotEngine {
 
   setShape(radii: number[] | null, now = 0) {
     if (radii === this.shape) return;
-    this.shapePrev = this.shape;
+    const t = easings.easeOutQuint(
+      clamp((now - this.shapeAt) / BotEngine.SHAPE_MORPH),
+    );
+    const previous = this.shapeSources ?? [
+      { radii: this.shapePrev, weight: 1 },
+    ];
+    this.shapeSources =
+      t >= 1
+        ? [{ radii: this.shape, weight: 1 }]
+        : [
+            ...previous.map((entry) => ({
+              ...entry,
+              weight: entry.weight * (1 - t),
+            })),
+            { radii: this.shape, weight: t },
+          ];
+    this.shapePrev = this.shapeAtTime(now);
     this.shape = radii;
     this.shapeAt = now;
   }
@@ -161,7 +226,12 @@ export class BotEngine {
      * l'appelant. Celui-la est corrige, mais le moteur n'a pas a dependre de la
      * prudence de ses appelants pour rester rejouable.
      */
-    if (look && !Number.isFinite(look.yaw + look.pitch + look.mix + look.spin + look.wander)) {
+    if (
+      look &&
+      !Number.isFinite(
+        look.yaw + look.pitch + look.mix + look.spin + look.wander,
+      )
+    ) {
       return;
     }
     this.lookPrev = this.lookAtTime(now);
@@ -175,7 +245,12 @@ export class BotEngine {
     if (k >= 1) return this.look;
     return lerpLook(this.lookPrev, this.look, easings.easeOutQuint(clamp(k)));
   }
-  private posed(def: StateDef, t: number, shape: number[] | null, expr: BotExpression | null): Pose {
+  private posed(
+    def: StateDef,
+    t: number,
+    shape: number[] | null,
+    expr: BotExpression | null,
+  ): Pose {
     let pose = def.pose(t);
     if (def.baseBody && shape) {
       // on garde la pose (rotation, decalage, squash) et on n'echange que le profil
@@ -212,17 +287,46 @@ export class BotEngine {
       const t = easings.easeOutQuint(clamp(k));
       return { x: lerp(a.x, b.x, t), y: lerp(a.y, b.y, t) };
     };
-    // axe de l'expression, pour chacune des deux formes en presence
-    const parForme = (radii: number[] | null) =>
-      surAxe(
-        this.exprAt,
-        BotEngine.SHAPE_MORPH,
-        decalageDesYeux(radii, state, this.exprPrev?.id ?? null),
-        decalageDesYeux(radii, state, this.expr?.id ?? null),
+    if (
+      now - this.shapeAt >= BotEngine.SHAPE_MORPH &&
+      now - this.exprAt >= BotEngine.SHAPE_MORPH
+    )
+      return decalageDesYeux(this.shape, state, this.expr?.id ?? null);
+    // Preserve the fitted eye positions too when a user retargets a live morph.
+    const parForme = (radii: number[] | null) => {
+      const target = decalageDesYeux(radii, state, this.expr?.id ?? null);
+      if (now - this.exprAt >= BotEngine.SHAPE_MORPH) return target;
+      const origin = (
+        this.expressionSources ?? [{ id: this.exprPrev?.id ?? null, weight: 1 }]
+      ).reduce(
+        (sum, entry) => {
+          const fit = decalageDesYeux(radii, state, entry.id);
+          return {
+            x: sum.x + fit.x * entry.weight,
+            y: sum.y + fit.y * entry.weight,
+          };
+        },
+        { x: 0, y: 0 },
       );
-    // puis axe de la forme
-    return surAxe(this.shapeAt, BotEngine.SHAPE_MORPH, parForme(this.shapePrev), parForme(this.shape));
+      return surAxe(this.exprAt, BotEngine.SHAPE_MORPH, origin, target);
+    };
+    const target = parForme(this.shape);
+    if (now - this.shapeAt >= BotEngine.SHAPE_MORPH) return target;
+    const origin = (
+      this.shapeSources ?? [{ radii: this.shapePrev, weight: 1 }]
+    ).reduce(
+      (sum, entry) => {
+        const fit = parForme(entry.radii);
+        return {
+          x: sum.x + fit.x * entry.weight,
+          y: sum.y + fit.y * entry.weight,
+        };
+      },
+      { x: 0, y: 0 },
+    );
+    return surAxe(this.shapeAt, BotEngine.SHAPE_MORPH, origin, target);
   }
+
   get state(): StateId {
     return this.cur;
   }
@@ -236,30 +340,40 @@ export class BotEngine {
     this.blinkAt = -10;
   }
 
-  private origine(now: number, shape: number[] | null, expr: BotExpression | null): Pose | null {
+  private origine(
+    now: number,
+    shape: number[] | null,
+    expr: BotExpression | null,
+  ): Pose | null {
     if (this.departFige) return this.departFige;
     if (!this.prev) return null;
     const prevDef = STATE_BY_ID.get(this.prev)!;
     return this.posed(prevDef, Math.max(0, now - this.tPrev), shape, expr);
   }
 
-  private poseComposee(now: number): Pose {
+  private poseComposee(now: number, appearanceNow = now): Pose {
     const def = STATE_BY_ID.get(this.cur)!;
-    const shape = this.shapeAtTime(now);
-    const expr = this.exprAtTime(now);
+    const shape = this.shapeAtTime(appearanceNow);
+    const expr = this.exprAtTime(appearanceNow);
     const pose = this.posed(def, Math.max(0, now - this.tCur), shape, expr);
     const since = now - this.tCur;
     if (since >= def.morph) return pose;
     const origine = this.origine(now, shape, expr);
     if (!origine) return pose;
-    return blendPose(origine, pose, easings.easeOutQuint(clamp(since / def.morph)));
+    return blendPose(
+      origine,
+      pose,
+      easings.easeOutQuint(clamp(since / def.morph)),
+    );
   }
 
-  setState(id: StateId, now: number) {
+  setState(id: StateId, now: number, appearanceNow = now) {
     if (id === this.cur) return;
     const morph = STATE_BY_ID.get(this.cur)!.morph;
     const enPleinFondu = this.prev !== null && now - this.tCur < morph;
-    this.departFige = enPleinFondu ? this.poseComposee(now) : null;
+    this.departFige = enPleinFondu
+      ? this.poseComposee(now, appearanceNow)
+      : null;
     this.prev = this.cur;
     this.tPrev = this.tCur;
     this.cur = id;
@@ -271,13 +385,14 @@ export class BotEngine {
     if (Number.isFinite(now)) this.blinkAt = now;
   }
 
-  sample(now: number): BotFrame {
+  sample(now: number, appearanceNow = now): BotFrame {
+    const geometry = this.geometryAtTime(appearanceNow);
     const R = this.scale;
     const def = STATE_BY_ID.get(this.cur)!;
-    const shape = this.shapeAtTime(now);
-    const expr = this.exprAtTime(now);
+    const shape = this.shapeAtTime(appearanceNow);
+    const expr = this.exprAtTime(appearanceNow);
     let pose = this.posed(def, Math.max(0, now - this.tCur), shape, expr);
-    let decalage = this.decalageAtTime(now, this.cur);
+    let decalage = this.decalageAtTime(appearanceNow, this.cur);
     // --- transition -------------------------------------------------------
     const since = now - this.tCur;
     // L'etat precedent n'est jamais purge : `since < def.morph` suffit a
@@ -298,7 +413,7 @@ export class BotEngine {
       // le test est la pour le typage, pas pour un cas reel.
       const quitte = this.prev;
       if (quitte) {
-        const avant = this.decalageAtTime(now, quitte);
+        const avant = this.decalageAtTime(appearanceNow, quitte);
         decalage = {
           x: lerp(avant.x, decalage.x, ratio),
           y: lerp(avant.y, decalage.y, ratio),
@@ -341,10 +456,11 @@ export class BotEngine {
     // Les yeux vivent sur une sphere de rayon 1 ; des que la silhouette n'est
     // plus un cercle, on les ramene au prorata du rayon reel dans leur
     // direction, sinon ils debordent et le masque les coupe.
-    const bodyRadius = (x: number, y: number) => radiusAtAngle(pose.sil.radii, Math.atan2(y, x) - pose.sil.rot);
+    const bodyRadius = (x: number, y: number) =>
+      radiusAtAngle(pose.sil.radii, Math.atan2(y, x) - pose.sil.rot);
     const eyes: RenderedEye[] = [];
     if (pose.eyeAlpha > 0.01) {
-      const poses = eyePoses(gaze, R, pose.split * this.eyeGeometry.spacing);
+      const poses = eyePoses(gaze, R, pose.split * geometry.spacing);
       for (let i = 0; i < 2; i++) {
         const e = poses[i]!;
         if (e.depth <= 0.02) continue;
@@ -365,13 +481,15 @@ export class BotEngine {
         const k = blinkScale(Math.min(lid, cfg.open));
         eyes.push({
           d: eyeShapePath(
-            cfg.w * R * this.eyeGeometry.size * this.eyeGeometry.width,
-            cfg.h * R * this.eyeGeometry.size * this.eyeGeometry.height,
+            cfg.w * R * geometry.size * geometry.width,
+            cfg.h * R * geometry.size * geometry.height,
             this.eyeFrom,
             this.eyeStyle,
-            easings.easeOutQuint(clamp((now - this.eyeAt) / BotEngine.SHAPE_MORPH)),
+            easings.easeOutQuint(
+              clamp((appearanceNow - this.eyeAt) / BotEngine.SHAPE_MORPH),
+            ),
           ),
-          matrix: `matrix(${r2(ax)},${r2(ay * k)},${r2(cx2)},${r2(cy2 * k)},${r2(e.x * fit + (offX + decalage.x) * R)},${r2(e.y * fit + (offY + decalage.y + this.eyeGeometry.offsetY) * R)})`,
+          matrix: `matrix(${r2(ax)},${r2(ay * k)},${r2(cx2)},${r2(cy2 * k)},${r2(e.x * fit + (offX + decalage.x) * R)},${r2(e.y * fit + (offY + decalage.y + geometry.offsetY) * R)})`,
           alpha: pose.eyeAlpha * clamp(e.depth / 0.12),
         });
       }
@@ -399,7 +517,9 @@ export class BotEngine {
       dotsBehind: pose.dotsBehind,
       // Les etats declarent des arcs en unites de rayon de boule ; le moteur
       // est le seul a connaitre l'echelle du viewBox, donc c'est lui qui trace.
-      arcs: pose.arcs.filter((a) => a.opacity > 0.01).map((a) => arcRender(a.seed, a.t, R, a.id, a.opacity)),
+      arcs: pose.arcs
+        .filter((a) => a.opacity > 0.01)
+        .map((a) => arcRender(a.seed, a.t, R, a.id, a.opacity)),
       notif,
       notch,
     };

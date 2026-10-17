@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useAtom } from "jotai";
 import { ChevronDown, RotateCcw } from "lucide-react";
 import { lookAtom } from "../state/lab";
+import { EYE_STYLES } from "../mascot/engine/eye-styles";
+import { ScrollShadow } from "./ScrollShadow";
 import { SHAPES } from "../mascot/engine/skins";
 import {
   DEFAULT_EYE_GEOMETRY,
@@ -10,17 +12,13 @@ import {
 import type { EyeGeometry } from "../mascot/engine/bot-types";
 import { PALETTE, SHAPE_LABELS } from "../mascot/mascot-catalog";
 import { MascotThumbnail } from "./MascotThumbnail";
+import { EyePreview } from "./EyePreview";
 import { Expressions } from "./Expressions";
 import { SurfacePicker } from "./SurfacePicker";
 import { Switch } from "./ui/switch";
 import { Range } from "./ui/range";
 import s from "../styles/settings.module.css";
 
-const eyeStyles = [
-  { id: "sparkle", label: "Éclats" },
-  { id: "star", label: "Étoiles" },
-  { id: "capsule", label: "Gélules" },
-] as const;
 const geometryControls: { key: keyof EyeGeometry; label: string }[] = [
   { key: "size", label: "Taille des yeux" },
   { key: "width", label: "Largeur des yeux" },
@@ -85,37 +83,43 @@ export default function StaticPanel() {
         <h3>
           Silhouette<span>{SHAPES.length} formes</span>
         </h3>
-        <div className={s.shapeGrid}>
-          {SHAPES.map(({ id }) => (
-            <button
-              key={id}
-              className={s.previewChoice}
-              aria-label={SHAPE_LABELS[id]}
-              aria-pressed={look.shape === id}
-              onClick={() => setLook({ ...look, shape: id })}
-            >
-              <MascotThumbnail look={{ ...look, shape: id }} size={47} />
-              <span>{SHAPE_LABELS[id]}</span>
-            </button>
-          ))}
-        </div>
+        <ScrollShadow label="Silhouettes">
+          <div className={s.shapeGrid}>
+            {SHAPES.map(({ id }) => (
+              <button
+                key={id}
+                className={s.previewChoice}
+                aria-label={SHAPE_LABELS[id]}
+                aria-pressed={look.shape === id}
+                onClick={() => setLook({ ...look, shape: id })}
+              >
+                <MascotThumbnail look={{ ...look, shape: id }} size={47} />
+                <span>{SHAPE_LABELS[id]}</span>
+              </button>
+            ))}
+          </div>
+        </ScrollShadow>
       </section>
       <section className={s.section}>
-        <h3>Style des yeux</h3>
-        <div className={s.eyeGrid}>
-          {eyeStyles.map(({ id, label }) => (
-            <button
-              key={id}
-              className={s.eyeChoice}
-              aria-label={label}
-              aria-pressed={look.eyes === id}
-              onClick={() => setLook({ ...look, eyes: id })}
-            >
-              <MascotThumbnail look={{ ...look, eyes: id }} size={43} />
-              <span>{label}</span>
-            </button>
-          ))}
-        </div>
+        <h3>
+          Style des yeux<span>{EYE_STYLES.length} regards</span>
+        </h3>
+        <ScrollShadow label="Styles des yeux">
+          <div className={s.eyeGrid}>
+            {EYE_STYLES.map(({ id, label }) => (
+              <button
+                key={id}
+                className={s.eyeChoice}
+                aria-label={label}
+                aria-pressed={look.eyes === id}
+                onClick={() => setLook({ ...look, eyes: id })}
+              >
+                <EyePreview look={look} style={id} />
+                <span>{label}</span>
+              </button>
+            ))}
+          </div>
+        </ScrollShadow>
       </section>
       <Expressions />
       <ColorControl />

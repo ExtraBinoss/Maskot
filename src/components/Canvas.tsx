@@ -3,15 +3,15 @@ import { useAtomValue, useSetAtom, useStore } from "jotai";
 import {
   boardAtom,
   frameAtom,
+  paintAtom,
   lookAtom,
-  stateAtom,
   surfaceAtom,
   viewAtom,
   followAtom,
   playingAtom,
 } from "../state/lab";
 import { BeamySvg } from "../mascot/BeamySvg";
-import { EXPRESSION_LABELS, STATE_LABELS } from "../mascot/mascot-catalog";
+import { STATE_LABELS } from "../mascot/mascot-catalog";
 import { SEQUENCE } from "../mascot/engine/states";
 import { usePlayer } from "../mascot/PlayerProvider";
 import { MascotThumbnail } from "./MascotThumbnail";
@@ -19,7 +19,7 @@ import s from "../styles/canvas.module.css";
 
 function LiveMascot({ svgRef }: { svgRef: RefObject<SVGSVGElement | null> }) {
   const frame = useAtomValue(frameAtom);
-  const { color, blush } = useAtomValue(lookAtom);
+  const { color, blush } = useAtomValue(paintAtom);
   return (
     <BeamySvg
       ref={svgRef}
@@ -60,36 +60,13 @@ function Board() {
   );
 }
 
-function Caption() {
-  const view = useAtomValue(viewAtom);
-  const state = useAtomValue(stateAtom);
-  const look = useAtomValue(lookAtom);
-  return (
-    <div className={s.caption}>
-      <span>
-        {view === "motion"
-          ? STATE_LABELS[state]
-          : EXPRESSION_LABELS[look.expression]}
-      </span>
-      <p>
-        {view === "motion" ? (
-          <>
-            Un peu de vie. <kbd>Espace</kbd> pour la pause.
-          </>
-        ) : (
-          "Une forme. Deux yeux. Tout un caractère."
-        )}
-      </p>
-    </div>
-  );
-}
-
 export function Canvas({
   svgRef,
 }: {
   svgRef: RefObject<SVGSVGElement | null>;
 }) {
   const surface = useAtomValue(surfaceAtom);
+  const view = useAtomValue(viewAtom);
   const board = useAtomValue(boardAtom);
   const { color } = useAtomValue(lookAtom);
   const player = usePlayer();
@@ -105,7 +82,8 @@ export function Canvas({
   return (
     <section
       className={s.canvas}
-      data-surface={surface}
+      data-surface={view === "about" ? "paper" : surface}
+      data-view={view}
       aria-label="Aperçu"
       style={{ "--mascot-color": color } as React.CSSProperties}
     >
@@ -127,12 +105,6 @@ export function Canvas({
           if (store.get(followAtom)) player.release();
         }}
       >
-        <div className={s.sceneHeading}>
-          <span>YOUR LITTLE CHARACTER</span>
-          <h1>
-            Make it yours<span>.</span>
-          </h1>
-        </div>
         {board ? (
           <Board />
         ) : (
@@ -140,7 +112,6 @@ export function Canvas({
             <LiveMascot svgRef={svgRef} />
           </div>
         )}
-        <Caption />
       </div>
     </section>
   );

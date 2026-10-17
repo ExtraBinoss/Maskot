@@ -31,6 +31,10 @@ export const speedAtom = atom(1);
 export const followAtom = atom(false);
 export const elapsedAtom = atom(0);
 export const activeStepAtom = atom(0);
+export const paintAtom = atom({
+  color: defaultPreset().look.color,
+  blush: Number(defaultPreset().look.blush),
+});
 export const frameAtom = atom(
   createMascotEngine(defaultPreset().look).sample(0),
 );
@@ -61,7 +65,11 @@ export function createLabStore(
   store.set(presetAtom, preset);
   store.set(frameAtom, createMascotEngine(preset.look).sample(0));
   store.set(viewAtom, view);
-  store.set(playingAtom, view === "motion" && !reducedMotion);
+  store.set(paintAtom, {
+    color: preset.look.color,
+    blush: Number(preset.look.blush),
+  });
+  store.set(playingAtom, !reducedMotion);
   store.set(reducedMotionAtom, reducedMotion);
   return store;
 }

@@ -1,62 +1,52 @@
+import { useState } from "react";
 import { useAtom } from "jotai";
-import { Aperture, ArrowUpRight, Circle, Info, Waves } from "lucide-react";
+import { AnimatePresence, m } from "motion/react";
+import { Clapperboard, Info, Palette } from "lucide-react";
 import { viewAtom } from "../state/lab";
-import { ThemePicker } from "./ThemePicker";
 import s from "../styles/workspace.module.css";
 
 export function Sidebar() {
   const [view, setView] = useAtom(viewAtom);
+  const [hovered, setHovered] = useState<string | null>(null);
   return (
-    <aside className={`${s.glass} ${s.sidebar}`} aria-label="Navigation Maskot">
-      <a
-        href="#static"
-        className={s.wordmark}
-        aria-label="Maskot, atelier"
-        onClick={(event) => {
-          event.preventDefault();
-          setView("static");
-        }}
-      >
-        <Aperture size={22} strokeWidth={1.8} />
-        <span>
-          maskot<span className={s.brandDot}>.</span>
-        </span>
-      </a>
-      <nav className={s.navigation} aria-label="Espace de travail">
-        {(
-          [
-            { id: "static", label: "Static", Icon: Circle },
-            { id: "motion", label: "Motion", Icon: Waves },
-            { id: "about", label: "About", Icon: Info },
-          ] as const
-        ).map(({ id, label, Icon }) => (
-          <button
-            key={id}
-            aria-current={view === id ? "page" : undefined}
-            onClick={() => setView(id)}
-          >
-            <Icon size={17} />
-            <span>{label}</span>
-            <i />
-          </button>
-        ))}
-      </nav>
-      <div className={s.sidebarBottom}>
-        <span className={s.sidebarNote}>
-          A little character.
-          <br />A lot of personality.
-        </span>
-        <ThemePicker />
-        <a
-          className={s.plinkaLink}
-          href="https://plinka.eu"
-          target="_blank"
-          rel="noreferrer"
+    <nav className={`${s.glass} ${s.sidebar}`} aria-label="Navigation Maskot">
+      {(
+        [
+          { id: "static", label: "Static", Icon: Palette },
+          { id: "motion", label: "Motion", Icon: Clapperboard },
+          { id: "about", label: "About", Icon: Info },
+        ] as const
+      ).map(({ id, label, Icon }) => (
+        <m.button
+          key={id}
+          aria-label={label}
+          aria-current={view === id ? "page" : undefined}
+          onClick={() => setView(id)}
+          onPointerEnter={() => setHovered(id)}
+          onPointerLeave={() => setHovered(null)}
+          onPointerDown={() => setHovered(null)}
+          onFocus={() => setHovered(id)}
+          onBlur={() => setHovered(null)}
+          whileTap={{ scale: 0.93 }}
         >
-          Un petit outil Plinka
-          <ArrowUpRight size={12} />
-        </a>
-      </div>
-    </aside>
+          <Icon size={19} aria-hidden />
+          <AnimatePresence>
+            {hovered === id && (
+              <m.span
+                key={id}
+                aria-hidden
+                className={s.navTooltip}
+                initial={{ opacity: 0, x: -6, scale: 0.92 }}
+                animate={{ opacity: 1, x: 0, scale: 1 }}
+                exit={{ opacity: 0, x: -3, scale: 0.96 }}
+                transition={{ duration: 0.16, ease: [0.22, 1, 0.36, 1] }}
+              >
+                {label}
+              </m.span>
+            )}
+          </AnimatePresence>
+        </m.button>
+      ))}
+    </nav>
   );
 }

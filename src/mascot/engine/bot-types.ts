@@ -1,5 +1,5 @@
-import type { PROFILES } from './profiles';
-export type EyeStyle = 'sparkle' | 'star' | 'capsule';
+import type { PROFILES } from "./profiles";
+export type { EyeStyle } from "./eye-styles";
 export interface EyeGeometry {
   size: number;
   width: number;
@@ -79,22 +79,38 @@ export interface Look {
   wander: number;
 }
 export type ExpressionId =
-  | 'neutre'
-  | 'attentif'
-  | 'surpris'
-  | 'excite'
-  | 'heureux'
-  | 'hilare'
-  | 'colere'
-  | 'triste'
-  | 'effraye'
-  | 'mefiant'
-  | 'confus'
-  | 'curieux'
-  | 'fier'
-  | 'timide'
-  | 'blase'
-  | 'somnolent';
+  | "neutre"
+  | "attentif"
+  | "surpris"
+  | "excite"
+  | "heureux"
+  | "hilare"
+  | "colere"
+  | "triste"
+  | "effraye"
+  | "mefiant"
+  | "confus"
+  | "curieux"
+  | "fier"
+  | "timide"
+  | "blase"
+  | "somnolent"
+  | "amuse"
+  | "complice"
+  | "charmeur"
+  | "determine"
+  | "concentre"
+  | "reveur"
+  | "inquiet"
+  | "sceptique"
+  | "impatient"
+  | "epuise"
+  | "paisible"
+  | "boudeur"
+  | "ebloui"
+  | "malicieux"
+  | "intrigue"
+  | "nostalgique";
 export interface BotExpression {
   id: ExpressionId;
   gaze: HeadGaze;
@@ -102,9 +118,9 @@ export interface BotExpression {
   eyes: [EyeCfg, EyeCfg];
 }
 export interface Visage {
-  gaze: Pose['gaze'];
+  gaze: Pose["gaze"];
   split: number;
-  eyes: Pose['eyes'];
+  eyes: Pose["eyes"];
 }
 export interface Empreinte {
   x: number;
@@ -174,24 +190,56 @@ export interface Silhouette {
   sx: number;
   sy: number;
 }
-export type ShapeId = 'cercle' | 'galet' | 'squircle' | 'capsule' | 'triangle' | 'hexagone' | 'nuage' | 'goutte';
+export type ShapeId =
+  | "cercle"
+  | "galet"
+  | "squircle"
+  | "capsule"
+  | "triangle"
+  | "hexagone"
+  | "nuage"
+  | "goutte"
+  | "ovale"
+  | "oeuf"
+  | "coussin"
+  | "rectangle"
+  | "losange"
+  | "pentagone"
+  | "heptagone"
+  | "octogone"
+  | "nonagone"
+  | "decagone"
+  | "coeur"
+  | "etoile4"
+  | "etoile5"
+  | "etoile6"
+  | "etoile8"
+  | "fleur4"
+  | "fleur5"
+  | "fleur6"
+  | "fleur8"
+  | "haricot"
+  | "cacahuete"
+  | "fantome"
+  | "montagne"
+  | "vague";
 export interface BotShape {
   id: ShapeId;
   radii: number[];
 }
 export type ColorId =
-  | 'encre'
-  | 'creme'
-  | 'brun'
-  | 'rouge'
-  | 'orange'
-  | 'ambre'
-  | 'vert'
-  | 'turquoise'
-  | 'bleu'
-  | 'violet'
-  | 'rose'
-  | 'gris';
+  | "encre"
+  | "creme"
+  | "brun"
+  | "rouge"
+  | "orange"
+  | "ambre"
+  | "vert"
+  | "turquoise"
+  | "bleu"
+  | "violet"
+  | "rose"
+  | "gris";
 export interface BotColor {
   id: ColorId;
   hex: string;
@@ -225,21 +273,21 @@ export interface Pose {
   dotsBehind: boolean;
 }
 export type StateId =
-  | 'idle'
-  | 'thinking'
-  | 'wink'
-  | 'wide'
-  | 'alert'
-  | 'notify'
-  | 'exclaim'
-  | 'sleep'
-  | 'egg'
-  | 'hexagon'
-  | 'play'
-  | 'orbit'
-  | 'burst'
-  | 'comet'
-  | 'swirl';
+  | "idle"
+  | "thinking"
+  | "wink"
+  | "wide"
+  | "alert"
+  | "notify"
+  | "exclaim"
+  | "sleep"
+  | "egg"
+  | "hexagon"
+  | "play"
+  | "orbit"
+  | "burst"
+  | "comet"
+  | "swirl";
 export interface StateDef {
   id: StateId;
 

@@ -84,16 +84,15 @@ test("opens Motion with autoplay on a slower CPU without starving the controls",
   await expect(
     page.getByRole("button", { name: "Mettre en pause", exact: true }),
   ).toBeVisible();
-  await page.getByRole("button", { name: "Séquence", exact: true }).click();
   await expect(
     page
       .getByRole("region", { name: "Chorégraphie", exact: true })
       .locator("article"),
   ).toHaveCount(4);
   await page.getByRole("button", { name: "Static", exact: true }).click();
-  const paused = await artwork(page);
+  const live = await artwork(page);
   await page.evaluate(() => new Promise((resolve) => setTimeout(resolve, 350)));
-  expect(await artwork(page)).toBe(paused);
+  expect(await artwork(page)).not.toBe(live);
   await cdp.send("Emulation.setCPUThrottlingRate", { rate: 1 });
   await cdp.detach();
 });
@@ -107,7 +106,7 @@ test("edits the real mascot in pause, persists settings, and restores defaults",
   await expect(page.locator("footer")).toHaveCount(0);
   await expect(
     page.getByLabel("Expressions", { exact: true }).getByRole("button"),
-  ).toHaveCount(16);
+  ).toHaveCount(32);
   const before = await artwork(page);
   await page.getByRole("button", { name: "Nuage", exact: true }).click();
   await expect.poll(() => artwork(page)).not.toBe(before);
@@ -131,7 +130,7 @@ test("edits the real mascot in pause, persists settings, and restores defaults",
       eyes: "star",
       color: "#8b5cf6",
       expression: "heureux",
-      blush: false,
+      blush: true,
       eyeGeometry: { size: 1.5, spacing: 1.3 },
     });
   await page.reload();
@@ -145,7 +144,7 @@ test("edits the real mascot in pause, persists settings, and restores defaults",
     .getByRole("button", { name: "Repartir de zéro", exact: true })
     .click();
   await expect(
-    page.getByRole("button", { name: "Galet", exact: true }),
+    page.getByRole("button", { name: "Bulle", exact: true }),
   ).toHaveAttribute("aria-pressed", "true");
   await expect(
     page.getByRole("status", { name: "Messages de l’atelier", exact: true }),
@@ -223,7 +222,6 @@ test("composes, reorders, seeks backward and forward, then plays the timeline", 
   page,
 }) => {
   await page.getByRole("button", { name: "Motion", exact: true }).click();
-  await page.getByRole("button", { name: "Séquence", exact: true }).click();
   const timeline = page.getByRole("region", {
     name: "Chorégraphie",
     exact: true,
@@ -232,13 +230,15 @@ test("composes, reorders, seeks backward and forward, then plays the timeline", 
     .getByLabel("Ajouter un mouvement", { exact: true })
     .selectOption("burst");
   await expect(timeline.locator("article")).toHaveCount(5);
-  await setRange(page, "Durée du mouvement 5", 0.6);
+  await page
+    .getByRole("slider", { name: "Durée du mouvement 5", exact: true })
+    .press("Home");
   await page
     .getByRole("button", {
-      name: "Déplacer le mouvement 5 à gauche",
+      name: "Aller au mouvement 5 : Confettis",
       exact: true,
     })
-    .click();
+    .press("Alt+ArrowLeft");
   await expect(timeline.locator("article").nth(3)).toContainText("Confettis");
   await page
     .getByRole("button", { name: "Retirer le mouvement 4", exact: true })
@@ -334,7 +334,7 @@ test("downloads standalone SVG, transparent 1024px PNG and compatible JSON", asy
   const json = await getDownload("Exporter le look");
   const preset = JSON.parse(json.bytes.toString());
   expect(preset.version).toBe(1);
-  expect(preset.timeline).toHaveLength(4);
+  expect(preset.timeline).toHaveLength(5);
   expect(preset.look.eyeGeometry.size).toBe(1);
 });
 
@@ -404,15 +404,17 @@ test("imports legacy presets and rejects malformed, invalid and oversized files"
     }),
   );
   await page.getByRole("button", { name: "Motion", exact: true }).click();
-  await page.getByRole("button", { name: "Séquence", exact: true }).click();
   await expect(
     page.getByLabel("Ajouter un mouvement", { exact: true }),
   ).toBeDisabled();
   await importJson(JSON.stringify(preset));
   await page.getByRole("button", { name: "Motion", exact: true }).click();
-  await page.getByRole("button", { name: "Séquence", exact: true }).click();
   await expect(
-    page.getByRole("button", { name: "Retirer le mouvement 1", exact: true }),
+    page.getByRole("button", {
+      name: "Retirer le mouvement 1",
+      exact: true,
+      includeHidden: true,
+    }),
   ).toBeDisabled();
 });
 
@@ -443,15 +445,18 @@ test("renders mobile and dark mode without page overflow or network font depende
 }) => {
   for (const width of [320, 390, 768, 1024, 1440]) {
     await page.setViewportSize({ width, height: 900 });
-    expect(
-      await page.evaluate(
-        () =>
-          document.documentElement.scrollWidth <= innerWidth &&
-          document.documentElement.scrollHeight <= innerHeight,
-      ),
-    ).toBe(true);
+    await expect
+      .poll(() =>
+        page.evaluate(
+          () =>
+            document.documentElement.scrollWidth <= innerWidth &&
+            document.documentElement.scrollHeight <= innerHeight,
+        ),
+      )
+      .toBe(true);
   }
   await page.setViewportSize({ width: 390, height: 844 });
+  await page.getByRole("button", { name: "About", exact: true }).click();
   await page.getByRole("button", { name: "Thème sombre", exact: true }).click();
   await expect(page.locator("html")).toHaveClass("dark");
   await page.reload();
@@ -481,10 +486,326 @@ test("renders mobile and dark mode without page overflow or network font depende
       { family: "Space Grotesk Variable", status: "loaded" },
     ]),
   );
+  await page.getByRole("button", { name: "About", exact: true }).click();
   await page.getByRole("button", { name: "Thème clair", exact: true }).click();
+  await page.getByRole("button", { name: "Static", exact: true }).click();
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.screenshot({
     path: "artifacts/desktop-light.png",
     fullPage: true,
   });
+});
+
+test("opens About as a page and animates the same mascot to the right", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  const nav = page.getByRole("navigation", { name: "Navigation Maskot" });
+  await expect(nav.getByRole("button")).toHaveCount(3);
+  await expect(nav.getByRole("link")).toHaveCount(0);
+  const navBox = await nav.boundingBox();
+  expect(Math.abs(navBox!.y + navBox!.height / 2 - 500)).toBeLessThan(2);
+  const original = await preview(page).elementHandle();
+  const before = await preview(page).boundingBox();
+  await page.getByRole("button", { name: "About", exact: true }).click();
+  await expect(
+    page.getByRole("complementary", { name: "Réglages de Maskot" }),
+  ).toHaveCount(0);
+  await expect(
+    page.getByRole("region", { name: "À propos de Maskot" }),
+  ).toBeVisible();
+  await expect
+    .poll(async () => (await preview(page).boundingBox())!.x)
+    .toBeGreaterThan(before!.x + 200);
+  expect(
+    await original!.evaluate(
+      (node) => node === document.querySelector("[data-mascot-preview] > svg"),
+    ),
+  ).toBe(true);
+  await expect(
+    page.getByRole("link", { name: "Un petit outil signé Plinka" }),
+  ).toHaveAttribute("href", "https://plinka.eu");
+  await page.screenshot({ path: "artifacts/about-desktop.png" });
+  await page.getByRole("button", { name: "Static", exact: true }).click();
+  await expect
+    .poll(async () =>
+      Math.abs((await preview(page).boundingBox())!.x - before!.x),
+    )
+    .toBeLessThan(2);
+  const live = await artwork(page);
+  await page.waitForTimeout(250);
+  expect(await artwork(page)).not.toBe(live);
+});
+
+test("scrolls the complete eye and mood catalogs and persists the new styles", async ({
+  page,
+}) => {
+  await expect(
+    page.getByLabel("Silhouettes", { exact: true }).getByRole("button"),
+  ).toHaveCount(32);
+  const eyes = page.getByLabel("Styles des yeux", { exact: true });
+  const moods = page.getByLabel("Expressions", { exact: true });
+  await expect(eyes.getByRole("button")).toHaveCount(32);
+  await expect(moods.getByRole("button")).toHaveCount(32);
+  expect(await eyes.evaluate((el) => el.scrollHeight > el.clientHeight)).toBe(
+    true,
+  );
+  await eyes.getByRole("button", { name: "Haricots", exact: true }).click();
+  await expect(eyes).toHaveAttribute("data-top", "true");
+  await expect(eyes).toHaveAttribute("data-bottom", "false");
+  await moods
+    .getByRole("button", { name: "Expression Nostalgique", exact: true })
+    .click();
+  await page.reload();
+  await expect(
+    eyes.getByRole("button", { name: "Haricots", exact: true }),
+  ).toHaveAttribute("aria-pressed", "true");
+  await expect(
+    moods.getByRole("button", { name: "Expression Nostalgique", exact: true }),
+  ).toHaveAttribute("aria-pressed", "true");
+});
+
+test("drags and stretches timeline cards while keeping keyboard editing available", async ({
+  page,
+}) => {
+  await page.getByRole("button", { name: "Motion", exact: true }).click();
+  const timeline = page.getByRole("region", {
+    name: "Chorégraphie",
+    exact: true,
+  });
+  const first = timeline.locator('[data-card="0"]');
+  const third = timeline.locator('[data-card="2"]');
+  const a = await first.boundingBox(),
+    b = await third.boundingBox();
+  await page.mouse.move(a!.x + a!.width / 2, a!.y + a!.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(b!.x + b!.width / 2, b!.y + b!.height / 2, {
+    steps: 12,
+  });
+  await page.mouse.up();
+  await expect(timeline.locator('[data-card="2"]')).toHaveAttribute(
+    "title",
+    /Au repos/,
+  );
+  const handle = timeline.getByRole("slider", {
+    name: "Durée du mouvement 3",
+    exact: true,
+  });
+  const box = await handle.boundingBox();
+  await page.mouse.move(box!.x + box!.width / 2, box!.y + box!.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(
+    box!.x + box!.width / 2 + 48,
+    box!.y + box!.height / 2,
+    { steps: 10 },
+  );
+  await page.mouse.up();
+  await expect(handle).toHaveAttribute("aria-valuenow", "3");
+  await handle.press("ArrowLeft");
+  await expect(handle).toHaveAttribute("aria-valuenow", "2.9");
+  await timeline.locator('[data-card="2"]').press("Alt+ArrowLeft");
+  await expect(timeline.locator('[data-card="1"]')).toBeFocused();
+  await page.screenshot({ path: "artifacts/motion-desktop.png" });
+});
+
+test("exports a real WebM with the complete montage and lazy-loads the encoder", async ({
+  page,
+}) => {
+  test.setTimeout(90000);
+  const resourceNames = () =>
+    page.evaluate(() =>
+      performance.getEntriesByType("resource").map((entry) => entry.name),
+    );
+  expect(
+    (await resourceNames()).some((name) => /mascot-video-/.test(name)),
+  ).toBe(false);
+  await page
+    .getByLabel("Importer un réglage de mascotte", { exact: true })
+    .setInputFiles({
+      name: "video.json",
+      mimeType: "application/json",
+      buffer: Buffer.from(
+        JSON.stringify({
+          version: 1,
+          look: {
+            shape: "cercle",
+            color: "#8b5cf6",
+            expression: "complice",
+            eyes: "heart",
+            blush: false,
+          },
+          timeline: [
+            { state: "idle", duration: 0.6 },
+            { state: "orbit", duration: 0.6 },
+          ],
+        }),
+      ),
+    });
+  await page.getByRole("button", { name: "Motion", exact: true }).click();
+  expect(
+    (await resourceNames()).some((name) => /mascot-video-/.test(name)),
+  ).toBe(false);
+  await page
+    .getByRole("button", { name: "Exporter le montage", exact: true })
+    .click();
+  await expect(page.getByRole("dialog")).toContainText("1.2 secondes");
+  const pending = page.waitForEvent("download");
+  await page
+    .getByRole("button", { name: "Exporter en WebM", exact: true })
+    .click();
+  const download = await pending;
+  expect(download.suggestedFilename()).toBe("maskot-montage.webm");
+  const bytes = await readFile((await download.path())!);
+  expect(bytes.subarray(0, 4).toString("hex")).toBe("1a45dfa3");
+  expect(bytes.length).toBeGreaterThan(3000);
+  expect(
+    (await resourceNames()).some((name) => /mascot-video-/.test(name)),
+  ).toBe(true);
+  const videoInfo = await page.evaluate(async (base64) => {
+    const video = document.createElement("video");
+    video.muted = true;
+    video.preload = "auto";
+    const blob = await (await fetch(`data:video/webm;base64,${base64}`)).blob();
+    const url = URL.createObjectURL(blob);
+    video.src = url;
+    await new Promise<void>((resolve, reject) => {
+      video.onloadeddata = () => resolve();
+      video.onerror = () => reject(new Error("Cannot decode exported WebM"));
+    });
+    const canvas = document.createElement("canvas");
+    canvas.width = canvas.height = 64;
+    const ctx = canvas.getContext("2d")!;
+    const sample = async (time: number) => {
+      video.currentTime = time;
+      await new Promise<void>((resolve) => (video.onseeked = () => resolve()));
+      ctx.drawImage(video, 0, 0, 64, 64);
+      return [...ctx.getImageData(0, 0, 64, 64).data];
+    };
+    const first = await sample(0.1),
+      last = await sample(1.1);
+    const result = {
+      width: video.videoWidth,
+      height: video.videoHeight,
+      duration: video.duration,
+      changed: first.some((value, i) => Math.abs(value - last[i]) > 30),
+      corner: first.slice(0, 4),
+    };
+    video.removeAttribute("src");
+    video.load();
+    URL.revokeObjectURL(url);
+    return result;
+  }, bytes.toString("base64"));
+  expect(videoInfo.width).toBe(1024);
+  expect(videoInfo.height).toBe(1024);
+  expect(videoInfo.duration).toBeCloseTo(1.2, 1);
+  expect(videoInfo.changed).toBe(true);
+  expect(videoInfo.corner[3]).toBe(255);
+  await expect(page.getByRole("dialog")).not.toBeVisible();
+  await expect(
+    page.getByRole("status", { name: "Messages de l’atelier" }),
+  ).toContainText("WebM exporté");
+});
+
+test("cancels video export and reports a missing WebCodecs encoder", async ({
+  page,
+}) => {
+  await page.getByRole("button", { name: "Motion", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Exporter le montage", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Exporter en WebM", exact: true })
+    .click();
+  await page.getByRole("button", { name: "Annuler", exact: true }).click();
+  await expect(page.getByRole("dialog")).not.toBeVisible();
+  await page.evaluate(() =>
+    Object.defineProperty(globalThis, "VideoEncoder", {
+      value: undefined,
+      configurable: true,
+    }),
+  );
+  await page
+    .getByRole("button", { name: "Exporter le montage", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Exporter en WebM", exact: true })
+    .click();
+  await expect(page.getByRole("alert")).toContainText("WebCodecs");
+  await page
+    .getByRole("button", { name: "Fermer l’export vidéo", exact: true })
+    .click();
+  await expect(page.getByRole("dialog")).not.toBeVisible();
+});
+
+test("blinks naturally in Static and morphs eyes, silhouette and paint", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await page.reload();
+  const data = await page.evaluate(async () => {
+    const samples: number[] = [];
+    const start = performance.now();
+    await new Promise<void>((resolve) => {
+      function sample() {
+        const path = document.querySelector(
+          "[data-mascot-preview] mask path[transform]",
+        )!;
+        const m = path
+          .getAttribute("transform")!
+          .slice(7, -1)
+          .split(",")
+          .map(Number);
+        samples.push(Math.abs(m[0] * m[3] - m[1] * m[2]));
+        if (performance.now() - start > 2200) resolve();
+        else requestAnimationFrame(sample);
+      }
+      sample();
+    });
+    return { min: Math.min(...samples), max: Math.max(...samples) };
+  });
+  expect(data.min / data.max).toBeLessThan(0.35);
+  const frames = await page.evaluate(async () => {
+    const svg = document.querySelector("[data-mascot-preview] > svg")!;
+    const read = () => ({
+      body: svg.querySelector("mask path")!.getAttribute("d"),
+      eye: svg.querySelector("mask path[transform]")!.getAttribute("d"),
+      color: svg.querySelector("path[mask]")!.getAttribute("fill"),
+    });
+    const before = read();
+    (
+      document.querySelector('[aria-label="Éclats"]') as HTMLButtonElement
+    ).click();
+    (
+      document.querySelector('[aria-label="Nuage"]') as HTMLButtonElement
+    ).click();
+    (
+      document.querySelector(
+        '[aria-label="Couleur #8b5cf6"]',
+      ) as HTMLButtonElement
+    ).click();
+    let middle = before;
+    const end = performance.now() + 2000;
+    while (performance.now() < end) {
+      await new Promise(requestAnimationFrame);
+      middle = read();
+      if (
+        middle.eye !== before.eye &&
+        middle.body !== before.body &&
+        middle.color !== before.color
+      )
+        break;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 650));
+    return { before, middle, after: read() };
+  });
+  expect(frames.middle.eye).not.toBe(frames.before.eye);
+  expect(frames.middle.eye).not.toBe(frames.after.eye);
+  expect(frames.middle.body).not.toBe(frames.before.body);
+  expect(frames.middle.color).not.toBe(frames.before.color);
+  expect(frames.middle.color).not.toBe("#8b5cf6");
+  expect(frames.after.color).toBe("#8b5cf6");
+  const motion = page.getByRole("button", { name: "Motion", exact: true });
+  await motion.hover();
+  await expect(motion.locator("span")).toHaveText("Motion");
+  await expect(motion.locator("span")).toHaveCSS("opacity", "1");
 });

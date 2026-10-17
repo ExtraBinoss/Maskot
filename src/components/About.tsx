@@ -1,87 +1,91 @@
 import { ArrowUpRight, CodeXml } from "lucide-react";
+import { m } from "motion/react";
+import { ThemePicker } from "./ThemePicker";
 import s from "../styles/about.module.css";
 
 export default function About() {
   return (
-    <div className={s.about}>
-      <div className={s.intro}>
+    <m.section
+      id="about"
+      className={s.about}
+      aria-label="À propos de Maskot"
+      initial={{ opacity: 0, x: -16 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.45, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
+    >
+      <div className={s.content}>
         <span className={s.tag}>A LITTLE CHARACTER STUDIO</span>
-        <h3>
+        <h2>
           Grok bot inspired.
           <br />
           <span>Made to be yours.</span>
-        </h3>
-        <p>
-          Une silhouette, un regard, un peu de mouvement. Maskot est un atelier
-          pour donner du caractère à tes petits compagnons.
+        </h2>
+        <p className={s.description}>
+          Une silhouette, deux yeux, tout un caractère. Crée ton petit
+          compagnon, trouve son regard et donne-lui vie.
         </p>
-        <p>
-          Change tout, essaie, recommence. Et emporte ton personnage avec toi.
-        </p>
-      </div>
-      <div className={s.credits}>
-        <h4>Une histoire de courbes</h4>
-        <p>
-          Inspiré de l’univers du Grok bot de xAI et de{" "}
+        <section className={s.preferences} aria-label="Préférences">
+          <h3>Apparence</h3>
+          <div className={s.themeRow}>
+            <span>Le thème de l’atelier</span>
+            <ThemePicker />
+          </div>
+        </section>
+        <section className={s.links}>
+          <h3>À propos</h3>
+          <a
+            href="https://github.com/ExtraBinoss/Maskot"
+            target="_blank"
+            rel="noreferrer"
+          >
+            <CodeXml size={17} />
+            <span>Voir le projet sur GitHub</span>
+            <ArrowUpRight size={14} />
+          </a>
+          <a href="https://plinka.eu" target="_blank" rel="noreferrer">
+            <span>Un petit outil signé Plinka</span>
+            <ArrowUpRight size={14} />
+          </a>
+        </section>
+        <p className={s.credits}>
+          Inspiré du Grok bot et de{" "}
           <a
             href="https://github.com/jeremy-prt/bloub"
             target="_blank"
             rel="noreferrer"
           >
             Bloub, par Jérémy Perret
-            <ArrowUpRight size={11} />
           </a>
-          . Le moteur de morphing et l’atelier viennent de Beam, adaptés pour le
-          web par Plinka.
+          . Moteur adapté de Beam.{" "}
+          <a href="/licenses/NOTICE.txt" target="_blank" rel="noreferrer">
+            Crédits & licences ↗
+          </a>
         </p>
-        <p>
-          Un projet indépendant, sans affiliation avec xAI. Tes créations et tes
-          réglages restent dans ton navigateur.
-        </p>
-        <a
-          className={s.sourceLink}
-          href="https://github.com/ExtraBinoss/Maskot"
-          target="_blank"
-          rel="noreferrer"
-        >
-          <CodeXml size={14} />
-          Le code est ouvert
-          <ArrowUpRight size={12} />
-        </a>
-        <a
-          className={s.licenseLink}
-          href="/licenses/NOTICE.txt"
-          target="_blank"
-          rel="noreferrer"
-        >
-          Crédits & licences
-          <ArrowUpRight size={11} />
-        </a>
-      </div>
-      <footer className={s.footer}>
-        <div className={s.footerRow}>
-          <span>© {new Date().getFullYear()} Plinka</span>
+        <footer className={s.footer}>
+          <p>
+            Créé avec <span aria-label="amour">♥</span> par{" "}
+            <a
+              href="https://x.com/ExtraBinoss"
+              target="_blank"
+              rel="noreferrer"
+            >
+              @ExtraBinoss
+            </a>
+          </p>
           <a href="https://plinka.eu" target="_blank" rel="noreferrer">
-            Explorer Plinka
-            <ArrowUpRight size={11} />
+            © {new Date().getFullYear()} Plinka <ArrowUpRight size={12} />
           </a>
-        </div>
-        <p>
-          Imaginé et construit par{" "}
-          <a href="https://x.com/ExtraBinoss" target="_blank" rel="noreferrer">
-            @ExtraBinoss
-          </a>
-        </p>
-        <a
-          className={s.footerWordmark}
-          href="https://plinka.eu"
-          target="_blank"
-          rel="noreferrer"
-          aria-label="Maskot, un projet Plinka"
-        >
-          maskot.
-        </a>
-      </footer>
-    </div>
+        </footer>
+      </div>
+      <a
+        className={s.wordmark}
+        href="https://plinka.eu"
+        target="_blank"
+        rel="noreferrer"
+        aria-label="Maskot, un projet Plinka"
+      >
+        maskot.
+      </a>
+    </m.section>
   );
 }

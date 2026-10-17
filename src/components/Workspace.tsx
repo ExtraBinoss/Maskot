@@ -5,27 +5,11 @@ import { boardAtom, playingAtom, statusAtom, viewAtom } from "../state/lab";
 import { Sidebar } from "./Sidebar";
 import { Canvas } from "./Canvas";
 import StaticPanel from "./StaticPanel";
-import { ThemePicker } from "./ThemePicker";
 import { WorkspaceActions } from "./WorkspaceActions";
 import s from "../styles/workspace.module.css";
 
 const MotionPanel = lazy(() => import("./MotionPanel"));
 const About = lazy(() => import("./About"));
-const titles = {
-  static: {
-    title: "Le petit look",
-    description: "Tout commence par un caractère.",
-  },
-  motion: {
-    title: "Un peu de vie",
-    description: "De petits gestes, de grandes émotions.",
-  },
-  about: {
-    title: "Meet Maskot",
-    description: "Un petit terrain d’expression.",
-  },
-};
-
 function Feedback() {
   const status = useAtomValue(statusAtom);
   const store = useStore();
@@ -85,46 +69,42 @@ export function Workspace() {
     return () => window.removeEventListener("keydown", keyboard);
   }, [store]);
   return (
-    <main className={s.workspace}>
-      <a className={s.skipLink} href="#settings">
+    <main className={s.workspace} data-view={view}>
+      <h1 className="sr-only">Maskot — A little character studio</h1>
+      <a
+        className={s.skipLink}
+        href={view === "about" ? "#about" : "#settings"}
+      >
         Aller aux réglages
       </a>
       <Canvas svgRef={svgRef} />
       <Sidebar />
-      <aside
-        className={s.inspector + " " + s.glass}
-        id="settings"
-        aria-label="Réglages de Maskot"
-      >
-        <header className={s.panelHeader}>
-          <div>
-            <h2>{titles[view].title}</h2>
-            <p>{titles[view].description}</p>
-          </div>
-          <div className={s.mobileTheme}>
-            <ThemePicker />
-          </div>
-        </header>
-        <div className={s.panelScroll} ref={panelRef}>
-          <Suspense fallback={<p className={s.loading}>Un petit instant…</p>}>
+      {view === "about" ? (
+        <Suspense fallback={<p className={s.loading}>Un petit instant…</p>}>
+          <About />
+        </Suspense>
+      ) : view === "motion" ? (
+        <Suspense fallback={<p className={s.loading}>Un petit instant…</p>}>
+          <MotionPanel svgRef={svgRef} />
+        </Suspense>
+      ) : (
+        <aside
+          className={s.inspector}
+          id="settings"
+          aria-label="Réglages de Maskot"
+        >
+          <div className={s.panelScroll} ref={panelRef}>
             <m.div
-              key={view}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ duration: 0.16 }}
+              transition={{ duration: 0.2 }}
             >
-              {view === "static" ? (
-                <StaticPanel />
-              ) : view === "motion" ? (
-                <MotionPanel />
-              ) : (
-                <About />
-              )}
+              <StaticPanel />
             </m.div>
-          </Suspense>
-        </div>
-        {view !== "about" && <WorkspaceActions svgRef={svgRef} />}
-      </aside>
+          </div>
+          <WorkspaceActions svgRef={svgRef} />
+        </aside>
+      )}
       <Feedback />
     </main>
   );

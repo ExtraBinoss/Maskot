@@ -1,244 +1,607 @@
-.viewRow {
+.paletteHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 5px;
-  margin-bottom: 16px;
+  margin-bottom: 8px;
 }
-.tabs {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-}
-.tabs button {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  padding: 5px 0 8px;
-  background: transparent;
-  color: var(--muted-foreground);
-  font-size: 11px;
-  border-bottom: 1px solid transparent;
-}
-.tabs button[aria-pressed="true"] {
-  color: var(--foreground);
-  border-color: var(--foreground);
-}
-.tabs span {
-  font-size: 8px;
-  opacity: 0.45;
+.paletteHeader h2 {
+  font: 600 14px var(--font-sans);
 }
 .boardToggle {
   display: flex;
-  gap: 2px;
+  gap: 3px;
 }
 .boardToggle button {
   display: grid;
   place-items: center;
-  background: transparent;
+  width: 26px;
+  height: 26px;
   border-radius: 7px;
-  width: 23px;
-  height: 25px;
   color: var(--muted-foreground);
+  background: transparent;
 }
-.boardToggle button[aria-pressed="true"] {
-  background: rgb(128 128 140 / 0.08);
+.boardToggle [aria-pressed="true"] {
+  background: color-mix(in srgb, var(--foreground) 6%, transparent);
   color: var(--foreground);
 }
 .movements {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 6px;
 }
 .movement {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: flex-start;
   min-width: 0;
+  padding: 3px 1px 7px;
   border-radius: 12px;
-  padding: 3px 0 8px;
-  background: transparent;
-  border: 1px solid transparent;
   color: var(--muted-foreground);
+  background: transparent;
+  border: 2px solid transparent;
 }
 .movement > svg {
-  width: min(100%, 76px);
+  width: 100%;
   height: auto;
+  max-width: 68px;
 }
 .movement > span {
-  font-size: 9px;
-  white-space: nowrap;
+  font-size: 11px;
+  line-height: 1.2;
+  text-align: center;
 }
 .movement:hover {
-  background: rgb(128 128 140 / 0.05);
+  background: color-mix(in srgb, var(--foreground) 4%, transparent);
   color: var(--foreground);
 }
 .movement[aria-pressed="true"] {
-  background: rgb(255 255 255 / 0.7);
-  border-color: rgb(128 128 140 / 0.1);
+  border-color: var(--primary);
   color: var(--foreground);
 }
-:global(.dark) .movement[aria-pressed="true"] {
-  background: rgb(255 255 255 / 0.055);
-}
-.player {
-  padding: 21px 1px 10px;
-}
-.transport {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-}
-.transport button {
-  width: 30px;
-  height: 32px;
-  display: grid;
-  place-items: center;
-  background: transparent;
-  color: var(--muted-foreground);
-  border-radius: 50%;
-}
-.transport .playButton {
-  background: var(--foreground);
-  color: var(--background);
-  width: 35px;
-  height: 35px;
-}
-.transport button:disabled {
-  opacity: 0.3;
-}
-.transport select {
-  background: transparent;
-  color: var(--muted-foreground);
-  padding: 3px;
-  width: 55px;
+.hint {
   font-size: 11px;
-  margin-left: 10px;
-}
-.transport option,
-.addStep option {
-  background: var(--card);
-  color: var(--foreground);
-}
-.follow {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 8px;
-  font-size: 11px;
-  margin-top: 22px;
-}
-.motionNote {
-  color: var(--muted-foreground);
-  font-size: 10px;
   line-height: 1.6;
-  margin-top: 12px;
+  color: var(--muted-foreground);
+  margin-top: 16px;
 }
-.sequenceHeader {
+.options {
+  margin-top: 24px;
+}
+.optionRow {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
-  margin: 21px 0 14px;
-  font-size: 10px;
+  font-size: 12px;
   color: var(--muted-foreground);
+  padding: 7px 0;
 }
-.sequenceHeader > span,
-.sequenceHeader button {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-.sequenceHeader button {
-  font-size: 11px;
-  color: var(--foreground);
-  background: transparent;
-}
-.steps {
-  display: grid;
-  gap: 14px;
-}
-.step {
-  padding: 0 0 13px;
-  border-bottom: 1px solid rgb(128 128 140 / 0.09);
-}
-.stepTop {
+.playbackOptions {
   display: flex;
   align-items: center;
   gap: 5px;
-  margin-bottom: 3px;
 }
-.stepNumber {
-  font-size: 9px;
-  color: var(--muted-foreground);
-  width: 18px;
+.playbackOptions button {
+  background: transparent;
+  color: inherit;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
 }
-.stepPreview {
-  flex: 1;
+.playbackOptions button:hover {
+  background: color-mix(in srgb, var(--foreground) 5%, transparent);
+}
+.playbackOptions select {
+  background: transparent;
+  color: inherit;
+  font-size: 12px;
+}
+.timeline {
+  position: absolute;
+  bottom: 0;
+  left: 88px;
+  right: calc(var(--panel-width) + var(--edge) * 2);
+  height: 224px;
+  padding: 14px 4px 20px;
+  z-index: 3;
   min-width: 0;
+}
+.playback {
+  position: absolute;
+  top: -24px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+.playback > span:last-child {
+  color: var(--muted-foreground);
+}
+.playButton {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  box-shadow: 0 1px 4px #0001;
+  transition: transform 150ms;
+}
+.playButton:hover {
+  transform: scale(1.05);
+}
+.playButton:active {
+  transform: scale(0.96);
+}
+.timelineHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  height: 34px;
+  margin-bottom: 12px;
+}
+.timelineHeader h2 {
+  font: 600 13px var(--font-sans);
+}
+.timelineHeader h2 span {
+  display: block;
+  font-size: 10px;
+  font-weight: 400;
+  color: var(--muted-foreground);
+  margin-top: 3px;
+}
+.exportVideo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 12px;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  padding: 8px 13px;
+  font-size: 12px;
+  white-space: nowrap;
+  box-shadow: 0 1px 3px #0001;
+}
+.track {
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+  overscroll-behavior-x: contain;
+  min-width: 0;
+  padding: 3px 2px 7px;
+}
+.trackContent {
+  position: relative;
+}
+.ruler {
+  height: 22px;
+  position: relative;
+  background: repeating-linear-gradient(
+      90deg,
+      var(--border) 0 1px,
+      transparent 1px 12px
+    )
+    0 9px / 100% 5px no-repeat;
+}
+.ruler > span {
+  position: absolute;
+  top: 0;
+  transform: translateX(-1px);
+  font-size: 10px;
+  color: var(--muted-foreground);
+  padding: 0 3px;
+  background: var(--background);
+  pointer-events: none;
+}
+.seek {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: ew-resize;
+}
+.ruler:focus-within {
+  outline: 1px solid var(--muted-foreground);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+.cards {
+  display: flex;
+  height: 88px;
+}
+.step {
+  position: relative;
+  flex-shrink: 0;
+  padding-right: 4px;
+  transition: transform 150ms ease-out;
+}
+.step:has(.card:active) {
+  transition: none;
+}
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--foreground) 4.5%, transparent);
+  color: var(--muted-foreground);
+  touch-action: none;
+  cursor: grab;
+  user-select: none;
+}
+.card:active {
+  cursor: grabbing;
+}
+.card > svg {
+  max-width: 90%;
+  height: auto;
+  min-height: 20px;
+  flex: 1;
+}
+.card > span {
+  font-size: 11px;
+  font-weight: 600;
+  padding-bottom: 5px;
+  white-space: nowrap;
+}
+.step[aria-current="step"] .card {
+  background: var(--card);
+  box-shadow: inset 0 0 0 2px var(--primary);
+  color: var(--foreground);
+}
+.remove {
+  position: absolute;
+  top: 4px;
+  right: 9px;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--foreground) 12%, var(--background));
+  color: var(--foreground);
+  opacity: 0;
+}
+.step:hover .remove,
+.remove:focus-visible {
+  opacity: 1;
+}
+.remove:disabled {
+  display: none;
+}
+.resize {
+  position: absolute;
+  right: 1px;
+  top: 10px;
+  bottom: 8px;
+  width: 9px;
+  border-radius: 6px;
+  background: transparent;
+  cursor: ew-resize;
+  touch-action: none;
+}
+.resize::after {
+  content: "";
+  position: absolute;
+  inset: 0 3px;
+  border-radius: 5px;
+  background: var(--muted-foreground);
+  opacity: 0;
+}
+.step:hover .resize::after,
+.resize:focus-visible::after {
+  opacity: 0.6;
+}
+.addCard {
+  position: relative;
+  flex-shrink: 0;
+  width: 66px;
+  display: grid;
+  place-items: center;
+  background: transparent;
+  border: 1px dashed var(--border);
+  border-radius: 9px;
+  color: var(--muted-foreground);
+  margin-left: 4px;
+}
+.addCard select {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  width: 100%;
+  cursor: pointer;
+}
+.addCard:focus-within {
+  outline: 2px solid var(--foreground);
+  outline-offset: 2px;
+}
+.cursor {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  pointer-events: none;
+  background: var(--foreground);
+  border-radius: 2px;
+}
+.cursor i {
+  position: absolute;
+  left: -4px;
+  top: -1px;
+  width: 10px;
+  height: 10px;
+  border: 2px solid var(--background);
+  border-radius: 50%;
+  background: var(--foreground);
+}
+.timelineTools {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 16px;
+  margin-top: 5px;
+  height: 22px;
+  color: var(--muted-foreground);
+  font-size: 11px;
+}
+.keyboardHint {
+  margin-right: auto;
+  font-size: 10px;
+  opacity: 0.7;
+}
+.zoom {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 11px;
-  color: var(--foreground);
-  text-align: left;
-  background: transparent;
 }
-.stepActions {
-  display: flex;
-  gap: 1px;
+.zoom input {
+  width: 90px;
+  height: 3px;
+  accent-color: var(--primary);
 }
-.stepActions button {
+.zoom span {
+  min-width: 31px;
+  font-variant-numeric: tabular-nums;
+}
+.counter {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.replay {
   display: grid;
   place-items: center;
-  width: 21px;
-  height: 25px;
-  border-radius: 7px;
   background: transparent;
-  color: var(--muted-foreground);
+  color: inherit;
+  width: 24px;
+  height: 24px;
 }
-.stepActions button:hover {
-  background: rgb(128 128 140 / 0.07);
-}
-.stepActions button:disabled {
-  opacity: 0.25;
-}
-.step[aria-current="step"] .stepNumber {
+.exportDialog {
+  margin: auto;
+  width: min(420px, calc(100vw - 32px));
+  border: 1px solid var(--border);
+  padding: 27px;
+  border-radius: 22px;
+  background: var(--background);
   color: var(--foreground);
+  box-shadow: 0 20px 100px #0002;
 }
-.step[aria-current="step"] .stepNumber::before {
-  content: "";
-  display: inline-block;
-  width: 3px;
-  height: 3px;
-  border-radius: 50%;
-  background: var(--foreground);
-  margin-right: 3px;
+.exportDialog::backdrop {
+  background: rgb(15 20 35 / 0.22);
+  backdrop-filter: blur(12px);
 }
-.step label {
-  font-size: 9px;
+.exportDialog header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
 }
-.step label output {
-  font-size: 10px;
+.exportDialog h2 {
+  font-size: 22px;
+  letter-spacing: -0.8px;
+  font-weight: 500;
 }
-.addStep {
-  display: block;
-  width: 100%;
-  margin-top: 17px;
-  padding: 9px 0;
-  color: var(--muted-foreground);
+.exportDialog header button {
+  display: grid;
+  place-items: center;
   background: transparent;
-  font-size: 11px;
+  color: var(--muted-foreground);
+  width: 25px;
+  height: 25px;
 }
-.scrubber {
+.exportDialog p {
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--muted-foreground);
   margin-top: 13px;
 }
-.scrubber > div:first-child {
+.exportDialog fieldset {
+  border: 0;
+  padding: 0;
+  margin: 24px 0;
+  display: flex;
+  gap: 15px;
+}
+.exportDialog legend {
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+.exportDialog label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+}
+.exportDialog input {
+  accent-color: var(--primary);
+}
+.exportDialog label span {
+  width: 17px;
+  height: 17px;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+}
+.exportConfirm {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 11px;
+  padding: 11px;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  font-size: 13px;
+}
+.exportDialog progress {
+  width: 100%;
+  height: 5px;
+  accent-color: var(--primary);
+}
+.progressRow {
   display: flex;
   justify-content: space-between;
+  font-size: 12px;
+  margin-top: 10px;
   color: var(--muted-foreground);
-  font-size: 10px;
-  font-variant-numeric: tabular-nums;
-  margin-bottom: 7px;
+}
+.progressRow button {
+  background: transparent;
+  color: var(--foreground);
+  text-decoration: underline;
+}
+.exportDialog .exportError {
+  color: var(--destructive);
+  margin-bottom: 15px;
+}
+@media (max-width: 1100px) {
+  .keyboardHint {
+    display: none;
+  }
+  .timelineTools {
+    gap: 10px;
+  }
+  .zoom input {
+    width: 60px;
+  }
+}
+@media (max-width: 760px) {
+  .timeline {
+    left: 78px;
+    right: 16px;
+    height: 192px;
+    padding: 10px 0 12px;
+    background: var(--background);
+  }
+  .timelineHeader {
+    gap: 6px;
+    margin-bottom: 7px;
+  }
+  .timelineHeader h2 {
+    font-size: 11px;
+  }
+  .timelineHeader h2 span {
+    font-size: 9px;
+    max-width: 90px;
+  }
+  .exportVideo {
+    font-size: 10px;
+    padding: 8px;
+    gap: 4px;
+  }
+  .exportVideo svg {
+    width: 12px;
+  }
+  .playback {
+    top: -33px;
+  }
+  .playButton {
+    width: 38px;
+    height: 38px;
+  }
+  .playback > span {
+    font-size: 11px;
+  }
+  .cards {
+    height: 70px;
+  }
+  .timelineTools {
+    gap: 8px;
+    font-size: 10px;
+  }
+  .zoom input {
+    width: 42px;
+  }
+  .zoom svg,
+  .replay {
+    display: none;
+  }
+  :global([data-view="motion"]) > :global(#settings) {
+    top: 33dvh;
+    bottom: 242px;
+  }
+  .movement > span {
+    font-size: 9px;
+  }
+  .movement {
+    gap: 0;
+    padding-bottom: 4px;
+  }
+  .movements {
+    gap: 3px;
+  }
+  .hint {
+    font-size: 10px;
+  }
+  .options {
+    margin-top: 16px;
+  }
+}
+@media (pointer: coarse) {
+  .remove {
+    opacity: 0.7;
+  }
+  .resize::after {
+    opacity: 0.35;
+  }
+}
+.movement > span {
+  font-size: 12px;
+}
+.hint,
+.optionRow {
+  font-size: 13px;
+}
+@media (max-width: 760px) {
+  .movement > span {
+    font-size: 10px;
+  }
+  .hint {
+    font-size: 11px;
+  }
+}
+
+.step[aria-current="step"] .card {
+  background: var(--accent-soft);
+  color: var(--primary);
+}
+.cursor,
+.cursor i {
+  background: var(--primary);
 }
