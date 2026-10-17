@@ -1,10 +1,16 @@
-import type { ProfileName, Point, Silhouette } from './bot-types';
-import { TAU, lerp, r2 } from './math';
-import { PROFILES, PROFILE_SAMPLES } from './profiles';
-const ANGLES = Array.from({ length: PROFILE_SAMPLES }, (_, i) => (i / PROFILE_SAMPLES) * TAU);
+import type { ProfileName, Point, Silhouette } from "./bot-types";
+import { TAU, lerp, r2 } from "./math";
+import { PROFILES, PROFILE_SAMPLES } from "./profiles";
+const ANGLES = Array.from(
+  { length: PROFILE_SAMPLES },
+  (_, i) => (i / PROFILE_SAMPLES) * TAU,
+);
 const COS = ANGLES.map(Math.cos);
 const SIN = ANGLES.map(Math.sin);
-export function silhouette(name: ProfileName, pose: Partial<Silhouette> = {}): Silhouette {
+export function silhouette(
+  name: ProfileName,
+  pose: Partial<Silhouette> = {},
+): Silhouette {
   return {
     radii: [...PROFILES[name]],
     rot: 0,
@@ -16,7 +22,10 @@ export function silhouette(name: ProfileName, pose: Partial<Silhouette> = {}): S
   };
 }
 
-export function circle(radius: number, pose: Partial<Silhouette> = {}): Silhouette {
+export function circle(
+  radius: number,
+  pose: Partial<Silhouette> = {},
+): Silhouette {
   return {
     radii: Array.from({ length: PROFILE_SAMPLES }, () => radius),
     rot: 0,
@@ -28,7 +37,12 @@ export function circle(radius: number, pose: Partial<Silhouette> = {}): Silhouet
   };
 }
 
-export function blend(a: Silhouette, b: Silhouette, t: number, out?: Silhouette): Silhouette {
+export function blend(
+  a: Silhouette,
+  b: Silhouette,
+  t: number,
+  out?: Silhouette,
+): Silhouette {
   const dst = out ?? {
     radii: Array.from({ length: PROFILE_SAMPLES }, () => 0),
     rot: 0,
@@ -53,7 +67,11 @@ export function blend(a: Silhouette, b: Silhouette, t: number, out?: Silhouette)
   return dst;
 }
 
-export function toPoints(s: Silhouette, scale: number, out: Point[] = []): Point[] {
+export function toPoints(
+  s: Silhouette,
+  scale: number,
+  out: Point[] = [],
+): Point[] {
   const cr = Math.cos(s.rot);
   const sr = Math.sin(s.rot);
   for (let i = 0; i < PROFILE_SAMPLES; i++) {
@@ -74,7 +92,7 @@ export function toPoints(s: Silhouette, scale: number, out: Point[] = []): Point
 
 export function closedPath(pts: Point[], tension = 1 / 6): string {
   const n = pts.length;
-  if (n < 3) return '';
+  if (n < 3) return "";
   const first = pts[0]!;
   let d = `M${r2(first.x)} ${r2(first.y)}`;
   for (let i = 0; i < n; i++) {
@@ -91,7 +109,11 @@ export function closedPath(pts: Point[], tension = 1 / 6): string {
   return `${d}Z`;
 }
 
-export function profileFromPolygon(poly: Point[], cx: number, cy: number): number[] {
+export function profileFromPolygon(
+  poly: Point[],
+  cx: number,
+  cy: number,
+): number[] {
   const radii = Array.from({ length: PROFILE_SAMPLES }, () => 0);
   const n = poly.length;
   for (let k = 0; k < PROFILE_SAMPLES; k++) {
@@ -211,7 +233,12 @@ function roundedPolygon(verts: Point[], rc: number, arcSteps = 10): Point[] {
   return out;
 }
 
-export function regularPolygonProfile(sides: number, radius: number, rc: number, rotationDeg = 0): number[] {
+export function regularPolygonProfile(
+  sides: number,
+  radius: number,
+  rc: number,
+  rotationDeg = 0,
+): number[] {
   const rot = (rotationDeg * Math.PI) / 180;
   const verts = Array.from({ length: sides }, (_, i) => {
     // sens horaire a l'ecran : theta croissant avec y vers le bas
@@ -222,11 +249,11 @@ export function regularPolygonProfile(sides: number, radius: number, rc: number,
 }
 
 export function polyPath(pts: Point[], scale = 1): string {
-  if (pts.length < 3) return '';
-  let d = '';
+  if (pts.length < 3) return "";
+  let d = "";
   for (let i = 0; i < pts.length; i++) {
     const p = pts[i]!;
-    d += `${i === 0 ? 'M' : 'L'}${r2(p.x * scale)} ${r2(p.y * scale)}`;
+    d += `${i === 0 ? "M" : "L"}${r2(p.x * scale)} ${r2(p.y * scale)}`;
   }
   return `${d}Z`;
 }

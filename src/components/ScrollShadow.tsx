@@ -31,6 +31,7 @@ export function ScrollShadow({
       ref={ref}
       data-preview-scroll
       className={s.scrollShadow}
+      role="region"
       aria-label={label}
       tabIndex={0}
     >

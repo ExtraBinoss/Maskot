@@ -2,8 +2,12 @@ import { BotEngine } from "./engine/engine";
 import type { BotFrame, DotRender, BotExpression } from "./engine/bot-types";
 import { SHAPE_BY_ID } from "./engine/skins";
 import { clamp, easings, lerp } from "./engine/math";
-import { figureFrame, isFigure, type MascotShapeId } from "./figures";
-import type { FigureId } from "./figures";
+import {
+  figureFrame,
+  isFigure,
+  type MascotShapeId,
+  type FigureId,
+} from "./figures";
 import type { MotionId } from "./motion-types";
 
 const numbers = /-?\d*\.?\d+(?:e[-+]?\d+)?/gi;

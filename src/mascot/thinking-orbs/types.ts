@@ -1,4 +1,4 @@
-import type { CSSProperties, CanvasHTMLAttributes } from 'react';
+import type { CSSProperties, CanvasHTMLAttributes } from "react";
 
 /**
  * The nine shipped states — each a hand-tuned animation:
@@ -13,15 +13,15 @@ import type { CSSProperties, CanvasHTMLAttributes } from 'react';
  * - `shaping`    — a dotted outline morphs circle → triangle → square
  */
 export type OrbState =
-  | 'working'
-  | 'searching'
-  | 'solving'
-  | 'listening'
-  | 'connecting'
-  | 'weaving'
-  | 'composing'
-  | 'breathing'
-  | 'shaping';
+  | "working"
+  | "searching"
+  | "solving"
+  | "listening"
+  | "connecting"
+  | "weaving"
+  | "composing"
+  | "breathing"
+  | "shaping";
 
 /**
  * Rendered size in CSS pixels. Exactly two tuned presets ship:
@@ -47,10 +47,13 @@ export type OrbSize = 64 | 20;
  * Dark renders light ink on the transparent canvas (for dark
  * backgrounds); light renders dark ink (for light backgrounds).
  */
-export type OrbTheme = 'auto' | 'dark' | 'light';
+export type OrbTheme = "auto" | "dark" | "light";
 
 /** Props for the ThinkingOrb React component. */
-export interface ThinkingOrbProps extends Omit<CanvasHTMLAttributes<HTMLCanvasElement>, 'style'> {
+export interface ThinkingOrbProps extends Omit<
+  CanvasHTMLAttributes<HTMLCanvasElement>,
+  "style"
+> {
   /** Which animation to show. @default 'working' */
   state?: OrbState;
 

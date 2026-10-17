@@ -1,5 +1,5 @@
-import type { DotRender, ArcRender, ArcSeed } from './bot-types';
-import { TAU, clamp, createRng, r2 } from './math';
+import type { DotRender, ArcRender, ArcSeed } from "./bot-types";
+import { TAU, clamp, createRng, r2 } from "./math";
 
 function wheel(hue: number, s = 0.55, l = 0.62): string {
   const h = ((hue % 360) + 360) % 360;
@@ -21,19 +21,25 @@ function wheel(hue: number, s = 0.55, l = 0.62): string {
   const hex = (v: number) =>
     Math.round((v + m) * 255)
       .toString(16)
-      .padStart(2, '0');
+      .padStart(2, "0");
   return `#${hex(r)}${hex(g)}${hex(b)}`;
 }
 
-export function arcRender(seed: ArcSeed, t: number, scale: number, id: string, opacity = 1): ArcRender {
+export function arcRender(
+  seed: ArcSeed,
+  t: number,
+  scale: number,
+  id: string,
+  opacity = 1,
+): ArcRender {
   const spin = seed.phase + t * seed.speed * TAU;
   const cu = Math.cos(seed.tilt);
   const su = Math.sin(seed.tilt);
   const kz = Math.sqrt(Math.max(0, 1 - seed.k * seed.k));
   const N = 64;
   const span = seed.sweep * TAU;
-  let front = '';
-  let back = '';
+  let front = "";
+  let back = "";
   let prev: boolean | null = null;
   for (let i = 0; i <= N; i++) {
     const th = spin + (i / N) * span;
@@ -46,7 +52,7 @@ export function arcRender(seed: ArcSeed, t: number, scale: number, id: string, o
     const behind = z < 0;
     const sx = r2(x * scale);
     const sy = r2(y * scale);
-    const cmd = behind !== prev ? 'M' : 'L';
+    const cmd = behind !== prev ? "M" : "L";
     if (behind) back += `${cmd}${sx} ${sy}`;
     else front += `${cmd}${sx} ${sy}`;
     prev = behind;
@@ -64,7 +70,11 @@ export function arcRender(seed: ArcSeed, t: number, scale: number, id: string, o
       y1: r2(seed.cy * scale - gy),
       x2: r2(seed.cx * scale + gx),
       y2: r2(seed.cy * scale + gy),
-      stops: [wheel(seed.hue), wheel(seed.hue + seed.hueSpan * 0.5), wheel(seed.hue + seed.hueSpan)],
+      stops: [
+        wheel(seed.hue),
+        wheel(seed.hue + seed.hueSpan * 0.5),
+        wheel(seed.hue + seed.hueSpan),
+      ],
     },
   };
 }
@@ -151,7 +161,7 @@ export const COMET_RIBBONS: ArcSeed[] = Array.from({ length: 4 }, (_, i) => {
 
 export const COMET_DOT = 0.129;
 
-export const NOTIF_BLUE = '#2496e8';
+export const NOTIF_BLUE = "#2496e8";
 
 export const NOTIF_ANGLE = -42;
 export const NOTIF_DIST = 1.003;

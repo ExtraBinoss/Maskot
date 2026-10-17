@@ -2,8 +2,14 @@
 // wave (listening). All draw a lat/long dot field with mode-specific
 // motion, then hand off to the shared z-sorted painter.
 
-import type { Dot, ModeFrame } from './types';
-import { angleDelta, finalizeFrame, hashD, makeProj, radiusScale } from './core';
+import type { Dot, ModeFrame } from "./types";
+import {
+  angleDelta,
+  finalizeFrame,
+  hashD,
+  makeProj,
+  radiusScale,
+} from "./core";
 
 // --- the shared solver heartbeat (rubik) ------------------------------
 // Rapid eased moves scramble, then replay in reverse (palindrome) so
@@ -16,10 +22,15 @@ interface Move {
   ang: number;
 }
 
-function solveCycle(time: number, count: number, slotDur: number, rest: number) {
+function solveCycle(
+  time: number,
+  count: number,
+  slotDur: number,
+  rest: number,
+) {
   const cyc = 2 * count * slotDur + rest;
   const tc = time % cyc;
-  const amount = new Array<number>(count).fill(0);
+  const amount = Array.from({ length: count }, () => 0);
   let active = -1;
   if (tc < 2 * count * slotDur) {
     const slot = Math.floor(tc / slotDur);
@@ -43,7 +54,7 @@ function solveCycle(time: number, count: number, slotDur: number, rest: number) 
 function applyMoves(
   pt3: [number, number, number],
   moves: Move[],
-  sc: { amount: number[]; active: number }
+  sc: { amount: number[]; active: number },
 ): [number, number, number, boolean] {
   let [x, y, z] = pt3;
   let inActive = false;
@@ -108,7 +119,11 @@ export const frameGlobe: ModeFrame = (size, t, o) => {
     const lonCount = Math.max(1, Math.round(Math.abs(cosLat) * lonDensity));
     for (let lj = 0; lj < lonCount; lj++) {
       const lon = (lj / lonCount) * 2 * Math.PI;
-      const [px, py, z] = pt(cosLat * Math.cos(lon), sinLat, cosLat * Math.sin(lon));
+      const [px, py, z] = pt(
+        cosLat * Math.cos(lon),
+        sinLat,
+        cosLat * Math.sin(lon),
+      );
       const depth = (z + 1) / 2;
       // the scan: a moving meridian read as a size ripple, not a shine
       const d = angleDelta(lon + t * spin, scan);
@@ -117,10 +132,14 @@ export const frameGlobe: ModeFrame = (size, t, o) => {
         x: px,
         y: py,
         z,
-        r: ((o.rBase ?? 0.6) + (o.rDepth ?? 1.7) * depth + (o.rBoost ?? 1) * boost) * rs,
+        r:
+          ((o.rBase ?? 0.6) +
+            (o.rDepth ?? 1.7) * depth +
+            (o.rBoost ?? 1) * boost) *
+          rs,
         white: (o.inkFar ?? 0.62) - (o.inkSpan ?? 0.54) * depth,
         // dimBase < 1 fades un-scanned dots so the meridian reads clearly
-        a: dimBase + (1 - dimBase) * Math.min(1, boost)
+        a: dimBase + (1 - dimBase) * Math.min(1, boost),
       });
     }
   }
@@ -149,7 +168,11 @@ export const frameRubik: ModeFrame = (size, t, o) => {
     const lonCount = Math.max(1, Math.round(Math.abs(cosLat) * lonDensity));
     for (let lj = 0; lj < lonCount; lj++) {
       const lon = (lj / lonCount) * 2 * Math.PI;
-      const [x, y, z, inActive] = applyMoves([cosLat * Math.cos(lon), sinLat, cosLat * Math.sin(lon)], moves, sc);
+      const [x, y, z, inActive] = applyMoves(
+        [cosLat * Math.cos(lon), sinLat, cosLat * Math.sin(lon)],
+        moves,
+        sc,
+      );
       const [px, py, zr] = pt(x, y, z);
       const depth = (zr + 1) / 2;
       // the band being turned inks a touch darker — the "hand"
@@ -157,8 +180,15 @@ export const frameRubik: ModeFrame = (size, t, o) => {
         x: px,
         y: py,
         z: zr,
-        r: ((o.rBase ?? 0.6) + (o.rDepth ?? 1.7) * depth + (inActive ? (o.rActive ?? 0.3) : 0)) * rs,
-        white: (o.inkFar ?? 0.62) - (o.inkSpan ?? 0.54) * depth - (inActive ? 0.14 : 0)
+        r:
+          ((o.rBase ?? 0.6) +
+            (o.rDepth ?? 1.7) * depth +
+            (inActive ? (o.rActive ?? 0.3) : 0)) *
+          rs,
+        white:
+          (o.inkFar ?? 0.62) -
+          (o.inkSpan ?? 0.54) * depth -
+          (inActive ? 0.14 : 0),
       });
     }
   }
@@ -184,20 +214,29 @@ export const frameWave: ModeFrame = (size, t, o) => {
     const cosLat = Math.cos(lat);
     const sinLat = Math.sin(lat);
     // two waves, different tempi — organic, never quite repeating
-    const w = 0.62 * Math.sin(t * 2.1 - ri * 0.52) + 0.38 * Math.sin(t * 1.27 + ri * 0.83);
+    const w =
+      0.62 * Math.sin(t * 2.1 - ri * 0.52) +
+      0.38 * Math.sin(t * 1.27 + ri * 0.83);
     const rr = R * (0.88 + 0.105 * w);
     const lonCount = Math.max(1, Math.round(Math.abs(cosLat) * lonDensity));
     for (let lj = 0; lj < lonCount; lj++) {
       const lon = (lj / lonCount) * 2 * Math.PI;
-      const [px, py, z] = pt(cosLat * Math.cos(lon) * rr, sinLat * rr, cosLat * Math.sin(lon) * rr);
+      const [px, py, z] = pt(
+        cosLat * Math.cos(lon) * rr,
+        sinLat * rr,
+        cosLat * Math.sin(lon) * rr,
+      );
       const depth = (z / R + 1) / 2;
       const crest = Math.max(0, w);
       dots.push({
         x: px,
         y: py,
         z,
-        r: ((o.rBase ?? 0.6) + (o.rDepth ?? 1.7) * depth) * (1 + 0.4 * crest) * rs,
-        white: 0.66 - 0.56 * depth - 0.1 * crest
+        r:
+          ((o.rBase ?? 0.6) + (o.rDepth ?? 1.7) * depth) *
+          (1 + 0.4 * crest) *
+          rs,
+        white: 0.66 - 0.56 * depth - 0.1 * crest,
       });
     }
   }

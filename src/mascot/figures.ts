@@ -47,7 +47,8 @@ export const ORBS = [
   { id: "orb-shaping", label: "Orbe · Métamorphose", state: "shaping" },
 ] as const satisfies readonly { id: string; label: string; state: OrbState }[];
 export type FigureId =
-  (typeof SYMBOLS)[number]["id"] | (typeof ORBS)[number]["id"];
+  | (typeof SYMBOLS)[number]["id"]
+  | (typeof ORBS)[number]["id"];
 export type MascotShapeId = ShapeId | FigureId;
 export const FIGURES = [...SYMBOLS, ...ORBS];
 const byId = new Map<string, (typeof FIGURES)[number]>(

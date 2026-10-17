@@ -37,7 +37,11 @@ export interface OrbFrame {
   lines: Line[];
 }
 
-export type Projector = (x: number, y: number, z: number) => [number, number, number];
+export type Projector = (
+  x: number,
+  y: number,
+  z: number,
+) => [number, number, number];
 
 export function lerp(a: number, b: number, f: number): number {
   return a + (b - a) * f;
@@ -83,7 +87,13 @@ export function angleDelta(a: number, b: number): number {
 }
 
 /** Shared spin + tilt + orthographic projection. */
-export function makeProj(yaw: number, tilt: number, cx: number, cy: number, scale: number): Projector {
+export function makeProj(
+  yaw: number,
+  tilt: number,
+  cx: number,
+  cy: number,
+  scale: number,
+): Projector {
   const st = Math.sin(tilt);
   const ct = Math.cos(tilt);
   const sy = Math.sin(yaw);
@@ -102,7 +112,11 @@ export function makeProj(yaw: number, tilt: number, cx: number, cy: number, scal
  * ink value is mirrored (1 - white) so near dots read bright — the same
  * depth language on an inverted substrate.
  */
-export function paint(ctx: CanvasRenderingContext2D, dots: Dot[], dark: boolean): void {
+export function paint(
+  ctx: CanvasRenderingContext2D,
+  dots: Dot[],
+  dark: boolean,
+): void {
   for (const d of dots) {
     const alpha = d.a ?? 1;
     const w = Math.min(1, Math.max(0, d.white));
@@ -115,7 +129,11 @@ export function paint(ctx: CanvasRenderingContext2D, dots: Dot[], dark: boolean)
 }
 
 /** Stroke pass for edge-based modes. Runs before `paint` so nodes sit on top. */
-export function paintLines(ctx: CanvasRenderingContext2D, lines: Line[], dark: boolean): void {
+export function paintLines(
+  ctx: CanvasRenderingContext2D,
+  lines: Line[],
+  dark: boolean,
+): void {
   for (const l of lines) {
     const alpha = l.a ?? 1;
     const w = Math.min(1, Math.max(0, l.white));
@@ -139,7 +157,11 @@ export function paintLines(ctx: CanvasRenderingContext2D, lines: Line[], dark: b
  * output verbatim — a port draws the list, it never re-derives anything —
  * and what lets the golden-vector tests compare numbers instead of pixels.
  */
-export function finalizeFrame(dots: Dot[], lines: Line[], rMin = 0.3): OrbFrame {
+export function finalizeFrame(
+  dots: Dot[],
+  lines: Line[],
+  rMin = 0.3,
+): OrbFrame {
   const visible: Dot[] = [];
   for (const d of dots) {
     if ((d.a ?? 1) < 0.02) continue;
@@ -151,7 +173,11 @@ export function finalizeFrame(dots: Dot[], lines: Line[], rMin = 0.3): OrbFrame 
 }
 
 /** Paint a finished frame. Lines first, so nodes sit on top of their edges. */
-export function paintFrame(ctx: CanvasRenderingContext2D, frame: OrbFrame, dark: boolean): void {
+export function paintFrame(
+  ctx: CanvasRenderingContext2D,
+  frame: OrbFrame,
+  dark: boolean,
+): void {
   if (frame.lines.length) paintLines(ctx, frame.lines, dark);
   paint(ctx, frame.dots, dark);
 }

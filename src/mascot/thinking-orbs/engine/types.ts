@@ -1,10 +1,10 @@
 // Engine-level contracts shared by every mode implementation.
 
-import type { ModeOpts } from './profiles';
+import type { ModeOpts } from "./profiles";
 
-export type { Dot, Line, OrbFrame } from './core';
+export type { Dot, Line, OrbFrame } from "./core";
 
-import type { OrbFrame } from './core';
+import type { OrbFrame } from "./core";
 
 /**
  * Geometry for one instant: pure math over (size, t, opts), no rendering
@@ -22,5 +22,5 @@ export type ModeDraw = (
   size: number,
   t: number,
   dark: boolean,
-  opts: ModeOpts
+  opts: ModeOpts,
 ) => void;

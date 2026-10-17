@@ -2,8 +2,17 @@
 // on the sphere under slow value noise; any pair closer than `thr` grows an
 // edge, and bright packets run along randomly re-picked node pairs.
 
-import type { Dot, Line, ModeFrame } from './types';
-import { fibDir, finalizeFrame, frac, hashD, lerp, makeProj, radiusScale, vnoise } from './core';
+import type { Dot, Line, ModeFrame } from "./types";
+import {
+  fibDir,
+  finalizeFrame,
+  frac,
+  hashD,
+  lerp,
+  makeProj,
+  radiusScale,
+  vnoise,
+} from "./core";
 
 export const frameWeb: ModeFrame = (size, t, o) => {
   const cx = size / 2;
@@ -51,7 +60,7 @@ export const frameWeb: ModeFrame = (size, t, o) => {
         y2,
         white: 0.42,
         a: (1 - dist / thr) * (0.3 + 0.55 * depth),
-        w: Math.max(0.6, (o.lineW ?? 0.8) * rs)
+        w: Math.max(0.6, (o.lineW ?? 0.8) * rs),
       });
     }
   }
@@ -65,7 +74,7 @@ export const frameWeb: ModeFrame = (size, t, o) => {
       y: py,
       z,
       r: (nodeR + nodeRDepth * depth) * pulse * rs,
-      white: 0.55 - 0.45 * depth
+      white: 0.55 - 0.45 * depth,
     });
   }
 
@@ -89,7 +98,7 @@ export const frameWeb: ModeFrame = (size, t, o) => {
       z: zr,
       r: (nodeR * 1.5 + nodeRDepth * depth) * rs,
       white: 0.05,
-      a: 0.5 + 0.5 * depth
+      a: 0.5 + 0.5 * depth,
     });
   }
 

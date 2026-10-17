@@ -14,16 +14,21 @@ function initialLanguage() {
   return navigator.language.toLowerCase().startsWith("fr") ? "fr" : "en";
 }
 
-void i18n.use(initReactI18next).init({
-  resources: { en: { translation: en }, fr: { translation: fr } },
-  lng: initialLanguage(),
-  fallbackLng: "en",
-  supportedLngs: ["en", "fr"],
-  keySeparator: false,
-  nsSeparator: false,
-  interpolation: { escapeValue: false },
-  initAsync: false,
-});
+void i18n
+  .use(initReactI18next)
+  .init({
+    resources: { en: { translation: en }, fr: { translation: fr } },
+    lng: initialLanguage(),
+    fallbackLng: "en",
+    supportedLngs: ["en", "fr"],
+    keySeparator: false,
+    nsSeparator: false,
+    interpolation: { escapeValue: false },
+    initAsync: false,
+  })
+  .catch((error: unknown) => {
+    console.error("Language initialization failed", error);
+  });
 
 function synchronizeLanguage(language: string) {
   document.documentElement.lang = language;

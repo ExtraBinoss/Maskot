@@ -1401,6 +1401,8 @@ test("previews a picker drag immediately and commits without repainting the cata
     key,
   );
   await page.evaluate((key) => {
+    // Preserve the original method; the wrapper supplies its Storage receiver.
+    // oxlint-disable-next-line typescript/unbound-method
     const original = Storage.prototype.setItem;
     const state = window as typeof window & { pickerSaves: number };
     state.pickerSaves = 0;
@@ -1536,6 +1538,8 @@ test("updates eyes throughout a drag without catalog churn, persistence or a tra
     .getByLabel("Styles des yeux", { exact: true })
     .innerHTML();
   await page.evaluate(() => {
+    // Preserve the original method; the wrapper supplies its Storage receiver.
+    // oxlint-disable-next-line typescript/unbound-method
     const original = Storage.prototype.setItem;
     (window as typeof window & { presetWrites: number }).presetWrites = 0;
     Storage.prototype.setItem = function (key, value) {

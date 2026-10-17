@@ -10,25 +10,25 @@ export interface ModeOpts {
 // √scale so the TOTAL dot count scales by `scale`; flat lists scale
 // linearly. `iconD` sets the morph outline's sampling density.
 const COUNT_PAIRS: ReadonlyArray<readonly [string, string]> = [
-  ['latRings', 'lonDensity'],
-  ['rings', 'lonDensity'],
-  ['lanes', 'segs']
+  ["latRings", "lonDensity"],
+  ["rings", "lonDensity"],
+  ["lanes", "segs"],
 ];
-const COUNT_KEYS = ['orbitN', 'ghostN', 'nodeN', 'strandN', 'signals'] as const;
-const ICON_DENSITY_KEYS = ['iconD'] as const;
+const COUNT_KEYS = ["orbitN", "ghostN", "nodeN", "strandN", "signals"] as const;
+const ICON_DENSITY_KEYS = ["iconD"] as const;
 
 // Every key that sets a dot's rendered radius — scaling all of them keeps
 // a dot's near/far falloff intact while shrinking or growing the mark.
 const RADIUS_KEYS = [
-  'rBase',
-  'rDepth',
-  'rActive',
-  'rDot',
-  'ghostR',
-  'partR',
-  'partRDepth',
-  'nodeR',
-  'nodeRDepth'
+  "rBase",
+  "rDepth",
+  "rActive",
+  "rDot",
+  "ghostR",
+  "partR",
+  "partRDepth",
+  "nodeR",
+  "nodeRDepth",
 ] as const;
 
 export function scaleCounts(opts: ModeOpts, scale: number): ModeOpts {
@@ -49,7 +49,8 @@ export function scaleCounts(opts: ModeOpts, scale: number): ModeOpts {
     const v = out[k];
     // 0 means the mode opted out of that layer entirely (ring has no ghost
     // sphere) — scaling must not resurrect it as a single stray dot
-    if (v != null && v !== 0 && !done.has(k)) out[k] = Math.max(1, Math.round(v * scale));
+    if (v != null && v !== 0 && !done.has(k))
+      out[k] = Math.max(1, Math.round(v * scale));
   }
   for (const k of ICON_DENSITY_KEYS) {
     const v = out[k];
@@ -81,7 +82,7 @@ export const BASE_PROFILES: Record<string, ModeOpts> = {
     inkFar: 0.62,
     inkSpan: 0.54,
     rsPow: 0.6,
-    rMin: 0.3
+    rMin: 0.3,
   },
   orbits: {
     orbitN: 12,
@@ -92,7 +93,7 @@ export const BASE_PROFILES: Record<string, ModeOpts> = {
     partR: 1.2,
     partRDepth: 1.6,
     rsPow: 0.6,
-    rMin: 0.3
+    rMin: 0.3,
   },
   rubik: {
     latRings: 15,
@@ -104,7 +105,7 @@ export const BASE_PROFILES: Record<string, ModeOpts> = {
     inkFar: 0.62,
     inkSpan: 0.54,
     rsPow: 0.6,
-    rMin: 0.3
+    rMin: 0.3,
   },
   wave: {
     rings: 15,
@@ -112,7 +113,7 @@ export const BASE_PROFILES: Record<string, ModeOpts> = {
     rBase: 0.6,
     rDepth: 1.7,
     rsPow: 0.6,
-    rMin: 0.3
+    rMin: 0.3,
   },
   web: {
     nodeN: 30,
@@ -122,7 +123,7 @@ export const BASE_PROFILES: Record<string, ModeOpts> = {
     nodeRDepth: 1.8,
     lineW: 0.8,
     rsPow: 0.6,
-    rMin: 0.3
+    rMin: 0.3,
   },
   braid: {
     strandN: 52,
@@ -131,7 +132,7 @@ export const BASE_PROFILES: Record<string, ModeOpts> = {
     rBase: 1.2,
     rDepth: 1.8,
     rsPow: 0.6,
-    rMin: 0.3
+    rMin: 0.3,
   },
   ribbon: {
     lanes: 5,
@@ -140,7 +141,7 @@ export const BASE_PROFILES: Record<string, ModeOpts> = {
     rBase: 1.1,
     rDepth: 1.7,
     rsPow: 0.6,
-    rMin: 0.3
+    rMin: 0.3,
   },
   // ring shares ribbon's painter; faceOn cancels the camera tilt and moves
   // the undulation onto the radius, and there is no ghost sphere behind it
@@ -152,11 +153,11 @@ export const BASE_PROFILES: Record<string, ModeOpts> = {
     rBase: 1.1,
     rDepth: 1.7,
     rsPow: 0.6,
-    rMin: 0.3
+    rMin: 0.3,
   },
   morph: {
     rDot: 0.021,
     iconD: 1,
-    rMin: 0.25
-  }
+    rMin: 0.25,
+  },
 };

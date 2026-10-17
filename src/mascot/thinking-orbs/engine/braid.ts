@@ -2,8 +2,8 @@
 // Each strand runs pole to pole on a helix, and a radial breathing term
 // makes them trade places, reading as the over/under of a plait.
 
-import type { Dot, ModeFrame } from './types';
-import { fibDir, finalizeFrame, frac, makeProj, radiusScale } from './core';
+import type { Dot, ModeFrame } from "./types";
+import { fibDir, finalizeFrame, frac, makeProj, radiusScale } from "./core";
 
 export const frameBraid: ModeFrame = (size, t, o) => {
   const cx = size / 2;
@@ -18,7 +18,14 @@ export const frameBraid: ModeFrame = (size, t, o) => {
     const d = fibDir(i, ghostN);
     const [px, py, z] = pt(d[0] * R, d[1] * R, d[2] * R);
     const depth = (z / R + 1) / 2;
-    dots.push({ x: px, y: py, z, r: 0.8 * rs, white: 0.78, a: 0.1 + 0.22 * depth });
+    dots.push({
+      x: px,
+      y: py,
+      z,
+      r: 0.8 * rs,
+      white: 0.78,
+      a: 0.1 + 0.22 * depth,
+    });
   }
 
   const strandN = o.strandN ?? 52;
@@ -32,9 +39,14 @@ export const frameBraid: ModeFrame = (size, t, o) => {
       const endFade = Math.min(1, (1 - Math.abs(u)) / 0.1);
       const a = u * Math.PI * turns + phase;
       // radial breathing: strands trade places — the over/under of a plait
-      const weave = 1 + 0.075 * Math.sin(u * Math.PI * turns * 2 + phase * 2 + t * 0.8);
+      const weave =
+        1 + 0.075 * Math.sin(u * Math.PI * turns * 2 + phase * 2 + t * 0.8);
       const rr = surf * R * weave;
-      const [px, py, zr] = pt(Math.cos(a) * rr, u * R * weave, Math.sin(a) * rr);
+      const [px, py, zr] = pt(
+        Math.cos(a) * rr,
+        u * R * weave,
+        Math.sin(a) * rr,
+      );
       const depth = (zr / R + 1) / 2;
       dots.push({
         x: px,
@@ -42,7 +54,7 @@ export const frameBraid: ModeFrame = (size, t, o) => {
         z: zr,
         r: ((o.rBase ?? 1.2) + (o.rDepth ?? 1.8) * depth) * rs,
         white: 0.55 - 0.45 * depth,
-        a: endFade * (0.45 + 0.55 * depth)
+        a: endFade * (0.45 + 0.55 * depth),
       });
     }
   }

@@ -1,4 +1,4 @@
-import type { Silhouette, EyeCfg, Pose, StateId, StateDef } from './bot-types';
+import type { Silhouette, EyeCfg, Pose, StateId, StateDef } from "./bot-types";
 import {
   COMET_DOT,
   COMET_RIBBONS,
@@ -13,10 +13,16 @@ import {
   RINGS,
   SWOOSH,
   particles,
-} from './decor';
-import { EYE_H, EYE_SPLIT, EYE_W, REST_GAZE } from './face';
-import { TAU, clamp, easings } from './math';
-import { circle, hullOfCircles, polyPath, profileFromPolygon, silhouette } from './shape';
+} from "./decor";
+import { EYE_H, EYE_SPLIT, EYE_W, REST_GAZE } from "./face";
+import { TAU, clamp, easings } from "./math";
+import {
+  circle,
+  hullOfCircles,
+  polyPath,
+  profileFromPolygon,
+  silhouette,
+} from "./shape";
 const pair = (w: number, h: number): [EyeCfg, EyeCfg] => [
   { w, h, open: 1 },
   { w, h, open: 1 },
@@ -40,9 +46,17 @@ function base(over: Partial<Pose> = {}): Pose {
 }
 
 const BAR_UPRIGHT_CY = -0.1875;
-const BAR_UPRIGHT = profileFromPolygon(hullOfCircles(0, -0.505, 0.132, 0, 0.13, 0.075), 0, BAR_UPRIGHT_CY);
+const BAR_UPRIGHT = profileFromPolygon(
+  hullOfCircles(0, -0.505, 0.132, 0, 0.13, 0.075),
+  0,
+  BAR_UPRIGHT_CY,
+);
 
-const BAR_ITALIC = profileFromPolygon(hullOfCircles(0, -0.2535, 0.1345, 0, 0.2535, 0.1345), 0, 0);
+const BAR_ITALIC = profileFromPolygon(
+  hullOfCircles(0, -0.2535, 0.1345, 0, 0.2535, 0.1345),
+  0,
+  0,
+);
 const barUpright = (pose: Partial<Silhouette> = {}): Silhouette => ({
   radii: [...BAR_UPRIGHT],
   rot: 0,
@@ -66,7 +80,7 @@ const TEAR = polyPath(hullOfCircles(0, 0, 0.118, 0, 0.172, 0.012));
 
 const TRI_ORBIT = 0.213;
 function spinningTriangle(rot: number): Silhouette {
-  return silhouette('triangle', {
+  return silhouette("triangle", {
     rot,
     cx: -TRI_ORBIT * Math.sin(rot),
     cy: TRI_ORBIT * Math.cos(rot),
@@ -80,7 +94,7 @@ function dotPulse(t: number, index: number): number {
 }
 export const STATES: StateDef[] = [
   {
-    id: 'idle',
+    id: "idle",
     duration: 2.4,
     morph: 0.45,
     blinkIn: false,
@@ -89,7 +103,7 @@ export const STATES: StateDef[] = [
     pose: () => base(),
   },
   {
-    id: 'thinking',
+    id: "thinking",
     duration: 2.6,
     morph: 0.4,
     baseFace: false,
@@ -117,7 +131,7 @@ export const STATES: StateDef[] = [
     },
   },
   {
-    id: 'wink',
+    id: "wink",
     duration: 1.6,
     morph: 0.3,
     blinkIn: true,
@@ -136,7 +150,7 @@ export const STATES: StateDef[] = [
       }),
   },
   {
-    id: 'wide',
+    id: "wide",
     duration: 1.8,
     morph: 0.55,
     blinkIn: true,
@@ -150,7 +164,7 @@ export const STATES: StateDef[] = [
       }),
   },
   {
-    id: 'alert',
+    id: "alert",
     duration: 2.4,
     // le "!" revient en place a 1.6 + 0.4
     minDuration: 2,
@@ -185,7 +199,7 @@ export const STATES: StateDef[] = [
     },
   },
   {
-    id: 'notify',
+    id: "notify",
     duration: 2.2,
     morph: 0.5,
     blinkIn: true,
@@ -212,7 +226,7 @@ export const STATES: StateDef[] = [
     },
   },
   {
-    id: 'exclaim',
+    id: "exclaim",
     duration: 2,
     morph: 0.45,
     baseFace: false,
@@ -226,7 +240,7 @@ export const STATES: StateDef[] = [
       }),
   },
   {
-    id: 'sleep',
+    id: "sleep",
     duration: 2.4,
     morph: 0.5,
     baseFace: false,
@@ -240,7 +254,7 @@ export const STATES: StateDef[] = [
       }),
   },
   {
-    id: 'egg',
+    id: "egg",
     duration: 1.8,
     morph: 0.4,
     baseFace: false,
@@ -248,7 +262,7 @@ export const STATES: StateDef[] = [
     blinkIn: true,
     pose: () =>
       base({
-        sil: silhouette('egg'),
+        sil: silhouette("egg"),
         gaze: { yaw: 19.97, pitch: 26.01, roll: -17.1 },
         // les yeux se resserrent comme le corps
         split: 11.07,
@@ -256,7 +270,7 @@ export const STATES: StateDef[] = [
       }),
   },
   {
-    id: 'hexagon',
+    id: "hexagon",
     duration: 1.6,
     morph: 0.4,
     baseFace: false,
@@ -264,14 +278,14 @@ export const STATES: StateDef[] = [
     blinkIn: true,
     pose: () =>
       base({
-        sil: silhouette('hexagon'),
+        sil: silhouette("hexagon"),
         gaze: { yaw: 23.11, pitch: 24.42, roll: -13.3 },
         split: 13.37,
         eyes: pair(0.177, 0.411),
       }),
   },
   {
-    id: 'play',
+    id: "play",
     duration: 2,
     morph: 0.5,
     baseFace: false,
@@ -296,7 +310,7 @@ export const STATES: StateDef[] = [
     },
   },
   {
-    id: 'orbit',
+    id: "orbit",
     duration: 3.4,
     // le corps a fini de se relacher du triangle vers la boule a 1.6 + 0.9
     minDuration: 2.5,
@@ -341,7 +355,7 @@ export const STATES: StateDef[] = [
     },
   },
   {
-    id: 'swirl',
+    id: "swirl",
     // un peu plus que le tour du regard (`TURN_TIME`, 1,1 s) : les yeux doivent
     // etre poses a gauche avant que les anneaux ne s'effacent
     duration: 1.3,
@@ -366,7 +380,7 @@ export const STATES: StateDef[] = [
       }),
   },
   {
-    id: 'burst',
+    id: "burst",
     duration: 2.6,
     // le corps est recompose a 1.7 + 0.7
     minDuration: 2.4,
@@ -387,7 +401,7 @@ export const STATES: StateDef[] = [
     },
   },
   {
-    id: 'comet',
+    id: "comet",
     duration: 2.4,
     // le point se recompose a 1.85 + 0.6 = 2.45, soit 0.05 s apres la coupe de
     // la video : ce reliquat se termine pendant le fondu suivant, comme dans la
@@ -398,7 +412,8 @@ export const STATES: StateDef[] = [
     baseBody: false,
     blinkIn: false,
     pose: (t) => {
-      const collapse = 1 - (1 - COMET_DOT) * easings.easeOutQuint(clamp(t / 0.55));
+      const collapse =
+        1 - (1 - COMET_DOT) * easings.easeOutQuint(clamp(t / 0.55));
       const regrow = easings.easeOutQuint(clamp((t - 1.85) / 0.6));
       const fade = clamp((t - 0.15) / 0.25) * clamp((1.95 - t) / 0.3);
       return base({
@@ -437,19 +452,19 @@ export const POSES: Record<StateId, number> = {
   comet: 1.15,
 };
 export const SEQUENCE: StateId[] = [
-  'idle',
-  'thinking',
-  'wink',
-  'wide',
-  'alert',
-  'notify',
-  'exclaim',
-  'sleep',
-  'egg',
-  'hexagon',
-  'play',
-  'orbit',
-  'swirl',
-  'burst',
-  'comet',
+  "idle",
+  "thinking",
+  "wink",
+  "wide",
+  "alert",
+  "notify",
+  "exclaim",
+  "sleep",
+  "egg",
+  "hexagon",
+  "play",
+  "orbit",
+  "swirl",
+  "burst",
+  "comet",
 ];

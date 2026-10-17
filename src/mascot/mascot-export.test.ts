@@ -2,10 +2,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { downloadBlob, mascotPng, serializeMascot } from "./mascot-export";
 
 describe("mascot exports", () => {
+  let revokeObjectURL: ReturnType<typeof vi.fn>;
   beforeEach(() => {
+    revokeObjectURL = vi.fn();
     vi.stubGlobal("URL", {
       createObjectURL: vi.fn(() => "blob:mascot"),
-      revokeObjectURL: vi.fn(),
+      revokeObjectURL,
     });
   });
   afterEach(() => {
@@ -51,9 +53,9 @@ describe("mascot exports", () => {
       });
     downloadBlob(new Blob(["svg"]), "mascot.svg");
     expect(click).toHaveBeenCalledOnce();
-    expect(URL.revokeObjectURL).not.toHaveBeenCalled();
+    expect(revokeObjectURL).not.toHaveBeenCalled();
     vi.advanceTimersByTime(1000);
-    expect(URL.revokeObjectURL).toHaveBeenCalledWith("blob:mascot");
+    expect(revokeObjectURL).toHaveBeenCalledWith("blob:mascot");
   });
   it("also releases the URL if the download fails", () => {
     vi.useFakeTimers();
@@ -64,7 +66,7 @@ describe("mascot exports", () => {
       "download blocked",
     );
     vi.advanceTimersByTime(1000);
-    expect(URL.revokeObjectURL).toHaveBeenCalledWith("blob:mascot");
+    expect(revokeObjectURL).toHaveBeenCalledWith("blob:mascot");
   });
   const image = (success: boolean) => {
     vi.stubGlobal(
@@ -93,18 +95,18 @@ describe("mascot exports", () => {
     );
     expect((await mascotPng(serializeMascot(svg()))).type).toBe("image/png");
     expect(draw).toHaveBeenCalledOnce();
-    expect(URL.revokeObjectURL).toHaveBeenCalledOnce();
+    expect(revokeObjectURL).toHaveBeenCalledOnce();
   });
   it("reports decoding failures and still revokes the URL", async () => {
     image(false);
     await expect(mascotPng("broken")).rejects.toThrow("convertir");
-    expect(URL.revokeObjectURL).toHaveBeenCalledOnce();
+    expect(revokeObjectURL).toHaveBeenCalledOnce();
   });
   it("reports an unavailable canvas and releases the URL", async () => {
     image(true);
     vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue(null);
     await expect(mascotPng("svg")).rejects.toThrow("navigateur");
-    expect(URL.revokeObjectURL).toHaveBeenCalledOnce();
+    expect(revokeObjectURL).toHaveBeenCalledOnce();
   });
   it("reports a failed PNG encoder and releases the URL", async () => {
     image(true);
@@ -115,6 +117,6 @@ describe("mascot exports", () => {
       (callback) => callback(null),
     );
     await expect(mascotPng("svg")).rejects.toThrow("échoué");
-    expect(URL.revokeObjectURL).toHaveBeenCalledOnce();
+    expect(revokeObjectURL).toHaveBeenCalledOnce();
   });
 });

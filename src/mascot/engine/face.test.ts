@@ -1,6 +1,6 @@
-import type { HeadGaze } from './bot-types';
-import { describe, expect, it } from 'vitest';
-import { EYE_H, EYE_SPLIT, EYE_W, REST_GAZE, eyePoses } from './face';
+import type { HeadGaze } from "./bot-types";
+import { describe, expect, it } from "vitest";
+import { EYE_H, EYE_SPLIT, EYE_W, REST_GAZE, eyePoses } from "./face";
 
 const MESURES: Array<{
   nom: string;
@@ -16,7 +16,7 @@ const MESURES: Array<{
   }>;
 }> = [
   {
-    nom: 'repos',
+    nom: "repos",
     gaze: REST_GAZE,
     split: EYE_SPLIT,
     w: EYE_W,
@@ -27,7 +27,7 @@ const MESURES: Array<{
     ],
   },
   {
-    nom: 'yeux ecarquilles',
+    nom: "yeux ecarquilles",
     gaze: { yaw: 6.92, pitch: -21.96, roll: 11.6 },
     split: 18.43,
     w: 0.356,
@@ -38,7 +38,7 @@ const MESURES: Array<{
     ],
   },
   {
-    nom: 'notification',
+    nom: "notification",
     gaze: { yaw: -21.94, pitch: -5.82, roll: -12.2 },
     split: 18.89,
     w: 0.505,
@@ -49,9 +49,11 @@ const MESURES: Array<{
     ],
   },
 ];
-const court = (e: ReturnType<typeof eyePoses>[number], w: number) => Math.hypot(e.a, e.b) * w;
-const long = (e: ReturnType<typeof eyePoses>[number], h: number) => Math.hypot(e.c, e.d) * h;
-describe('yeux poses sur une sphere', () => {
+const court = (e: ReturnType<typeof eyePoses>[number], w: number) =>
+  Math.hypot(e.a, e.b) * w;
+const long = (e: ReturnType<typeof eyePoses>[number], h: number) =>
+  Math.hypot(e.c, e.d) * h;
+describe("yeux poses sur une sphere", () => {
   for (const m of MESURES) {
     it(`reproduit la pose "${m.nom}" mesuree sur la video`, () => {
       const poses = eyePoses(m.gaze, 1, m.split);
@@ -66,7 +68,7 @@ describe('yeux poses sur une sphere', () => {
       }
     });
   }
-  it('comprime l oeil exactement du facteur de profondeur de la sphere', () => {
+  it("comprime l oeil exactement du facteur de profondeur de la sphere", () => {
     // Invariant exact : le determinant du repere tangent projete vaut z. C'est
     // lui qui fait que l'aire de l'oeil suit la courbure (mesure : 0.663).
     for (const e of eyePoses(REST_GAZE, 1)) {
@@ -77,18 +79,22 @@ describe('yeux poses sur une sphere', () => {
     // mesure video de la largeur : 0.120 / 0.178 = 0.674
     expect(court(loin, EYE_W) / court(proche, EYE_W)).toBeCloseTo(0.674, 1);
   });
-  it('garde la meme longueur pour les deux yeux (axe tangentiel non deforme)', () => {
+  it("garde la meme longueur pour les deux yeux (axe tangentiel non deforme)", () => {
     const [a, b] = eyePoses(REST_GAZE, 1);
     expect(long(a, EYE_H)).toBeCloseTo(long(b, EYE_H), 3);
   });
-  it('conserve la separation angulaire de 31 degres quel que soit le regard', () => {
-    for (const gaze of [REST_GAZE, { yaw: -40, pitch: 10, roll: 5 }, { yaw: 0, pitch: 0, roll: 0 }]) {
+  it("conserve la separation angulaire de 31 degres quel que soit le regard", () => {
+    for (const gaze of [
+      REST_GAZE,
+      { yaw: -40, pitch: 10, roll: 5 },
+      { yaw: 0, pitch: 0, roll: 0 },
+    ]) {
       const [a, b] = eyePoses(gaze, 1);
       const dot = a.x * b.x + a.y * b.y + a.depth * b.depth;
       expect((Math.acos(dot) * 180) / Math.PI).toBeCloseTo(EYE_SPLIT * 2, 4);
     }
   });
-  it('fait passer un oeil derriere la sphere quand la tete tourne fort', () => {
+  it("fait passer un oeil derriere la sphere quand la tete tourne fort", () => {
     const [, loin] = eyePoses({ yaw: 80, pitch: 0, roll: 0 }, 1);
     expect(loin.depth).toBeLessThan(0);
   });

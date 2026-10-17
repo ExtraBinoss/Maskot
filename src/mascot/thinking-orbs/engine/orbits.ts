@@ -2,8 +2,8 @@
 // (the tuned preset runs coreless): just ghost paths and the particles
 // doing the work.
 
-import type { Dot, ModeFrame } from './types';
-import { finalizeFrame, hashD, makeProj, radiusScale } from './core';
+import type { Dot, ModeFrame } from "./types";
+import { finalizeFrame, hashD, makeProj, radiusScale } from "./core";
 
 export const frameOrbits: ModeFrame = (size, t, o) => {
   const cx = size / 2;
@@ -46,7 +46,7 @@ export const frameOrbits: ModeFrame = (size, t, o) => {
       const [px, py, z] = pt(
         (ux * Math.cos(a) + vx * Math.sin(a)) * ro,
         (uy * Math.cos(a) + vy * Math.sin(a)) * ro,
-        (uz * Math.cos(a) + vz * Math.sin(a)) * ro
+        (uz * Math.cos(a) + vz * Math.sin(a)) * ro,
       );
       const depth = (z / ro + 1) / 2;
       dots.push({
@@ -55,7 +55,7 @@ export const frameOrbits: ModeFrame = (size, t, o) => {
         z,
         r: (o.ghostR ?? 0.9) * rs,
         white: 0.72,
-        a: (o.ghostA ?? 0.5) * (0.4 + 0.6 * depth)
+        a: (o.ghostA ?? 0.5) * (0.4 + 0.6 * depth),
       });
     }
     // the particles doing the work
@@ -64,7 +64,7 @@ export const frameOrbits: ModeFrame = (size, t, o) => {
       const [px, py, z] = pt(
         (ux * Math.cos(a) + vx * Math.sin(a)) * ro,
         (uy * Math.cos(a) + vy * Math.sin(a)) * ro,
-        (uz * Math.cos(a) + vz * Math.sin(a)) * ro
+        (uz * Math.cos(a) + vz * Math.sin(a)) * ro,
       );
       const depth = (z / ro + 1) / 2;
       dots.push({
@@ -72,7 +72,7 @@ export const frameOrbits: ModeFrame = (size, t, o) => {
         y: py,
         z,
         r: ((o.partR ?? 1.2) + (o.partRDepth ?? 1.6) * depth) * rs,
-        white: 0.3 - 0.22 * depth
+        white: 0.3 - 0.22 * depth,
       });
     }
   }

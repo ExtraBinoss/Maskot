@@ -34,9 +34,11 @@ describe("React/Jotai mascot playback", () => {
   let visibility: () => void;
   let motion: (reduced: boolean) => void;
   let env: PlayerEnvironment;
+  let save: ReturnType<typeof vi.fn<PlayerEnvironment["save"]>>;
   const removeVisibility = vi.fn();
   const removeMotion = vi.fn();
   beforeEach(() => {
+    save = vi.fn<PlayerEnvironment["save"]>();
     callbacks = new Map();
     hidden = false;
     let nextId = 0;
@@ -57,7 +59,7 @@ describe("React/Jotai mascot playback", () => {
         motion = callback;
         return removeMotion;
       },
-      save: vi.fn(),
+      save,
     };
   });
   const setup = (reduced = false) => {
@@ -83,13 +85,13 @@ describe("React/Jotai mascot playback", () => {
       }).sample(0);
       expect(store.get(frameAtom).eyes).toEqual(expected.eyes);
       expect(store.get(lookAtom)).toBe(original);
-      expect(env.save).not.toHaveBeenCalled();
+      expect(save).not.toHaveBeenCalled();
     }
     const shown = store.get(frameAtom);
     store.set(commitEyeGeometryAtom, store.get(previewEyeGeometryAtom)!);
     expect(store.get(frameAtom).eyes).toEqual(shown.eyes);
     expect(store.get(previewEyeGeometryAtom)).toBeNull();
-    expect(env.save).toHaveBeenCalledTimes(1);
+    expect(save).toHaveBeenCalledTimes(1);
     expect(callbacks.size).toBe(0);
   });
   it("owns one loop, freezes on pause and resumes without a time jump", () => {
@@ -320,7 +322,8 @@ describe("React/Jotai mascot playback", () => {
   });
   it("follows a mouse, ignores touch and empty boxes, and releases gaze", () => {
     const { store, player } = setup();
-    const rect = { x: 0, y: 0, width: 400, height: 400 } as DOMRect;
+    const box = { x: 0, y: 0, width: 400, height: 400 };
+    const rect = box as DOMRect;
     const pointer = { clientX: 400, clientY: 0, pointerType: "mouse" };
     tick(0);
     tick(64);
@@ -334,8 +337,8 @@ describe("React/Jotai mascot playback", () => {
     const aimed = store.get(frameAtom);
     expect(aimed).not.toEqual(before);
     player.aim({ ...pointer, pointerType: "touch" }, rect);
-    player.aim(pointer, { ...rect, width: 0 });
-    player.aim(pointer, { ...rect, height: 0 });
+    player.aim(pointer, { ...box, width: 0 } as DOMRect);
+    player.aim(pointer, { ...box, height: 0 } as DOMRect);
     player.release();
     tick(192);
     expect(store.get(frameAtom).bodyPath).not.toMatch(/NaN|Infinity/);
@@ -346,9 +349,7 @@ describe("React/Jotai mascot playback", () => {
   it("saves presets on edits, reports storage errors and unsubscribes", () => {
     const { store, unmount } = setup();
     store.set(lookAtom, { ...store.get(lookAtom), color: "#abcdef" });
-    expect(env.save).toHaveBeenCalledWith(
-      JSON.stringify(store.get(presetAtom)),
-    );
+    expect(save).toHaveBeenCalledWith(JSON.stringify(store.get(presetAtom)));
     env.save = () => {
       throw new Error("quota");
     };
@@ -369,13 +370,13 @@ describe("React/Jotai mascot playback", () => {
     for (const color of ["#123456", "#abcdef", "#fedcba"])
       store.set(previewColorAtom, color);
     expect(store.get(lookAtom)).toBe(look);
-    expect(env.save).not.toHaveBeenCalled();
+    expect(save).not.toHaveBeenCalled();
     expect(callbacks.size).toBe(0);
     store.set(commitColorAtom, "#fedcba");
     expect(store.get(lookAtom).color).toBe("#fedcba");
     expect(store.get(paintAtom).color).toBe("#fedcba");
     expect(store.get(previewColorAtom)).toBeNull();
-    expect(env.save).toHaveBeenCalledTimes(1);
+    expect(save).toHaveBeenCalledTimes(1);
     expect(store.get(frameAtom)).toBe(frame);
     expect(sample).not.toHaveBeenCalled();
     expect(geometry).not.toHaveBeenCalled();

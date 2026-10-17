@@ -6,8 +6,8 @@
 // every instant of the morph, holds and transitions alike. Plain
 // circle fills only: no canvas/SVG filters, fully cross-browser.
 
-import type { Dot, ModeFrame } from './types';
-import { finalizeFrame } from './core';
+import type { Dot, ModeFrame } from "./types";
+import { finalizeFrame } from "./core";
 
 type Path = (f: number) => [number, number];
 
@@ -47,7 +47,7 @@ const CIRCLE: Path = (f) => {
 const TRIANGLE = polyPath([
   [0.0, -0.26],
   [0.24, 0.16],
-  [-0.24, 0.16]
+  [-0.24, 0.16],
 ]);
 // 5-vertex walk so the path STARTS at top-centre like the other shapes
 const SQUARE = polyPath([
@@ -55,7 +55,7 @@ const SQUARE = polyPath([
   [0.2, -0.2],
   [0.2, 0.2],
   [-0.2, 0.2],
-  [-0.2, -0.2]
+  [-0.2, -0.2],
 ]);
 const CYCLE: Path[] = [CIRCLE, TRIANGLE, SQUARE];
 
@@ -93,7 +93,10 @@ export const frameMorph: ModeFrame = (size, t, o) => {
     const f = i / M;
     const a = pA(f);
     const b = pB(f);
-    pts.push([(a[0] + (b[0] - a[0]) * m) * sprd, (a[1] + (b[1] - a[1]) * m) * sprd]);
+    pts.push([
+      (a[0] + (b[0] - a[0]) * m) * sprd,
+      (a[1] + (b[1] - a[1]) * m) * sprd,
+    ]);
   }
   const L: number[] = [];
   let total = 0;
@@ -131,7 +134,7 @@ export const frameMorph: ModeFrame = (size, t, o) => {
       y: c2 + y * size,
       z: 0,
       r: Math.max(0.35, re * size),
-      white: 0.1
+      white: 0.1,
     });
   }
   return finalizeFrame(dots, [], o.rMin);

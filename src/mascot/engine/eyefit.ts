@@ -1,11 +1,20 @@
-import type { BotExpression, Visage, Empreinte, Epreuve, Point, Pose, StateId, StateDef } from './bot-types';
+import type {
+  BotExpression,
+  Visage,
+  Empreinte,
+  Epreuve,
+  Point,
+  Pose,
+  StateId,
+  StateDef,
+} from "./bot-types";
 
-import { EXPRESSIONS } from './expressions';
-import { eyePoses } from './face';
-import { radiusAtAngle, toPoints } from './shape';
-import { SHAPES } from './skins';
-import { STATES } from './states';
-import EYE_FIT_DATA from './eye-fit-data';
+import { EXPRESSIONS } from "./expressions";
+import { eyePoses } from "./face";
+import { radiusAtAngle, toPoints } from "./shape";
+import { SHAPES } from "./skins";
+import { STATES } from "./states";
+import EYE_FIT_DATA from "./eye-fit-data";
 
 const R = 100;
 
@@ -15,7 +24,11 @@ const DERIVE_PITCH = 4.2 + 1.3;
 const DERIVE_X = 0.006;
 const DERIVE_Y = 0.007;
 
-function empreintes(visage: Visage, sil: Pose['sil'], radii: number[]): Empreinte[] {
+function empreintes(
+  visage: Visage,
+  sil: Pose["sil"],
+  radii: number[],
+): Empreinte[] {
   const out: Empreinte[] = [];
   const poses = eyePoses(visage.gaze, R, visage.split);
   for (let i = 0; i < 2; i++) {
@@ -49,7 +62,13 @@ function empreintes(visage: Visage, sil: Pose['sil'], radii: number[]): Empreint
   return out;
 }
 
-function approche(pts: Point[], x0: number, y0: number, x1: number, y1: number) {
+function approche(
+  pts: Point[],
+  x0: number,
+  y0: number,
+  x1: number,
+  y1: number,
+) {
   const sx = x1 - x0;
   const sy = y1 - y0;
   const len2 = sx * sx + sy * sy;
@@ -85,7 +104,9 @@ function pire(pts: Point[], emps: Empreinte[], tx: number, ty: number) {
     const a = approche(pts, x - e.ax, y - e.ay, x + e.ax, y + e.ay);
     // fonction d'appui de l'ellipse dans la direction de l'approche
     const [m0, m1, m2, m3] = e.m;
-    const rayon = e.r * Math.hypot(m0 * a.ux + m1 * a.uy, m2 * a.ux + m3 * a.uy) + FLOTTEMENT;
+    const rayon =
+      e.r * Math.hypot(m0 * a.ux + m1 * a.uy, m2 * a.ux + m3 * a.uy) +
+      FLOTTEMENT;
     if (a.d - rayon < marge) {
       marge = a.d - rayon;
       ux = a.ux;
@@ -106,7 +127,8 @@ function resous(epreuves: Epreuve[]): {
 
   const marge = (tx: number, ty: number) => {
     let m = Infinity;
-    for (const ep of epreuves) m = Math.min(m, pire(ep.contour, ep.empreintes, tx, ty).marge);
+    for (const ep of epreuves)
+      m = Math.min(m, pire(ep.contour, ep.empreintes, tx, ty).marge);
     return m;
   };
   // Marge exigee : la plus serree que le profil d'origine tolere, sur toutes les
@@ -186,14 +208,28 @@ function resous(epreuves: Epreuve[]): {
   return { x: +(x / R).toFixed(6), y: +(y / R).toFixed(6) };
 }
 
-function visageDe(def: StateDef, pose: Pose, expr: BotExpression | null): Visage {
-  if (def.baseFace && expr) return { gaze: expr.gaze, split: expr.split, eyes: expr.eyes };
+function visageDe(
+  def: StateDef,
+  pose: Pose,
+  expr: BotExpression | null,
+): Visage {
+  if (def.baseFace && expr)
+    return { gaze: expr.gaze, split: expr.split, eyes: expr.eyes };
   return { gaze: pose.gaze, split: pose.split, eyes: pose.eyes };
 }
 
 function dates(def: StateDef): number[] {
   const signature = (p: Pose) =>
-    JSON.stringify([p.gaze, p.split, p.eyes, p.sil.rot, p.sil.cx, p.sil.cy, p.sil.sx, p.sil.sy]);
+    JSON.stringify([
+      p.gaze,
+      p.split,
+      p.eyes,
+      p.sil.rot,
+      p.sil.cx,
+      p.sil.cy,
+      p.sil.sx,
+      p.sil.sy,
+    ]);
   if (signature(def.pose(0)) === signature(def.pose(def.duration))) return [0];
   const n = 3;
   return Array.from({ length: n }, (_, i) => (i / (n - 1)) * def.duration);
@@ -242,7 +278,7 @@ function decalagePour(
 
 const NUL = { x: 0, y: 0 } as const;
 
-const clef = (state: StateId, expr: string | null) => `${state}|${expr ?? ''}`;
+const clef = (state: StateId, expr: string | null) => `${state}|${expr ?? ""}`;
 
 function batir(): Map<
   number[],
@@ -267,7 +303,10 @@ function batir(): Map<
         if (!def.baseBody) continue;
         const expressions = def.baseFace ? [null, ...EXPRESSIONS] : [null];
         for (const expr of expressions) {
-          par.set(clef(def.id, expr?.id ?? null), decalagePour(def, forme.radii, expr));
+          par.set(
+            clef(def.id, expr?.id ?? null),
+            decalagePour(def, forme.radii, expr),
+          );
         }
       }
       return [forme.radii, par];
@@ -277,7 +316,12 @@ function batir(): Map<
 // Maskot precomputes the original solver's results at build time. Keep the
 // solver as a fallback when adding catalogue entries before regenerating data.
 const PRECOMPUTED: Record<string, Record<string, Point>> = EYE_FIT_DATA;
-const DECALAGES = new Map(SHAPES.map((shape) => [shape.radii, new Map<string, Point>(Object.entries(PRECOMPUTED[shape.id] ?? {}))]));
+const DECALAGES = new Map(
+  SHAPES.map((shape) => [
+    shape.radii,
+    new Map<string, Point>(Object.entries(PRECOMPUTED[shape.id] ?? {})),
+  ]),
+);
 
 export function decalageDesYeux(
   radii: number[] | null,
@@ -292,7 +336,9 @@ export function decalageDesYeux(
   if (!par) return NUL;
   const def = STATES.find((candidate) => candidate.id === state);
   if (!def?.baseBody) return NUL;
-  const expression = def.baseFace ? (EXPRESSIONS.find((candidate) => candidate.id === expr) ?? null) : null;
+  const expression = def.baseFace
+    ? (EXPRESSIONS.find((candidate) => candidate.id === expr) ?? null)
+    : null;
   const key = clef(state, expression?.id ?? null);
   let correction = par.get(key);
   if (!correction) {

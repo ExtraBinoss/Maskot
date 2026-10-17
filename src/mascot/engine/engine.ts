@@ -1,5 +1,7 @@
 import type {
   RenderedEye,
+  EyeGeometry,
+  EyeStyle,
   BotFrame,
   Look,
   BotExpression,
@@ -16,7 +18,6 @@ import { blinkScale, eyePoses, liveliness } from "./face";
 import { clamp, easings, lerp, r2 } from "./math";
 import { blend, closedPath, radiusAtAngle, toPoints } from "./shape";
 import { blendEyeStyles, eyeShapePath, type EyeStyleMix } from "./eye-shape";
-import type { EyeGeometry, EyeStyle } from "./bot-types";
 import { DEFAULT_EYE_GEOMETRY, validateEyeGeometry } from "./eye-geometry";
 import { STATE_BY_ID } from "./states";
 const NO_LOOK: Look = { yaw: 0, pitch: 0, mix: 0, spin: 0, wander: 1 };
