@@ -1,0 +1,237 @@
+// Playback adapted from Beam's useMascotPlayer.ts (MPL-2.0).
+import { EXPRESSION_BY_ID } from "./engine/expressions";
+import { SHAPE_BY_ID } from "./engine/skins";
+import { clamp } from "./engine/math";
+import { SEQUENCE } from "./engine/states";
+import type { StateId } from "./engine/bot-types";
+import { createMascotEngine, timelinePosition } from "./mascot-catalog";
+import {
+  activeStepAtom,
+  boardAtom,
+  durationAtom,
+  elapsedAtom,
+  followAtom,
+  frameAtom,
+  lookAtom,
+  playingAtom,
+  presetAtom,
+  reducedMotionAtom,
+  sequencingAtom,
+  speedAtom,
+  stateAtom,
+  statusAtom,
+  timelineAtom,
+  PRESET_KEY,
+  type LabStore,
+} from "../state/lab";
+
+export interface PlayerEnvironment {
+  requestFrame(callback: FrameRequestCallback): number;
+  cancelFrame(id: number): void;
+  isHidden(): boolean;
+  onVisibility(callback: () => void): () => void;
+  onMotion(callback: (reduced: boolean) => void): () => void;
+  save(text: string): void;
+}
+
+export function browserEnvironment(): PlayerEnvironment {
+  return {
+    requestFrame: (callback) => requestAnimationFrame(callback),
+    cancelFrame: (id) => cancelAnimationFrame(id),
+    isHidden: () => document.hidden,
+    onVisibility: (callback) => {
+      document.addEventListener("visibilitychange", callback);
+      return () => document.removeEventListener("visibilitychange", callback);
+    },
+    onMotion: (callback) => {
+      const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+      const listener = (event: MediaQueryListEvent) => callback(event.matches);
+      media.addEventListener("change", listener);
+      return () => media.removeEventListener("change", listener);
+    },
+    save: (text) => localStorage.setItem(PRESET_KEY, text),
+  };
+}
+
+export function createMascotPlayer(store: LabStore, env: PlayerEnvironment) {
+  let engine = createMascotEngine(store.get(lookAtom));
+  let clock = 0;
+  let sequenceStart = 0;
+  let last: number | null = null;
+  let raf: number | null = null;
+  let mounted = false;
+  const draw = () => store.set(frameAtom, engine.sample(clock));
+  const choose = (id: StateId) => {
+    store.set(sequencingAtom, false);
+    store.set(stateAtom, id);
+    if (store.get(playingAtom)) engine.setState(id, clock);
+    else {
+      engine = createMascotEngine(store.get(lookAtom), id);
+      clock = 0;
+    }
+    draw();
+  };
+  const seek = (time: number) => {
+    if (!Number.isFinite(time)) return;
+    const steps = store.get(timelineAtom);
+    const at = clamp(time, 0, store.get(durationAtom));
+    const position = timelinePosition(steps, at);
+    engine = createMascotEngine(store.get(lookAtom), steps[0].state);
+    let start = 0;
+    for (let i = 1; i <= position.index; i++) {
+      start += steps[i - 1].duration;
+      engine.setState(steps[i].state, start);
+    }
+    clock = at;
+    sequenceStart = 0;
+    store.set(elapsedAtom, at);
+    store.set(activeStepAtom, position.index);
+    store.set(stateAtom, steps[position.index].state);
+    store.set(sequencingAtom, true);
+    draw();
+  };
+  const tick = (ms: number) => {
+    raf = null;
+    if (!mounted || !store.get(playingAtom) || env.isHidden()) return;
+    const delta =
+      last === null
+        ? 0
+        : Math.max(0, Math.min((ms - last) / 1000, 0.064)) *
+          store.get(speedAtom);
+    last = ms;
+    clock += delta;
+    if (store.get(sequencingAtom)) {
+      const steps = store.get(timelineAtom);
+      const duration = store.get(durationAtom);
+      if (clock - sequenceStart >= duration) {
+        sequenceStart += duration;
+        engine.setState(steps[0].state, sequenceStart);
+        store.set(activeStepAtom, 0);
+        store.set(stateAtom, steps[0].state);
+      }
+      const elapsed = clock - sequenceStart;
+      const position = timelinePosition(steps, elapsed);
+      if (position.index !== store.get(activeStepAtom)) {
+        store.set(activeStepAtom, position.index);
+        store.set(stateAtom, steps[position.index].state);
+        engine.setState(
+          steps[position.index].state,
+          sequenceStart + position.start,
+        );
+      }
+      store.set(elapsedAtom, elapsed);
+    }
+    draw();
+    raf = env.requestFrame(tick);
+  };
+  const synchronize = () => {
+    if (raf !== null) env.cancelFrame(raf);
+    raf = null;
+    last = null;
+    if (mounted && store.get(playingAtom) && !env.isHidden())
+      raf = env.requestFrame(tick);
+  };
+  const release = () => {
+    engine.setLook(null, store.get(playingAtom) ? clock : clock - 1);
+    draw();
+  };
+  const applyLook = () => {
+    const look = store.get(lookAtom);
+    const at = store.get(playingAtom) ? clock : clock - 1;
+    engine.setShape(SHAPE_BY_ID.get(look.shape)!.radii, at);
+    engine.setExpression(EXPRESSION_BY_ID.get(look.expression)!, at);
+    engine.setEyes(look.eyes, at);
+    engine.setEyeGeometry(look.eyeGeometry);
+    draw();
+  };
+  const mount = () => {
+    if (mounted) throw new Error("Le lecteur est déjà monté.");
+    mounted = true;
+    const cleanups = [
+      store.sub(playingAtom, synchronize),
+      store.sub(lookAtom, applyLook),
+      store.sub(timelineAtom, () => {
+        if (store.get(sequencingAtom))
+          seek(Math.min(store.get(elapsedAtom), store.get(durationAtom)));
+      }),
+      store.sub(followAtom, release),
+      store.sub(boardAtom, () => {
+        if (store.get(boardAtom)) store.set(playingAtom, false);
+      }),
+      store.sub(presetAtom, () => {
+        try {
+          env.save(JSON.stringify(store.get(presetAtom)));
+        } catch {
+          store.set(
+            statusAtom,
+            "Le navigateur ne permet pas de sauvegarder. Tu peux exporter tes réglages en JSON.",
+          );
+        }
+      }),
+      env.onVisibility(synchronize),
+      env.onMotion((reduced) => {
+        store.set(reducedMotionAtom, reduced);
+        if (reduced) store.set(playingAtom, false);
+      }),
+    ];
+    applyLook();
+    synchronize();
+    return () => {
+      mounted = false;
+      if (raf !== null) env.cancelFrame(raf);
+      raf = null;
+      last = null;
+      cleanups.forEach((cleanup) => cleanup());
+    };
+  };
+  return {
+    mount,
+    choose,
+    seek,
+    release,
+    next: (direction: number) => {
+      const index = SEQUENCE.indexOf(store.get(stateAtom));
+      choose(SEQUENCE[(index + direction + SEQUENCE.length) % SEQUENCE.length]);
+    },
+    playSequence: () => {
+      seek(0);
+      store.set(boardAtom, false);
+      store.set(playingAtom, true);
+    },
+    aim: (
+      event: { clientX: number; clientY: number; pointerType: string },
+      rect: DOMRect,
+    ) => {
+      if (
+        !store.get(followAtom) ||
+        !store.get(playingAtom) ||
+        event.pointerType === "touch" ||
+        !rect.width ||
+        !rect.height
+      )
+        return;
+      engine.setLook(
+        {
+          yaw:
+            clamp(
+              (event.clientX - rect.x - rect.width / 2) / (rect.width / 2),
+              -1,
+              1,
+            ) * 40,
+          pitch:
+            -clamp(
+              (event.clientY - rect.y - rect.height / 2) / (rect.height / 2),
+              -1,
+              1,
+            ) * 30,
+          mix: 1,
+          spin: 0,
+          wander: 0,
+        },
+        clock,
+      );
+    },
+  };
+}
+
+export type MascotPlayer = ReturnType<typeof createMascotPlayer>;

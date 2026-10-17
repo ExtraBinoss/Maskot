@@ -1,0 +1,14 @@
+node_modules/
+dist/
+.vite/
+.wrangler/
+.env
+.env.*
+.dev.vars
+.dev.vars.*
+!.env.example
+.DS_Store
+artifacts/
+*.local
+test-results/
+playwright-report/
