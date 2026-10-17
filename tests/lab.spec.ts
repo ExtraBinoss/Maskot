@@ -543,6 +543,13 @@ test("scrolls the complete eye and mood catalogs and persists the new styles", a
   await expect(
     page.getByLabel("Silhouettes", { exact: true }).getByRole("button"),
   ).toHaveCount(32);
+  const shapes = page.getByLabel("Silhouettes", { exact: true });
+  await expect.poll(() => shapes.getByRole("img").count()).toBeGreaterThan(0);
+  expect(await shapes.getByRole("img").count()).toBeLessThan(32);
+  await shapes.getByRole("button", { name: "Vague", exact: true }).click();
+  await expect(
+    shapes.getByRole("button", { name: "Vague", exact: true }).getByRole("img"),
+  ).toBeVisible();
   const eyes = page.getByLabel("Styles des yeux", { exact: true });
   const moods = page.getByLabel("Expressions", { exact: true });
   await expect(eyes.getByRole("button")).toHaveCount(32);

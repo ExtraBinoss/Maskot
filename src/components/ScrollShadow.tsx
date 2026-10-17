@@ -27,7 +27,13 @@ export function ScrollShadow({
     };
   }, []);
   return (
-    <div ref={ref} className={s.scrollShadow} aria-label={label} tabIndex={0}>
+    <div
+      ref={ref}
+      data-preview-scroll
+      className={s.scrollShadow}
+      aria-label={label}
+      tabIndex={0}
+    >
       {children}
     </div>
   );

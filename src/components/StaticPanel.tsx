@@ -11,7 +11,7 @@ import {
 } from "../mascot/engine/eye-geometry";
 import type { EyeGeometry } from "../mascot/engine/bot-types";
 import { PALETTE, SHAPE_LABELS } from "../mascot/mascot-catalog";
-import { MascotThumbnail } from "./MascotThumbnail";
+import { VisibleMascotThumbnail } from "./VisibleMascotThumbnail";
 import { EyePreview } from "./EyePreview";
 import { Expressions } from "./Expressions";
 import { SurfacePicker } from "./SurfacePicker";
@@ -93,7 +93,10 @@ export default function StaticPanel() {
                 aria-pressed={look.shape === id}
                 onClick={() => setLook({ ...look, shape: id })}
               >
-                <MascotThumbnail look={{ ...look, shape: id }} size={47} />
+                <VisibleMascotThumbnail
+                  look={{ ...look, shape: id }}
+                  size={47}
+                />
                 <span>{SHAPE_LABELS[id]}</span>
               </button>
             ))}

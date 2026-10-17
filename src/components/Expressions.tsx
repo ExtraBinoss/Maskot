@@ -3,7 +3,7 @@ import { EXPRESSIONS } from "../mascot/engine/expressions";
 import { EXPRESSION_LABELS } from "../mascot/mascot-catalog";
 import { lookAtom } from "../state/lab";
 import { usePlayer } from "../mascot/PlayerProvider";
-import { MascotThumbnail } from "./MascotThumbnail";
+import { VisibleMascotThumbnail } from "./VisibleMascotThumbnail";
 import { ScrollShadow } from "./ScrollShadow";
 import s from "../styles/settings.module.css";
 
@@ -28,7 +28,10 @@ export function Expressions() {
                 player.choose("idle");
               }}
             >
-              <MascotThumbnail look={{ ...look, expression: id }} size={46} />
+              <VisibleMascotThumbnail
+                look={{ ...look, expression: id }}
+                size={46}
+              />
               <span>{EXPRESSION_LABELS[id]}</span>
             </button>
           ))}
