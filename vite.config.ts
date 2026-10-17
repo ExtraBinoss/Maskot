@@ -5,8 +5,8 @@ import babel from "@rolldown/plugin-babel";
 import { defineConfig } from "vite";
 
 export default defineConfig({
-  server: { port: 8000, strictPort: true },
-  preview: { port: 8000, strictPort: true },
+  server: { port: 8400, strictPort: true },
+  preview: { port: 8400, strictPort: true },
   plugins: [
     tailwindcss(),
     react(),

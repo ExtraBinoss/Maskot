@@ -1,6 +1,6 @@
 import { defineConfig } from "@playwright/test";
 
-// The application keeps strict port 8000. Browser checks use an isolated preview.
+// The application keeps strict port 8400. Browser checks use an isolated preview.
 const port = Number(
   process.env.MASKOT_TEST_PORT ?? process.env.MASCOTLAB_TEST_PORT ?? 8002,
 );
