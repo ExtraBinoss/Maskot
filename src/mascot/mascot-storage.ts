@@ -2,12 +2,11 @@ import { EXPRESSIONS } from "./engine/expressions";
 import { EYE_STYLES } from "./engine/eye-styles";
 import { SHAPES } from "./engine/skins";
 import { isFigure } from "./figures";
-import { SEQUENCE } from "./engine/states";
 import {
   DEFAULT_EYE_GEOMETRY,
   validateEyeGeometry,
 } from "./engine/eye-geometry";
-import { DEFAULT_LOOK, DEFAULT_TIMELINE } from "./mascot-catalog";
+import { DEFAULT_LOOK, DEFAULT_TIMELINE, MOTION_IDS } from "./mascot-catalog";
 import type { MascotLook, MascotPreset, MascotStep } from "./mascot-types";
 
 export const PRESET_KEY = "mascotlab.preset.v1";
@@ -49,7 +48,7 @@ export function parsePreset(text: string): MascotPreset {
       )
         return false;
       return (
-        SEQUENCE.includes(
+        MOTION_IDS.includes(
           step.state as MascotPreset["timeline"][number]["state"],
         ) &&
         typeof step.duration === "number" &&

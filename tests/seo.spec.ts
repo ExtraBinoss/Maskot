@@ -59,7 +59,9 @@ test("serves complete sharing metadata and useful content without JavaScript", a
   }
   const icon = await request.get("/favicon.svg");
   expect(await icon.text()).toContain('fill="#ff5a1f"');
-  expect(await icon.text()).toContain('<g fill="#fffaf3"><path');
+  expect(await icon.text()).toContain(
+    '<g fill="#fffaf3" clip-path="url(#body)"><path',
+  );
   await context.close();
 });
 

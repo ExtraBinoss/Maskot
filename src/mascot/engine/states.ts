@@ -449,6 +449,7 @@ export const SEQUENCE: StateId[] = [
   'hexagon',
   'play',
   'orbit',
+  'swirl',
   'burst',
   'comet',
 ];

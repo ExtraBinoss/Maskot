@@ -20,17 +20,21 @@ export const SYMBOLS = [
   { id: "symbol-cross", label: "Croix douce" },
   { id: "symbol-bolt", label: "Éclair" },
   { id: "symbol-check", label: "Validation" },
-  { id: "symbol-loading", label: "Chargement" },
+  { id: "symbol-loading", label: "Chargement", animated: true },
   { id: "symbol-ring", label: "Anneau" },
   { id: "symbol-crescent", label: "Croissant" },
   { id: "symbol-infinity", label: "Infini" },
-  { id: "symbol-dots", label: "Trois points" },
-  { id: "symbol-equalizer", label: "Égaliseur" },
-  { id: "symbol-wave", label: "Onde" },
+  { id: "symbol-dots", label: "Trois points", animated: true },
+  { id: "symbol-equalizer", label: "Égaliseur", animated: true },
+  { id: "symbol-wave", label: "Onde", animated: true },
   { id: "symbol-target", label: "Cible" },
-  { id: "symbol-atom", label: "Atome" },
+  { id: "symbol-atom", label: "Atome", animated: true },
   { id: "symbol-hourglass", label: "Sablier" },
 ] as const;
+export const ANIMATED_SYMBOLS = SYMBOLS.filter(
+  (symbol): symbol is Extract<(typeof SYMBOLS)[number], { animated: true }> =>
+    "animated" in symbol,
+);
 export const ORBS = [
   { id: "orb-working", label: "Orbe · Travail", state: "working" },
   { id: "orb-searching", label: "Orbe · Recherche", state: "searching" },

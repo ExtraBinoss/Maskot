@@ -13,10 +13,8 @@ import {
   playingAtom,
 } from "../state/lab";
 import { BeamySvg } from "../mascot/BeamySvg";
-import { STATE_LABELS } from "../mascot/mascot-catalog";
-import { SEQUENCE } from "../mascot/engine/states";
 import { usePlayer } from "../mascot/PlayerProvider";
-import { MascotThumbnail } from "./MascotThumbnail";
+import { MotionPicker } from "./MotionPicker";
 import s from "../styles/canvas.module.css";
 
 function LiveMascot({ svgRef }: { svgRef: RefObject<SVGSVGElement | null> }) {
@@ -45,24 +43,13 @@ function Board() {
   const player = usePlayer();
   return (
     <div className={s.board} aria-label={t("Planche des mouvements")}>
-      {SEQUENCE.map((state) => (
-        <button
-          key={state}
-          aria-label={t(STATE_LABELS[state])}
-          onClick={() => {
-            setBoard(false);
-            player.choose(state);
-          }}
-        >
-          <MascotThumbnail
-            look={look}
-            state={state}
-            portrait={false}
-            size={110}
-          />
-          <span>{t(STATE_LABELS[state])}</span>
-        </button>
-      ))}
+      <MotionPicker
+        look={look}
+        onSelect={(state) => {
+          setBoard(false);
+          player.choose(state);
+        }}
+      />
     </div>
   );
 }

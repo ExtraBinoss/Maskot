@@ -2,7 +2,7 @@ import { memo, useMemo } from "react";
 import { BeamySvg } from "../mascot/BeamySvg";
 import { createMascotEngine } from "../mascot/mascot-catalog";
 import type { MascotLook } from "../mascot/mascot-types";
-import type { StateId } from "../mascot/engine/bot-types";
+import type { MotionId } from "../mascot/motion-types";
 
 // Only geometry invalidates sampling. Color and blush reuse the cached frame.
 export const MascotThumbnail = memo(function MascotThumbnail({
@@ -13,7 +13,7 @@ export const MascotThumbnail = memo(function MascotThumbnail({
   morph = true,
 }: {
   look: MascotLook;
-  state?: StateId;
+  state?: MotionId;
   size?: number;
   portrait?: boolean;
   morph?: boolean;
@@ -43,6 +43,11 @@ export const MascotThumbnail = memo(function MascotThumbnail({
       blush={blush}
       size={size}
       portrait={portrait}
+      minDotRadius={
+        state.startsWith("orb-") || shape.startsWith("orb-")
+          ? ((portrait ? 232 : 316) / size) * 0.45
+          : 0
+      }
     />
   );
 });

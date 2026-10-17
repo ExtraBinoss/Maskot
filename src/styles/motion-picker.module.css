@@ -1,0 +1,50 @@
+.catalog {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.catalog h3 {
+  margin: 0 0 8px;
+  font: 500 12px var(--font-ui);
+  color: var(--muted-foreground);
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(var(--motion-columns, 4), minmax(0, 1fr));
+  gap: 4px;
+}
+.choice {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  height: auto;
+  min-width: 0;
+  gap: 3px;
+  padding: 4px 2px 8px;
+  border-radius: var(--radius);
+  color: var(--muted-foreground);
+  white-space: normal;
+}
+.choice:hover,
+.choice:focus-visible,
+.choice[aria-pressed="true"] {
+  background: var(--accent-soft);
+  color: var(--primary);
+}
+.preview {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: var(--motion-preview-size, 64px);
+}
+.preview > svg {
+  width: var(--motion-preview-size, 68px);
+  max-width: 100%;
+  height: auto;
+}
+.label {
+  display: var(--motion-label-display, block);
+  font: 400 10px/1.25 var(--font-ui);
+  text-align: center;
+  text-wrap: balance;
+}

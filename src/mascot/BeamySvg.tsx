@@ -16,6 +16,7 @@ interface BeamySvgProps {
   label?: string;
   portrait?: boolean;
   eyeColor?: string;
+  minDotRadius?: number;
   ref?: Ref<SVGSVGElement>;
 }
 
@@ -29,6 +30,7 @@ export function BeamySvg({
   label = "Mascotte Plinka",
   portrait = false,
   eyeColor,
+  minDotRadius = 0,
   ref,
 }: BeamySvgProps) {
   const Path = morph ? MorphPath : "path";
@@ -46,7 +48,7 @@ export function BeamySvg({
       const paths = buckets.get(opacity) ?? [];
       const x = Number(dot.x.toFixed(2)),
         y = Number(dot.y.toFixed(2)),
-        r = Number(dot.r.toFixed(2));
+        r = Number(Math.max(dot.r, minDotRadius).toFixed(2));
       paths.push(
         `M${x - r} ${y}a${r} ${r} 0 1 0 ${r * 2} 0a${r} ${r} 0 1 0 ${-r * 2} 0Z`,
       );
@@ -81,7 +83,7 @@ export function BeamySvg({
             opacity={dot.opacity}
             cx={dot.x}
             cy={dot.y}
-            r={dot.r}
+            r={dot.r > 0 ? Math.max(dot.r, minDotRadius) : 0}
           />
         );
       });

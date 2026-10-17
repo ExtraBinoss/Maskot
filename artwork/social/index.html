@@ -70,7 +70,6 @@
         height: 418px;
         left: 27px;
         top: 114px;
-        transform: rotate(-10deg);
         filter: drop-shadow(0 22px 18px rgb(255 90 31 / 8%));
       }
       .copy {
@@ -130,13 +129,12 @@
         font-size: 17px;
       }
       .url {
+        display: flex;
+        align-items: center;
+        gap: 10px;
         color: #2563eb;
         font-size: 20px;
         font-weight: 600;
-      }
-      .url span {
-        padding-left: 8px;
-        font-weight: 400;
       }
       .plinka {
         color: #606b81;
@@ -153,7 +151,7 @@
       <img
         class="hero"
         src="./assets/hero.svg"
-        alt="Orange mascot with capsule eyes"
+        alt="Orange Grok bot inspired mascot looking up"
       />
       <section class="copy">
         <h1>Maskot<span>.</span></h1>
@@ -173,7 +171,23 @@
         </p>
       </section>
       <footer>
-        <div class="url">maskot.plinka.eu<span>↗</span></div>
+        <div class="url">
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20M2 12h20" />
+          </svg>
+          maskot.plinka.eu
+        </div>
         <div>
           Free &amp; open source <span aria-hidden="true">·</span> by
           <span class="plinka">Plinka</span>

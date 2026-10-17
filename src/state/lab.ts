@@ -1,5 +1,6 @@
 import { atom, createStore } from "jotai";
-import type { StateId, EyeGeometry } from "../mascot/engine/bot-types";
+import type { EyeGeometry } from "../mascot/engine/bot-types";
+import type { MotionId } from "../mascot/motion-types";
 import type {
   MascotLook,
   MascotPreset,
@@ -99,7 +100,7 @@ export const redoTimelineAtom = atom(null, (get, set) => {
 export const durationAtom = atom((get) => timelineDuration(get(timelineAtom)));
 export const playingAtom = atom(true);
 export const sequencingAtom = atom(false);
-export const stateAtom = atom<StateId>("idle");
+export const stateAtom = atom<MotionId>("idle");
 export const speedAtom = atom(1);
 export const followAtom = atom(false);
 export const elapsedAtom = atom(0);

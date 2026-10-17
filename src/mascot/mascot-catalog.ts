@@ -3,6 +3,9 @@ import { EXPRESSION_BY_ID } from "./engine/expressions";
 import { RAYON } from "./engine/repere";
 import { DEFAULT_EYE_GEOMETRY } from "./engine/eye-geometry";
 import type { ExpressionId, ShapeId, StateId } from "./engine/bot-types";
+import { SEQUENCE } from "./engine/states";
+import { ANIMATED_SYMBOLS, ORBS } from "./figures";
+import type { MotionId, MotionGroup } from "./motion-types";
 import type { MascotLook, MascotStep } from "./mascot-types";
 
 export const DEFAULT_LOOK: MascotLook = {
@@ -36,6 +39,19 @@ export const STATE_LABELS: Record<StateId, string> = {
   comet: "Comète",
   swirl: "Tourbillon",
 };
+export const MOTION_GROUPS: readonly MotionGroup[] = [
+  {
+    label: "Mouvements classiques",
+    items: SEQUENCE.map((id) => ({ id, label: STATE_LABELS[id] })),
+  },
+  { label: "Thinking orbs", items: ORBS },
+  { label: "Symboles animés", items: ANIMATED_SYMBOLS },
+];
+export const MOTIONS = MOTION_GROUPS.flatMap(({ items }) => items);
+export const MOTION_IDS: MotionId[] = MOTIONS.map(({ id }) => id);
+export const MOTION_LABELS = Object.fromEntries(
+  MOTIONS.map(({ id, label }) => [id, label]),
+) as Record<MotionId, string>;
 export const SHAPE_LABELS: Record<ShapeId, string> = {
   cercle: "Bulle",
   galet: "Galet",
@@ -121,7 +137,7 @@ export const PALETTE = [
 
 export function createMascotEngine(
   look: MascotLook,
-  state: StateId = "idle",
+  state: MotionId = "idle",
 ): StudioEngine {
   const engine = new StudioEngine(
     RAYON,

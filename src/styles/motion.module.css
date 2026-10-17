@@ -24,41 +24,6 @@
   background: color-mix(in srgb, var(--foreground) 6%, transparent);
   color: var(--foreground);
 }
-.movements {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 6px;
-}
-.movement {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  min-width: 0;
-  padding: 3px 1px 7px;
-  border-radius: 12px;
-  color: var(--muted-foreground);
-  background: transparent;
-  border: 2px solid transparent;
-}
-.movement > svg {
-  width: 100%;
-  height: auto;
-  max-width: 68px;
-}
-.movement > span {
-  font-size: 11px;
-  line-height: 1.2;
-  text-align: center;
-}
-.movement:hover {
-  background: color-mix(in srgb, var(--foreground) 4%, transparent);
-  color: var(--foreground);
-}
-.movement[aria-pressed="true"] {
-  border-color: var(--primary);
-  color: var(--foreground);
-}
 .hint {
   font-size: 11px;
   line-height: 1.6;
@@ -330,50 +295,17 @@
   border-color: var(--primary);
 }
 .addPopover {
-  width: min(360px, calc(100vw - 32px));
-  max-height: min(440px, var(--available-height));
+  width: min(380px, calc(100vw - 32px));
+  max-height: min(520px, var(--available-height));
+  overflow: hidden;
+}
+.addScroll {
+  min-width: 0;
+  min-height: 0;
   overflow-y: auto;
   scrollbar-width: thin;
-  padding: 16px;
-  gap: 10px;
-  border: 1px solid var(--control-border);
-  border-radius: 18px;
-  background: color-mix(in srgb, var(--popover) 82%, transparent);
-  backdrop-filter: blur(24px);
-  box-shadow: var(--shadow-popover);
-}
-.addPopover [data-slot="popover-title"] {
-  font: 500 13px var(--font-sans);
-}
-.addGrid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 4px;
-}
-.addGrid button {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 3px;
-  min-width: 0;
-  padding: 5px 2px 8px;
-  border-radius: 10px;
-  background: transparent;
-  color: var(--muted-foreground);
-  transition:
-    background 120ms,
-    color 120ms;
-}
-.addGrid button:hover,
-.addGrid button:focus-visible {
-  background: var(--accent-soft);
-  color: var(--primary);
-}
-.addGrid span {
-  font-size: 10px;
-  text-align: center;
-  line-height: 1.2;
+  scrollbar-color: var(--border) transparent;
+  overscroll-behavior: contain;
 }
 .cursor {
   position: absolute;
@@ -596,16 +528,6 @@
     --inspector-top: 33dvh;
     --inspector-bottom: 276px;
   }
-  .movement > span {
-    font-size: 9px;
-  }
-  .movement {
-    gap: 0;
-    padding-bottom: 4px;
-  }
-  .movements {
-    gap: 3px;
-  }
   .hint {
     font-size: 10px;
   }
@@ -621,17 +543,11 @@
     opacity: 0.35;
   }
 }
-.movement > span {
-  font-size: 12px;
-}
 .hint,
 .optionRow {
   font-size: 13px;
 }
 @media (max-width: 760px) {
-  .movement > span {
-    font-size: 10px;
-  }
   .hint {
     font-size: 11px;
   }

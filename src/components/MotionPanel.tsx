@@ -13,10 +13,9 @@ import {
   timelineAtom,
   reducedMotionAtom,
 } from "../state/lab";
-import { SEQUENCE } from "../mascot/engine/states";
-import { STATE_LABELS, timelineDuration } from "../mascot/mascot-catalog";
+import { timelineDuration } from "../mascot/mascot-catalog";
 import { usePlayer } from "../mascot/PlayerProvider";
-import { MascotThumbnail } from "./MascotThumbnail";
+import { MotionPicker } from "./MotionPicker";
 import { Switch } from "./ui/switch";
 import { WorkspaceActions } from "./WorkspaceActions";
 import SequenceEditor from "./SequenceEditor";
@@ -79,31 +78,19 @@ export default function MotionPanel({
               </button>
             </div>
           </header>
-          <div className={s.movements} aria-label={t("Mouvements")}>
-            {SEQUENCE.map((id) => (
-              <button
-                key={id}
-                className={s.movement}
-                aria-label={t(STATE_LABELS[id])}
-                aria-pressed={state === id}
-                onClick={() => {
-                  setBoard(false);
-                  if (steps.length < 32) {
-                    const start = timelineDuration(steps);
-                    setSteps([...steps, { state: id, duration: 2 }]);
-                    player.seek(start);
-                  } else player.choose(id);
-                }}
-              >
-                <MascotThumbnail
-                  look={look}
-                  state={id}
-                  portrait={false}
-                  size={68}
-                />
-                <span>{t(STATE_LABELS[id])}</span>
-              </button>
-            ))}
+          <div aria-label={t("Mouvements")}>
+            <MotionPicker
+              look={look}
+              selected={state}
+              onSelect={(id) => {
+                setBoard(false);
+                if (steps.length < 32) {
+                  const start = timelineDuration(steps);
+                  setSteps([...steps, { state: id, duration: 2 }]);
+                  player.seek(start);
+                } else player.choose(id);
+              }}
+            />
           </div>
           <p className={s.hint}>
             {t(

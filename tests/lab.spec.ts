@@ -52,7 +52,7 @@ test("keeps Static still, opens tools immediately and reserves the footer for Ab
   await page.getByRole("button", { name: "Motion", exact: true }).click();
   await expect(
     page.getByLabel("Mouvements", { exact: true }).getByRole("button"),
-  ).toHaveCount(14);
+  ).toHaveCount(29);
   expect(await lazyTools()).toHaveLength(0);
   await page.getByRole("button", { name: "À propos", exact: true }).click();
   await expect(page.locator("footer")).toHaveCount(1);
@@ -80,7 +80,7 @@ test("opens Motion with autoplay on a slower CPU without starving the controls",
   await page.getByRole("button", { name: "Motion", exact: true }).click();
   await expect(
     page.getByLabel("Mouvements", { exact: true }).getByRole("button"),
-  ).toHaveCount(14);
+  ).toHaveCount(29);
   await expect(
     page.getByRole("button", { name: "Mettre en pause", exact: true }),
   ).toBeVisible();
@@ -157,7 +157,7 @@ test("plays, pauses, changes speed and protects interactive controls from Space"
   await page.getByRole("button", { name: "Motion", exact: true }).click();
   await expect(
     page.getByLabel("Mouvements", { exact: true }).getByRole("button"),
-  ).toHaveCount(14);
+  ).toHaveCount(29);
   await preview(page).click();
   await page.keyboard.press("Space");
   await expect(
@@ -277,7 +277,7 @@ test("composes, reorders, seeks backward and forward, then plays the timeline", 
     .click();
   await expect(
     page.getByLabel("Planche des mouvements", { exact: true }).getByRole("img"),
-  ).toHaveCount(14);
+  ).toHaveCount(29);
   await expect(
     page.getByRole("button", { name: "Exporter en SVG", exact: true }),
   ).toBeDisabled();
@@ -781,15 +781,15 @@ test("exports a real WebM with the complete montage and lazy-loads the encoder",
         JSON.stringify({
           version: 1,
           look: {
-            shape: "orb-working",
+            shape: "cercle",
             color: "#8b5cf6",
             expression: "complice",
             eyes: "heart",
             blush: false,
           },
           timeline: [
-            { state: "idle", duration: 0.6 },
-            { state: "orbit", duration: 0.6 },
+            { state: "orb-working", duration: 0.6 },
+            { state: "symbol-loading", duration: 0.6 },
           ],
         }),
       ),

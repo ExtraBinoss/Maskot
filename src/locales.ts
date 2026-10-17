@@ -1,6 +1,8 @@
 import { SITE_META } from "./site-meta";
 
 export const en: Record<string, string> = {
+  "Mouvements classiques": "Mascot movements",
+  "Symboles animés": "Animated symbols",
   Symboles: "Symbols",
   "Thinking orbs": "Thinking orbs",
   Exclamation: "Exclamation",

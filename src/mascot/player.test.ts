@@ -185,7 +185,7 @@ describe("React/Jotai mascot playback", () => {
     expect(store.get(sequencingAtom)).toBe(false);
     player.choose("idle");
     player.next(-1);
-    expect(store.get(stateAtom)).toBe("comet");
+    expect(store.get(stateAtom)).toBe("symbol-atom");
     player.next(1);
     expect(store.get(stateAtom)).toBe("idle");
   });

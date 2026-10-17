@@ -166,18 +166,18 @@ describe('forme personnalisee', () => {
   });
 });
 describe('etats', () => {
-  it('garde les 14 etats de la video dans la sequence, et rien d autre', () => {
-    expect(SEQUENCE).toHaveLength(14);
-    expect(new Set(SEQUENCE).size).toBe(14);
+  it('garde les 15 mouvements disponibles dans la sequence', () => {
+    expect(SEQUENCE).toHaveLength(15);
+    expect(new Set(SEQUENCE).size).toBe(15);
     for (const id of SEQUENCE)
       expect(
         STATES.some((s) => s.id === id),
         id,
       ).toBe(true);
   });
-  it('tient les transitions d interface hors du catalogue', () => {
+  it('inclut aussi les transitions courtes dans le catalogue', () => {
     const horsSequence = STATES.filter((s) => !SEQUENCE.includes(s.id)).map((s) => s.id);
-    expect(horsSequence).toEqual(['swirl']);
+    expect(horsSequence).toEqual([]);
   });
   it('montre le visage sur les etats a visage, le cache sur les autres', () => {
     const avec: StateId[] = ['idle', 'wink', 'wide', 'notify', 'egg', 'hexagon'];

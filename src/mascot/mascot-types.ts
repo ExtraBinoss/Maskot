@@ -1,10 +1,6 @@
-import type {
-  ExpressionId,
-  EyeGeometry,
-  EyeStyle,
-  StateId,
-} from "./engine/bot-types";
+import type { ExpressionId, EyeGeometry, EyeStyle } from "./engine/bot-types";
 import type { MascotShapeId } from "./figures";
+import type { MotionId } from "./motion-types";
 
 export interface MascotLook {
   shape: MascotShapeId;
@@ -16,7 +12,7 @@ export interface MascotLook {
 }
 
 export interface MascotStep {
-  state: StateId;
+  state: MotionId;
   duration: number;
 }
 

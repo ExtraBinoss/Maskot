@@ -20,10 +20,10 @@ import {
   sequencingAtom,
   timelineAtom,
 } from "../state/lab";
-import { STATE_LABELS, timelineDuration } from "../mascot/mascot-catalog";
-import { SEQUENCE } from "../mascot/engine/states";
+import { MOTION_LABELS, timelineDuration } from "../mascot/mascot-catalog";
 import { usePlayer } from "../mascot/PlayerProvider";
 import { MascotThumbnail } from "./MascotThumbnail";
+import { MotionPicker } from "./MotionPicker";
 import { VideoExport } from "./VideoExport";
 import { Range } from "./ui/range";
 import { Button } from "./ui/button";
@@ -33,6 +33,7 @@ import {
   PopoverTrigger,
   PopoverContent,
   PopoverTitle,
+  PopoverHeader,
 } from "./ui/popover";
 import s from "../styles/motion.module.css";
 
@@ -265,9 +266,9 @@ export default function SequenceEditor() {
                     data-card={index}
                     aria-label={t("Aller au mouvement {{index}} : {{label}}", {
                       index: index + 1,
-                      label: t(STATE_LABELS[step.state]),
+                      label: t(MOTION_LABELS[step.state]),
                     })}
-                    title={`${t(STATE_LABELS[step.state])} · ${step.duration} s`}
+                    title={`${t(MOTION_LABELS[step.state])} · ${step.duration} s`}
                     aria-keyshortcuts="Alt+ArrowLeft Alt+ArrowRight ArrowLeft ArrowRight Delete"
                     onPointerDown={(e) => {
                       if (e.button !== 0) return;
@@ -326,7 +327,7 @@ export default function SequenceEditor() {
                       s
                     </span>
                     <span className="sr-only">
-                      {t(STATE_LABELS[step.state])}
+                      {t(MOTION_LABELS[step.state])}
                     </span>
                   </button>
                   <button
@@ -420,30 +421,22 @@ export default function SequenceEditor() {
                 side="top"
                 align="end"
                 sideOffset={12}
-                className={s.addPopover}
+                collisionPadding={8}
+                className={`${s.addPopover} bg-popover/75 backdrop-blur-xl`}
               >
-                <PopoverTitle>{t("Ajouter un mouvement")}</PopoverTitle>
-                <div className={s.addGrid}>
-                  {SEQUENCE.map((state) => (
-                    <button
-                      key={state}
-                      aria-label={t(STATE_LABELS[state])}
-                      onClick={() => {
-                        if (steps.length >= 32) return;
-                        setSteps([...steps, { state, duration: 2 }]);
-                        player.seek(total);
-                        setAddOpen(false);
-                      }}
-                    >
-                      <MascotThumbnail
-                        look={look}
-                        state={state}
-                        portrait={false}
-                        size={54}
-                      />
-                      <span>{t(STATE_LABELS[state])}</span>
-                    </button>
-                  ))}
+                <PopoverHeader>
+                  <PopoverTitle>{t("Ajouter un mouvement")}</PopoverTitle>
+                </PopoverHeader>
+                <div className={s.addScroll}>
+                  <MotionPicker
+                    look={look}
+                    onSelect={(state) => {
+                      if (steps.length >= 32) return;
+                      setSteps([...steps, { state, duration: 2 }]);
+                      player.seek(total);
+                      setAddOpen(false);
+                    }}
+                  />
                 </div>
               </PopoverContent>
             </Popover>

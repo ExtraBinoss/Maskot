@@ -75,33 +75,12 @@
   bottom: 20%;
 }
 .board {
+  --motion-preview-size: 84px;
+  --motion-columns: 5;
   position: absolute;
   inset: 40px calc(var(--panel-width) + var(--edge) * 2) 260px 90px;
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  align-content: center;
-  gap: 8px;
-}
-.board button {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  border-radius: 12px;
-  background: transparent;
-  color: inherit;
-  padding-block: 5px;
-}
-.board button:hover {
-  background: color-mix(in srgb, var(--foreground) 5%, transparent);
-}
-.board svg {
-  width: min(100%, 90px);
-  height: auto;
-}
-.board span {
-  font-size: 10px;
-  opacity: 0.65;
+  overflow-y: auto;
+  scrollbar-width: thin;
 }
 @media (max-width: 760px) {
   .mascot {
@@ -130,16 +109,11 @@
     display: none;
   }
   .board {
+    --motion-preview-size: 36px;
+    --motion-columns: 7;
+    --motion-label-display: none;
     inset: 20px 16px auto 78px;
     height: 23dvh;
-    grid-template-columns: repeat(7, minmax(0, 1fr));
-    gap: 2px;
-  }
-  .board svg {
-    width: 36px;
-  }
-  .board span {
-    display: none;
   }
 }
 .canvas[data-view="static"] .caption {

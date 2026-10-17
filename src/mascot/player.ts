@@ -2,9 +2,12 @@
 import { EXPRESSION_BY_ID } from "./engine/expressions";
 import { mixHex } from "./engine/skins";
 import { clamp } from "./engine/math";
-import { SEQUENCE } from "./engine/states";
-import type { StateId } from "./engine/bot-types";
-import { createMascotEngine, timelinePosition } from "./mascot-catalog";
+import type { MotionId } from "./motion-types";
+import {
+  createMascotEngine,
+  timelinePosition,
+  MOTION_IDS,
+} from "./mascot-catalog";
 import {
   activeStepAtom,
   boardAtom,
@@ -85,7 +88,7 @@ export function createMascotPlayer(store: LabStore, env: PlayerEnvironment) {
       store.set(paintAtom, { color, blush });
     if (geometry) store.set(frameAtom, engine.sample(clock, appearanceClock));
   };
-  const choose = (id: StateId) => {
+  const choose = (id: MotionId) => {
     store.set(sequencingAtom, false);
     store.set(stateAtom, id);
     if (store.get(playingAtom)) engine.setState(id, clock, appearanceClock);
@@ -312,8 +315,10 @@ export function createMascotPlayer(store: LabStore, env: PlayerEnvironment) {
     seek,
     release,
     next: (direction: number) => {
-      const index = SEQUENCE.indexOf(store.get(stateAtom));
-      choose(SEQUENCE[(index + direction + SEQUENCE.length) % SEQUENCE.length]);
+      const index = MOTION_IDS.indexOf(store.get(stateAtom));
+      choose(
+        MOTION_IDS[(index + direction + MOTION_IDS.length) % MOTION_IDS.length],
+      );
     },
     playSequence: () => {
       seek(0);
