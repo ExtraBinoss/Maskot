@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next";
+import { m } from "motion/react";
 // Horizontal montage adapted from Bloub's Timeline / TimelineTrack (MIT).
 import { useEffect, useRef, useState, type PointerEvent } from "react";
 import { useAtom, useAtomValue, useStore } from "jotai";
@@ -189,7 +190,13 @@ export default function SequenceEditor() {
   };
   const tickStep = zoom >= 1.4 ? 1 : 2;
   return (
-    <section className={s.timeline} aria-label={t("Chorégraphie")}>
+    <m.section
+      className={s.timeline}
+      aria-label={t("Chorégraphie")}
+      initial={{ opacity: 0, y: 14 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+    >
       <Playback />
       <header className={s.timelineHeader}>
         <h2>
@@ -486,6 +493,6 @@ export default function SequenceEditor() {
           />
         </div>
       </div>
-    </section>
+    </m.section>
   );
 }

@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
 // Layout adapted from Bloub's App.vue / Timeline.vue (MIT). See licenses/NOTICE.txt.
-import { useEffect, type RefObject } from "react";
+import { useLayoutEffect, type RefObject } from "react";
+import { m } from "motion/react";
 import { useAtom, useAtomValue } from "jotai";
 import { ChevronLeft, ChevronRight, Grid2X2, Maximize2 } from "lucide-react";
 import {
@@ -37,18 +38,26 @@ export default function MotionPanel({
   const [speed, setSpeed] = useAtom(speedAtom);
   const reduced = useAtomValue(reducedMotionAtom);
   const player = usePlayer();
-  useEffect(() => {
+  useLayoutEffect(() => {
     player.seek(0);
     player.activateMotion();
   }, [player]);
   return (
     <>
-      <aside
+      <m.aside
         className={w.inspector}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
         id="settings"
         aria-label={t("Réglages de Maskot")}
       >
-        <div className={w.panelScroll}>
+        <m.div
+          className={w.panelScroll}
+          initial={{ y: 6 }}
+          animate={{ y: 0 }}
+          transition={{ duration: 0.18 }}
+        >
           <header className={s.paletteHeader}>
             <h2>{t("Animation")}</h2>
             <div className={s.boardToggle}>
@@ -147,9 +156,9 @@ export default function MotionPanel({
               </p>
             )}
           </div>
-        </div>
+        </m.div>
         <WorkspaceActions svgRef={svgRef} />
-      </aside>
+      </m.aside>
       <SequenceEditor />
     </>
   );

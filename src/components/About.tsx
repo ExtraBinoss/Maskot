@@ -1,7 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { m } from "motion/react";
-import { ButtonGroup } from "./ui/button-group";
-import { Button } from "./ui/button";
+import { PreferenceGroup } from "./PreferenceGroup";
 import { ThemePicker } from "./ThemePicker";
 import s from "../styles/about.module.css";
 
@@ -21,24 +20,15 @@ export default function About() {
         <section className={s.preferences} aria-label={t("Préférences")}>
           <div className={s.language}>
             <h3>{t("Langue")}</h3>
-            <ButtonGroup aria-label={t("Langue")} className={s.languagePicker}>
-              {(
-                [
-                  { id: "en", label: "English" },
-                  { id: "fr", label: "Français" },
-                ] as const
-              ).map(({ id, label }) => (
-                <Button
-                  variant="outline"
-                  key={id}
-                  lang={id}
-                  aria-pressed={i18n.resolvedLanguage === id}
-                  onClick={() => void i18n.changeLanguage(id)}
-                >
-                  {label}
-                </Button>
-              ))}
-            </ButtonGroup>
+            <PreferenceGroup
+              label={t("Langue")}
+              value={i18n.resolvedLanguage ?? "en"}
+              options={[
+                { value: "en", label: "English", lang: "en" },
+                { value: "fr", label: "Français", lang: "fr" },
+              ]}
+              onChange={(value) => void i18n.changeLanguage(value)}
+            />
           </div>
           <ThemePicker />
         </section>

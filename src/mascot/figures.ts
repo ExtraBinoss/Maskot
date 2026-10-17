@@ -1,5 +1,14 @@
-import type { BotFrame, DotRender, Point, ShapeId } from "./engine/bot-types";
-import { closedPath } from "./engine/shape";
+import type { BotFrame, DotRender, ShapeId } from "./engine/bot-types";
+import {
+  point,
+  circlePath as circle,
+  polygonPath as contour,
+  capsulePath,
+  ringPath as ring,
+  questionPath,
+  crescentPath,
+  infinityPath,
+} from "./vector-path";
 import { MODE_FRAMES } from "./thinking-orbs/engine/registry";
 import { resolvePreset } from "./thinking-orbs/presets";
 import type { OrbState } from "./thinking-orbs/types";
@@ -42,71 +51,6 @@ const byId = new Map<string, (typeof FIGURES)[number]>(
 );
 export const isFigure = (id: string): id is FigureId => byId.has(id);
 const TAU = Math.PI * 2;
-const point = (x: number, y: number): Point => ({ x, y });
-
-// Every solid outline has the same 64-cubic topology as the mascot body.
-// Contours are sampled by arc length so symbols morph as geometry too.
-function contour(points: Point[]): string {
-  const lengths = points.map((p, i) =>
-    Math.hypot(
-      p.x - points[(i + 1) % points.length].x,
-      p.y - points[(i + 1) % points.length].y,
-    ),
-  );
-  const total = lengths.reduce((sum, length) => sum + length, 0);
-  if (!total) return closedPath(Array.from({ length: 64 }, () => point(0, 0)));
-  let segment = 0,
-    start = 0;
-  return closedPath(
-    Array.from({ length: 64 }, (_, i) => {
-      const distance = (i / 64) * total;
-      while (segment < points.length - 1 && start + lengths[segment] < distance)
-        start += lengths[segment++];
-      const a = points[segment],
-        b = points[(segment + 1) % points.length];
-      const t = (distance - start) / (lengths[segment] || 1);
-      return point(a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t);
-    }),
-  );
-}
-const circle = (cx: number, cy: number, r: number) =>
-  contour(
-    Array.from({ length: 96 }, (_, i) =>
-      point(
-        cx + Math.cos((i / 96) * TAU) * r,
-        cy + Math.sin((i / 96) * TAU) * r,
-      ),
-    ),
-  );
-function tube(points: Point[], radius: number): string {
-  const normals = points.map((_, i) => {
-    const a = points[Math.max(0, i - 1)],
-      b = points[Math.min(points.length - 1, i + 1)];
-    const angle = Math.atan2(b.y - a.y, b.x - a.x) + Math.PI / 2;
-    return point(Math.cos(angle) * radius, Math.sin(angle) * radius);
-  });
-  return contour([
-    ...points.map((p, i) => point(p.x + normals[i].x, p.y + normals[i].y)),
-    ...points
-      .map((p, i) => point(p.x - normals[i].x, p.y - normals[i].y))
-      .reverse(),
-  ]);
-}
-function ring(
-  radius: number,
-  thickness: number,
-  start = 0,
-  sweep = TAU - 0.001,
-) {
-  const arc = (r: number) =>
-    Array.from({ length: 96 }, (_, i) =>
-      point(
-        Math.cos(start + (sweep * i) / 95) * r,
-        Math.sin(start + (sweep * i) / 95) * r,
-      ),
-    );
-  return contour([...arc(radius), ...arc(radius - thickness).reverse()]);
-}
 const hiddenBody = circle(0, 0, 0);
 const dot = (x: number, y: number, r: number, opacity = 1): DotRender => ({
   x,
@@ -148,17 +92,11 @@ export function figureFrame(id: FigureId, time: number): BotFrame {
   } else {
     switch (id) {
       case "symbol-exclamation":
-        bodyPath = tube([point(0, -94), point(0, 32)], 20);
+        bodyPath = capsulePath(point(0, -87), point(0, 25), 18);
         dots = [dot(0, 77, 20)];
         break;
       case "symbol-question":
-        bodyPath = tube(
-          Array.from({ length: 80 }, (_, i) => {
-            const a = -Math.PI + (i / 79) * Math.PI * 1.65;
-            return point(Math.cos(a) * 55, -37 + Math.sin(a) * 50);
-          }).concat([point(0, 31)]),
-          15,
-        );
+        bodyPath = questionPath();
         dots = [dot(0, 77, 17)];
         break;
       case "symbol-plus":
@@ -202,7 +140,17 @@ export function figureFrame(id: FigureId, time: number): BotFrame {
         );
         break;
       case "symbol-check":
-        bodyPath = tube([point(-83, 0), point(-20, 64), point(88, -68)], 18);
+        bodyPath = contour(
+          [
+            [-96, -2],
+            [-74, -25],
+            [-20, 28],
+            [78, -82],
+            [102, -60],
+            [-19, 81],
+          ].map(([x, y]) => point(x, y)),
+          4,
+        );
         break;
       case "symbol-loading":
         bodyPath = ring(91, 20, time * 2, Math.PI * 1.45);
@@ -211,16 +159,10 @@ export function figureFrame(id: FigureId, time: number): BotFrame {
         bodyPath = ring(94, 25);
         break;
       case "symbol-crescent":
-        bodyPath = ring(96, 38, -Math.PI * 0.7, Math.PI * 1.4);
+        bodyPath = crescentPath();
         break;
       case "symbol-infinity":
-        bodyPath = tube(
-          Array.from({ length: 129 }, (_, i) => {
-            const a = (i / 128) * TAU;
-            return point(91 * Math.cos(a), 47 * Math.sin(2 * a));
-          }),
-          12,
-        );
+        bodyPath = infinityPath();
         break;
       case "symbol-dots":
         bodyAlpha = 0;
@@ -241,8 +183,9 @@ export function figureFrame(id: FigureId, time: number): BotFrame {
           const x = (i - 3) * 27;
           dots.push({
             ...dot(0, 0, 0),
-            d: tube(
-              [point(x / 100, -height / 100), point(x / 100, height / 100)],
+            d: capsulePath(
+              point(x / 100, -height / 100),
+              point(x / 100, height / 100),
               0.065,
             ),
           });

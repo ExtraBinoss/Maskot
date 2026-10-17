@@ -33,7 +33,7 @@ test.afterEach(async ({ page }) => {
   expect(browserErrors.get(page)).toEqual([]);
 });
 
-test("keeps Static still, loads tools on demand and reserves the footer for About", async ({
+test("keeps Static still, opens tools immediately and reserves the footer for About", async ({
   page,
 }) => {
   await expect(page).toHaveTitle("Maskot — Atelier de mascottes");
@@ -53,9 +53,7 @@ test("keeps Static still, loads tools on demand and reserves the footer for Abou
   await expect(
     page.getByLabel("Mouvements", { exact: true }).getByRole("button"),
   ).toHaveCount(14);
-  expect(await lazyTools()).toEqual(
-    expect.arrayContaining([expect.stringMatching(/MotionPanel-/)]),
-  );
+  expect(await lazyTools()).toHaveLength(0);
   await page.getByRole("button", { name: "À propos", exact: true }).click();
   await expect(page.locator("footer")).toHaveCount(1);
   await expect(
@@ -1689,10 +1687,12 @@ test("enters on every load and keeps antialiased body edges blue in dark mode", 
     name: "Thème de l’interface",
     exact: true,
   });
-  await expect(group).toHaveAttribute("data-slot", "button-group");
+  await expect(group).toHaveAttribute("data-slot", "toggle-group");
   const dark = group.getByRole("button", { name: "Thème sombre", exact: true });
-  expect(
-    await dark.evaluate((el) => getComputedStyle(el).backgroundColor),
-  ).toBe("rgb(37, 99, 235)");
+  await expect(dark).toHaveAttribute("aria-pressed", "true");
+  await expect(group.locator('[data-slot="segmented-indicator"]')).toHaveCSS(
+    "background-color",
+    "rgb(37, 99, 235)",
+  );
   await expect(group.getByRole("button")).toHaveCount(3);
 });

@@ -593,8 +593,8 @@
     display: none;
   }
   :global([data-view="motion"]) > :global(#settings) {
-    top: 33dvh;
-    bottom: 276px;
+    --inspector-top: 33dvh;
+    --inspector-bottom: 276px;
   }
   .movement > span {
     font-size: 9px;

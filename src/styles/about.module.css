@@ -32,23 +32,6 @@
   font: 500 13px var(--font-sans);
   margin-bottom: 10px;
 }
-.languagePicker {
-  display: inline-flex;
-  gap: 0;
-  box-shadow: var(--control-shadow);
-}
-.languagePicker button {
-  padding-inline: 14px;
-  height: 36px;
-  font-size: 13px;
-  border-radius: 11px;
-  color: var(--muted-foreground);
-}
-.languagePicker button[aria-pressed="true"] {
-  background: var(--primary);
-  border-color: var(--primary);
-  color: var(--primary-foreground);
-}
 .footer {
   display: flex;
   justify-content: space-between;

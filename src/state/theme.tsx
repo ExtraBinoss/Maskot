@@ -57,6 +57,7 @@ export function ThemeSync() {
   useLayoutEffect(() => {
     const apply = () => {
       document.documentElement.classList.toggle("dark", dark);
+      document.documentElement.dataset.theme = dark ? "dark" : "light";
       document.documentElement.style.colorScheme = dark ? "dark" : "light";
       document
         .querySelector('meta[name="theme-color"]')

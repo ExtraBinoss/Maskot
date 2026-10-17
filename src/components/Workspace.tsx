@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { lazy, Suspense, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { useAtomValue, useStore } from "jotai";
 import { m } from "motion/react";
 import {
@@ -13,11 +13,11 @@ import {
 import { Sidebar } from "./Sidebar";
 import { Canvas } from "./Canvas";
 import StaticPanel from "./StaticPanel";
+import MotionPanel from "./MotionPanel";
+import About from "./About";
 import { WorkspaceActions } from "./WorkspaceActions";
 import s from "../styles/workspace.module.css";
 
-const MotionPanel = lazy(() => import("./MotionPanel"));
-const About = lazy(() => import("./About"));
 function Feedback() {
   const { t } = useTranslation();
 
@@ -122,17 +122,9 @@ export function Workspace() {
       <Canvas svgRef={svgRef} />
       <Sidebar />
       {view === "about" ? (
-        <Suspense
-          fallback={<p className={s.loading}>{t("Un petit instant…")}</p>}
-        >
-          <About />
-        </Suspense>
+        <About />
       ) : view === "motion" ? (
-        <Suspense
-          fallback={<p className={s.loading}>{t("Un petit instant…")}</p>}
-        >
-          <MotionPanel svgRef={svgRef} />
-        </Suspense>
+        <MotionPanel svgRef={svgRef} />
       ) : (
         <aside
           className={s.inspector}
@@ -141,9 +133,9 @@ export function Workspace() {
         >
           <div className={s.panelScroll} ref={panelRef}>
             <m.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.2 }}
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
             >
               <StaticPanel />
             </m.div>
