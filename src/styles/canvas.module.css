@@ -1,0 +1,240 @@
+.canvas {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: var(--background);
+  color: var(--foreground);
+}
+.canvas::before {
+  position: absolute;
+  inset: 0;
+  content: "";
+  pointer-events: none;
+  background:
+    radial-gradient(
+      ellipse at 35% 60%,
+      color-mix(in srgb, var(--mascot-color) 4%, transparent),
+      transparent 54%
+    ),
+    radial-gradient(
+      ellipse at 90% 10%,
+      rgb(215 211 235 / 0.15),
+      transparent 48%
+    );
+}
+.canvas[data-surface="dark"] {
+  background: #1c1c20;
+  color: #eae9ec;
+}
+.canvas[data-surface="transparent"] {
+  background:
+    repeating-conic-gradient(rgb(128 128 140 / 0.04) 0% 25%, transparent 0% 50%)
+      0 / 20px 20px,
+    var(--background);
+}
+.scene {
+  position: absolute;
+  inset: 0 calc(var(--panel-width) + var(--edge) * 2) 0
+    calc(var(--rail-width) + var(--edge) * 2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+.sceneHeading {
+  position: absolute;
+  top: clamp(54px, 10vh, 115px);
+  left: 0;
+  right: 0;
+  text-align: center;
+  pointer-events: none;
+}
+.sceneHeading > span {
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 2px;
+  opacity: 0.65;
+}
+.sceneHeading h1 {
+  font-size: clamp(28px, 2.5vw, 37px);
+  font-weight: 450;
+  letter-spacing: -1.5px;
+  margin-top: 9px;
+  opacity: 0.85;
+}
+.sceneHeading h1 > span {
+  color: var(--mascot-color);
+}
+.mascot {
+  display: grid;
+  place-items: center;
+  width: min(100%, 560px);
+  aspect-ratio: 1;
+}
+.mascot > svg {
+  display: block;
+  width: min(100%, 520px);
+  height: auto;
+  overflow: visible;
+}
+.caption {
+  position: absolute;
+  bottom: clamp(60px, 10vh, 110px);
+  text-align: center;
+  pointer-events: none;
+}
+.caption > span {
+  font: 450 13px var(--font-heading);
+  letter-spacing: -0.2px;
+  opacity: 0.65;
+}
+.caption p {
+  margin-top: 8px;
+  font-size: 11px;
+  opacity: 0.65;
+}
+.caption kbd {
+  font-family: inherit;
+  font-size: 9px;
+  padding: 1px 4px;
+  border: 1px solid currentColor;
+  border-radius: 4px;
+  margin: 0 2px;
+}
+.board {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  width: min(100%, 620px);
+  padding-inline: 10px;
+}
+.board button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  border-radius: 15px;
+  background: transparent;
+  color: inherit;
+  padding-block: 8px;
+}
+.board button:hover {
+  background: rgb(128 128 140 / 0.055);
+}
+.board button > svg {
+  width: min(100%, 100px);
+  height: auto;
+}
+.board button > span {
+  font-size: 10px;
+  opacity: 0.65;
+}
+.scene:has(.board) .sceneHeading {
+  top: 35px;
+}
+.scene:has(.board) .caption {
+  bottom: 30px;
+}
+@media (max-height: 760px) and (min-width: 761px) {
+  .mascot {
+    width: min(85%, 440px);
+  }
+  .sceneHeading {
+    top: 35px;
+  }
+  .caption {
+    bottom: 32px;
+  }
+  .board {
+    gap: 3px;
+  }
+  .board button > svg {
+    max-width: 80px;
+  }
+}
+@media (max-width: 1100px) {
+  .sceneHeading h1 {
+    font-size: 30px;
+  }
+  .caption p {
+    font-size: 10px;
+  }
+  .board {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 2px;
+  }
+  .board button {
+    padding-block: 3px;
+  }
+  .board button > svg {
+    max-width: 75px;
+  }
+}
+@media (max-width: 760px) {
+  .scene {
+    inset: 76px 14px calc(49dvh + 22px);
+  }
+  .sceneHeading {
+    top: 10px;
+  }
+  .sceneHeading > span {
+    font-size: 7px;
+    letter-spacing: 1.5px;
+  }
+  .sceneHeading h1 {
+    font-size: 23px;
+    letter-spacing: -0.9px;
+    margin-top: 4px;
+  }
+  .mascot {
+    width: min(280px, 35dvh);
+    margin-top: 20px;
+  }
+  .caption {
+    bottom: 5px;
+  }
+  .caption > span {
+    font-size: 11px;
+  }
+  .caption p {
+    display: none;
+  }
+  .board {
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 1px;
+    width: min(100%, 500px);
+    padding-inline: 0;
+    margin-top: 35px;
+  }
+  .board button {
+    padding-block: 5px;
+  }
+  .board button > svg {
+    width: 45px;
+  }
+  .board button > span {
+    display: none;
+  }
+  .scene:has(.board) .sceneHeading {
+    top: 10px;
+  }
+  .scene:has(.board) .caption {
+    bottom: 5px;
+  }
+}
+@media (max-width: 760px) and (max-height: 620px) {
+  .scene {
+    bottom: calc(45dvh + 22px);
+  }
+  .sceneHeading,
+  .caption {
+    display: none;
+  }
+  .mascot {
+    width: min(210px, 32dvh);
+    margin: 0;
+  }
+  .board {
+    margin-top: 0;
+  }
+}

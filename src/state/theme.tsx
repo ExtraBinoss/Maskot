@@ -58,7 +58,7 @@ export function ThemeSync() {
     document.documentElement.style.colorScheme = dark ? "dark" : "light";
     document
       .querySelector('meta[name="theme-color"]')
-      ?.setAttribute("content", dark ? "#1c1c1e" : "#fbfbfd");
+      ?.setAttribute("content", dark ? "#1c1c1e" : "#f5f3f0");
   }, [dark]);
   return null;
 }

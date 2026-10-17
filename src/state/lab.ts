@@ -38,10 +38,14 @@ export const reducedMotionAtom = atom(false);
 export const boardAtom = atom(false);
 export const surfaceAtom = atom<PreviewSurface>("paper");
 export const statusAtom = atom("");
+export type WorkspaceView = "static" | "motion" | "about";
+export const viewAtom = atom<WorkspaceView>("static");
+export const motionPanelAtom = atom<"movements" | "sequence">("movements");
 
 export function createLabStore(
   readSaved: () => string | null,
   reducedMotion: boolean,
+  view: WorkspaceView = "static",
 ) {
   const store = createStore();
   let preset = defaultPreset();
@@ -56,7 +60,8 @@ export function createLabStore(
   }
   store.set(presetAtom, preset);
   store.set(frameAtom, createMascotEngine(preset.look).sample(0));
-  store.set(playingAtom, !reducedMotion);
+  store.set(viewAtom, view);
+  store.set(playingAtom, view === "motion" && !reducedMotion);
   store.set(reducedMotionAtom, reducedMotion);
   return store;
 }

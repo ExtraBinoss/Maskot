@@ -21,6 +21,7 @@ import {
   stateAtom,
   statusAtom,
   timelineAtom,
+  viewAtom,
   PRESET_KEY,
   type LabStore,
 } from "../state/lab";
@@ -158,6 +159,14 @@ export function createMascotPlayer(store: LabStore, env: PlayerEnvironment) {
       store.sub(boardAtom, () => {
         if (store.get(boardAtom)) store.set(playingAtom, false);
       }),
+      store.sub(viewAtom, () => {
+        const view = store.get(viewAtom);
+        store.set(boardAtom, false);
+        if (view !== "motion") {
+          store.set(playingAtom, false);
+          if (view === "static") choose("idle");
+        } else store.set(playingAtom, false);
+      }),
       store.sub(presetAtom, () => {
         try {
           env.save(JSON.stringify(store.get(presetAtom)));
@@ -185,6 +194,10 @@ export function createMascotPlayer(store: LabStore, env: PlayerEnvironment) {
     };
   };
   return {
+    activateMotion: () => {
+      if (store.get(viewAtom) === "motion")
+        store.set(playingAtom, !store.get(reducedMotionAtom));
+    },
     mount,
     choose,
     seek,

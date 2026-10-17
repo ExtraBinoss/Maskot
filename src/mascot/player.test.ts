@@ -15,6 +15,7 @@ import {
   stateAtom,
   statusAtom,
   timelineAtom,
+  viewAtom,
   createLabStore,
 } from "../state/lab";
 import { createMascotPlayer, type PlayerEnvironment } from "./player";
@@ -54,7 +55,7 @@ describe("React/Jotai mascot playback", () => {
     };
   });
   const setup = (reduced = false) => {
-    const store = createLabStore(() => null, reduced);
+    const store = createLabStore(() => null, reduced, "motion");
     const player = createMascotPlayer(store, env);
     const unmount = player.mount();
     return { store, player, unmount };
@@ -78,6 +79,28 @@ describe("React/Jotai mascot playback", () => {
     tick(9999);
     expect(store.get(frameAtom)).toEqual(paused);
     expect(callbacks.size).toBe(1);
+  });
+  it("keeps Static and About idle and owns a loop only in Motion", () => {
+    const store = createLabStore(() => null, false);
+    const player = createMascotPlayer(store, env);
+    const unmount = player.mount();
+    expect(store.get(viewAtom)).toBe("static");
+    expect(store.get(playingAtom)).toBe(false);
+    expect(callbacks.size).toBe(0);
+    store.set(viewAtom, "motion");
+    expect(callbacks.size).toBe(0);
+    player.activateMotion();
+    expect(callbacks.size).toBe(1);
+    player.choose("orbit");
+    tick(0);
+    tick(64);
+    store.set(viewAtom, "about");
+    expect(callbacks.size).toBe(0);
+    store.set(viewAtom, "static");
+    expect(store.get(stateAtom)).toBe("idle");
+    expect(store.get(sequencingAtom)).toBe(false);
+    expect(callbacks.size).toBe(0);
+    unmount();
   });
   it("releases frames and listeners, including a StrictMode remount", () => {
     const { player, unmount } = setup();

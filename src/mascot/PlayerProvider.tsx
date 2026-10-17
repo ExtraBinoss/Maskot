@@ -16,6 +16,6 @@ export function PlayerProvider({
 
 export function usePlayer() {
   const player = useContext(PlayerContext);
-  if (!player) throw new Error("Le lecteur MascotLab est absent.");
+  if (!player) throw new Error("Le lecteur Maskot est absent.");
   return player;
 }

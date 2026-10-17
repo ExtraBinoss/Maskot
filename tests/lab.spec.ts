@@ -33,15 +33,81 @@ test.afterEach(async ({ page }) => {
   expect(browserErrors.get(page)).toEqual([]);
 });
 
+test("keeps Static still, loads tools on demand and reserves the footer for About", async ({
+  page,
+}) => {
+  await expect(page).toHaveTitle("Maskot — A little character studio");
+  const lazyTools = () =>
+    page.evaluate(() =>
+      performance
+        .getEntriesByType("resource")
+        .map((entry) => entry.name)
+        .filter((name) => /\/(MotionPanel|About)-/.test(name)),
+    );
+  expect(await lazyTools()).toHaveLength(0);
+  const still = await artwork(page);
+  await page.evaluate(() => new Promise((resolve) => setTimeout(resolve, 550)));
+  expect(await artwork(page)).toBe(still);
+  await expect(page.locator("footer")).toHaveCount(0);
+  await page.getByRole("button", { name: "Motion", exact: true }).click();
+  await expect(
+    page.getByLabel("Mouvements", { exact: true }).getByRole("button"),
+  ).toHaveCount(14);
+  expect(await lazyTools()).toEqual(
+    expect.arrayContaining([expect.stringMatching(/MotionPanel-/)]),
+  );
+  await page.getByRole("button", { name: "About", exact: true }).click();
+  await expect(page.locator("footer")).toHaveCount(1);
+  await expect(
+    page.getByRole("heading", { name: /Grok bot inspired/ }),
+  ).toBeVisible();
+  await expect(page.locator("footer")).toContainText("Plinka");
+  await expect(
+    page.getByRole("link", { name: "Maskot, un projet Plinka", exact: true }),
+  ).toHaveText("maskot.");
+  await page.getByRole("button", { name: "Static", exact: true }).click();
+  await expect(page.locator("footer")).toHaveCount(0);
+  await expect(preview(page)).toBeVisible();
+});
+
+test("opens Motion with autoplay on a slower CPU without starving the controls", async ({
+  page,
+}) => {
+  const cdp = await page.context().newCDPSession(page);
+  await cdp.send("Emulation.setCPUThrottlingRate", { rate: 4 });
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await page.reload();
+  await page.getByRole("button", { name: "Motion", exact: true }).click();
+  await expect(
+    page.getByLabel("Mouvements", { exact: true }).getByRole("button"),
+  ).toHaveCount(14);
+  await expect(
+    page.getByRole("button", { name: "Mettre en pause", exact: true }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Séquence", exact: true }).click();
+  await expect(
+    page
+      .getByRole("region", { name: "Chorégraphie", exact: true })
+      .locator("article"),
+  ).toHaveCount(4);
+  await page.getByRole("button", { name: "Static", exact: true }).click();
+  const paused = await artwork(page);
+  await page.evaluate(() => new Promise((resolve) => setTimeout(resolve, 350)));
+  expect(await artwork(page)).toBe(paused);
+  await cdp.send("Emulation.setCPUThrottlingRate", { rate: 1 });
+  await cdp.detach();
+});
+
 test("edits the real mascot in pause, persists settings, and restores defaults", async ({
   page,
 }) => {
   await expect(
-    page.getByRole("button", { name: "Animer la mascotte", exact: true }),
-  ).toBeVisible();
+    page.getByRole("button", { name: "Static", exact: true }),
+  ).toHaveAttribute("aria-current", "page");
+  await expect(page.locator("footer")).toHaveCount(0);
   await expect(
-    page.getByLabel("Mouvements", { exact: true }).getByRole("button"),
-  ).toHaveCount(14);
+    page.getByLabel("Expressions", { exact: true }).getByRole("button"),
+  ).toHaveCount(16);
   const before = await artwork(page);
   await page.getByRole("button", { name: "Nuage", exact: true }).click();
   await expect.poll(() => artwork(page)).not.toBe(before);
@@ -50,8 +116,8 @@ test("edits the real mascot in pause, persists settings, and restores defaults",
     .getByRole("button", { name: "Couleur #8b5cf6", exact: true })
     .click();
   await page
-    .getByLabel("Humeur au repos", { exact: true })
-    .selectOption("heureux");
+    .getByRole("button", { name: "Expression Heureux", exact: true })
+    .click();
   await page.getByRole("switch", { name: "Petites joues rosées" }).click();
   await page.getByText("Ajuster les yeux", { exact: true }).click();
   await setRange(page, "Taille des yeux", 150);
@@ -72,9 +138,9 @@ test("edits the real mascot in pause, persists settings, and restores defaults",
   await expect(
     page.getByRole("button", { name: "Nuage", exact: true }),
   ).toHaveAttribute("aria-pressed", "true");
-  await expect(page.getByLabel("Humeur au repos", { exact: true })).toHaveValue(
-    "heureux",
-  );
+  await expect(
+    page.getByRole("button", { name: "Expression Heureux", exact: true }),
+  ).toHaveAttribute("aria-pressed", "true");
   await page
     .getByRole("button", { name: "Repartir de zéro", exact: true })
     .click();
@@ -89,7 +155,11 @@ test("edits the real mascot in pause, persists settings, and restores defaults",
 test("plays, pauses, changes speed and protects interactive controls from Space", async ({
   page,
 }) => {
-  await page.locator("body").click({ position: { x: 5, y: 80 } });
+  await page.getByRole("button", { name: "Motion", exact: true }).click();
+  await expect(
+    page.getByLabel("Mouvements", { exact: true }).getByRole("button"),
+  ).toHaveCount(14);
+  await preview(page).click();
   await page.keyboard.press("Space");
   await expect(
     page.getByRole("button", { name: "Mettre en pause", exact: true }),
@@ -112,13 +182,14 @@ test("plays, pauses, changes speed and protects interactive controls from Space"
       .getByLabel("Mouvements", { exact: true })
       .getByRole("button", { name: "Réflexion", exact: true }),
   ).toHaveAttribute("aria-pressed", "true");
+  await page.getByRole("button", { name: "Static", exact: true }).click();
   const color = page.getByLabel("Couleur personnalisée au format hexadécimal");
   await color.fill("#12");
   await color.focus();
   await page.keyboard.press("Space");
   await expect(
     page.getByRole("button", { name: "Animer la mascotte", exact: true }),
-  ).toBeVisible();
+  ).toHaveCount(0);
   await expect(color).toHaveAttribute("aria-invalid", "true");
   await color.fill("#12");
   await expect(
@@ -127,6 +198,9 @@ test("plays, pauses, changes speed and protects interactive controls from Space"
   await color.fill("#123456");
   await expect(color).toHaveAttribute("aria-invalid", "false");
   await page.getByRole("switch", { name: "Petites joues rosées" }).focus();
+  await page.keyboard.press("Space");
+  await page.getByRole("button", { name: "Motion", exact: true }).click();
+  await page.getByRole("switch", { name: "Suivre le curseur" }).focus();
   await page.keyboard.press("Space");
   await expect(
     page.getByRole("button", { name: "Animer la mascotte", exact: true }),
@@ -148,6 +222,8 @@ test("plays, pauses, changes speed and protects interactive controls from Space"
 test("composes, reorders, seeks backward and forward, then plays the timeline", async ({
   page,
 }) => {
+  await page.getByRole("button", { name: "Motion", exact: true }).click();
+  await page.getByRole("button", { name: "Séquence", exact: true }).click();
   const timeline = page.getByRole("region", {
     name: "Chorégraphie",
     exact: true,
@@ -208,6 +284,7 @@ test("composes, reorders, seeks backward and forward, then plays the timeline", 
 test("downloads standalone SVG, transparent 1024px PNG and compatible JSON", async ({
   page,
 }) => {
+  await page.getByRole("button", { name: "Motion", exact: true }).click();
   // Export a particle/orbit state to check local paint references in the actual file.
   await page
     .getByLabel("Mouvements", { exact: true })
@@ -223,7 +300,7 @@ test("downloads standalone SVG, transparent 1024px PNG and compatible JSON", asy
     };
   };
   const svg = await getDownload("Exporter en SVG");
-  expect(svg.name).toBe("mascotlab-orbit.svg");
+  expect(svg.name).toBe("maskot-orbit.svg");
   const validation = await page.evaluate((text) => {
     const svg = new DOMParser().parseFromString(text, "image/svg+xml");
     return {
@@ -326,10 +403,14 @@ test("imports legacy presets and rejects malformed, invalid and oversized files"
       })),
     }),
   );
+  await page.getByRole("button", { name: "Motion", exact: true }).click();
+  await page.getByRole("button", { name: "Séquence", exact: true }).click();
   await expect(
     page.getByLabel("Ajouter un mouvement", { exact: true }),
   ).toBeDisabled();
   await importJson(JSON.stringify(preset));
+  await page.getByRole("button", { name: "Motion", exact: true }).click();
+  await page.getByRole("button", { name: "Séquence", exact: true }).click();
   await expect(
     page.getByRole("button", { name: "Retirer le mouvement 1", exact: true }),
   ).toBeDisabled();
@@ -364,7 +445,9 @@ test("renders mobile and dark mode without page overflow or network font depende
     await page.setViewportSize({ width, height: 900 });
     expect(
       await page.evaluate(
-        () => document.documentElement.scrollWidth <= innerWidth,
+        () =>
+          document.documentElement.scrollWidth <= innerWidth &&
+          document.documentElement.scrollHeight <= innerHeight,
       ),
     ).toBe(true);
   }

@@ -30,13 +30,13 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   --font-heading: "Space Grotesk Variable", sans-serif;
-  --background: #fbfbfd;
+  --background: #f5f3f0;
   --foreground: #1d1d1f;
   --card: #fff;
   --card-foreground: #1d1d1f;
   --popover: #fff;
   --popover-foreground: #1d1d1f;
-  --primary: #2563eb;
+  --primary: #29292d;
   --primary-foreground: #fff;
   --secondary: #f0f0f2;
   --secondary-foreground: #1d1d1f;
@@ -47,7 +47,7 @@
   --destructive: #d32f2f;
   --border: #e5e5e7;
   --input: #e5e5e7;
-  --ring: #2563eb;
+  --ring: #7c7b83;
   --radius: 0.5rem;
   --control-border: rgb(0 0 0 / 13%);
   --control-bg: #fff;
@@ -59,6 +59,8 @@
 .dark {
   color-scheme: dark;
   --background: #1c1c1e;
+  --primary: #eeeef1;
+  --primary-foreground: #242426;
   --foreground: #f5f5f7;
   --card: #242426;
   --card-foreground: #f5f5f7;
@@ -114,12 +116,12 @@
     @apply border-border;
   }
   html {
-    scroll-behavior: smooth;
-    scroll-padding-top: 32px;
+    overflow: hidden;
   }
   body {
     margin: 0;
     min-width: 320px;
+    overflow: hidden;
   }
   a {
     color: inherit;

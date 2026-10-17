@@ -1,0 +1,244 @@
+.viewRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 5px;
+  margin-bottom: 16px;
+}
+.tabs {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+.tabs button {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 0 8px;
+  background: transparent;
+  color: var(--muted-foreground);
+  font-size: 11px;
+  border-bottom: 1px solid transparent;
+}
+.tabs button[aria-pressed="true"] {
+  color: var(--foreground);
+  border-color: var(--foreground);
+}
+.tabs span {
+  font-size: 8px;
+  opacity: 0.45;
+}
+.boardToggle {
+  display: flex;
+  gap: 2px;
+}
+.boardToggle button {
+  display: grid;
+  place-items: center;
+  background: transparent;
+  border-radius: 7px;
+  width: 23px;
+  height: 25px;
+  color: var(--muted-foreground);
+}
+.boardToggle button[aria-pressed="true"] {
+  background: rgb(128 128 140 / 0.08);
+  color: var(--foreground);
+}
+.movements {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+.movement {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+  border-radius: 12px;
+  padding: 3px 0 8px;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--muted-foreground);
+}
+.movement > svg {
+  width: min(100%, 76px);
+  height: auto;
+}
+.movement > span {
+  font-size: 9px;
+  white-space: nowrap;
+}
+.movement:hover {
+  background: rgb(128 128 140 / 0.05);
+  color: var(--foreground);
+}
+.movement[aria-pressed="true"] {
+  background: rgb(255 255 255 / 0.7);
+  border-color: rgb(128 128 140 / 0.1);
+  color: var(--foreground);
+}
+:global(.dark) .movement[aria-pressed="true"] {
+  background: rgb(255 255 255 / 0.055);
+}
+.player {
+  padding: 21px 1px 10px;
+}
+.transport {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+.transport button {
+  width: 30px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  background: transparent;
+  color: var(--muted-foreground);
+  border-radius: 50%;
+}
+.transport .playButton {
+  background: var(--foreground);
+  color: var(--background);
+  width: 35px;
+  height: 35px;
+}
+.transport button:disabled {
+  opacity: 0.3;
+}
+.transport select {
+  background: transparent;
+  color: var(--muted-foreground);
+  padding: 3px;
+  width: 55px;
+  font-size: 11px;
+  margin-left: 10px;
+}
+.transport option,
+.addStep option {
+  background: var(--card);
+  color: var(--foreground);
+}
+.follow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  margin-top: 22px;
+}
+.motionNote {
+  color: var(--muted-foreground);
+  font-size: 10px;
+  line-height: 1.6;
+  margin-top: 12px;
+}
+.sequenceHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 21px 0 14px;
+  font-size: 10px;
+  color: var(--muted-foreground);
+}
+.sequenceHeader > span,
+.sequenceHeader button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.sequenceHeader button {
+  font-size: 11px;
+  color: var(--foreground);
+  background: transparent;
+}
+.steps {
+  display: grid;
+  gap: 14px;
+}
+.step {
+  padding: 0 0 13px;
+  border-bottom: 1px solid rgb(128 128 140 / 0.09);
+}
+.stepTop {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 3px;
+}
+.stepNumber {
+  font-size: 9px;
+  color: var(--muted-foreground);
+  width: 18px;
+}
+.stepPreview {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--foreground);
+  text-align: left;
+  background: transparent;
+}
+.stepActions {
+  display: flex;
+  gap: 1px;
+}
+.stepActions button {
+  display: grid;
+  place-items: center;
+  width: 21px;
+  height: 25px;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--muted-foreground);
+}
+.stepActions button:hover {
+  background: rgb(128 128 140 / 0.07);
+}
+.stepActions button:disabled {
+  opacity: 0.25;
+}
+.step[aria-current="step"] .stepNumber {
+  color: var(--foreground);
+}
+.step[aria-current="step"] .stepNumber::before {
+  content: "";
+  display: inline-block;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--foreground);
+  margin-right: 3px;
+}
+.step label {
+  font-size: 9px;
+}
+.step label output {
+  font-size: 10px;
+}
+.addStep {
+  display: block;
+  width: 100%;
+  margin-top: 17px;
+  padding: 9px 0;
+  color: var(--muted-foreground);
+  background: transparent;
+  font-size: 11px;
+}
+.scrubber {
+  margin-top: 13px;
+}
+.scrubber > div:first-child {
+  display: flex;
+  justify-content: space-between;
+  color: var(--muted-foreground);
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+  margin-bottom: 7px;
+}

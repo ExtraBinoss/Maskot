@@ -5,6 +5,7 @@ import { eyePoses } from './face';
 import { radiusAtAngle, toPoints } from './shape';
 import { SHAPES } from './skins';
 import { STATES } from './states';
+import EYE_FIT_DATA from './eye-fit-data';
 
 const R = 100;
 
@@ -273,9 +274,10 @@ function batir(): Map<
     }),
   );
 }
-// Only calculate the shape/pose actually displayed. Eagerly fitting the whole
-// Lab catalogue would make the lightweight recorder bootstrap pay for it too.
-const DECALAGES = new Map(SHAPES.map((shape) => [shape.radii, new Map<string, Point>()]));
+// Maskot precomputes the original solver's results at build time. Keep the
+// solver as a fallback when adding catalogue entries before regenerating data.
+const PRECOMPUTED: Record<string, Record<string, Point>> = EYE_FIT_DATA;
+const DECALAGES = new Map(SHAPES.map((shape) => [shape.radii, new Map<string, Point>(Object.entries(PRECOMPUTED[shape.id] ?? {}))]));
 
 export function decalageDesYeux(
   radii: number[] | null,

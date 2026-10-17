@@ -1,0 +1,199 @@
+.section {
+  margin-bottom: 25px;
+}
+.section h3 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+.section h3 > span {
+  font-size: 10px;
+  color: var(--muted-foreground);
+  font-weight: 400;
+}
+.shapeGrid,
+.expressionGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+}
+.previewChoice {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 1px 7px;
+  gap: 4px;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--muted-foreground);
+  border-radius: 11px;
+  transition:
+    background 130ms,
+    color 130ms;
+}
+.previewChoice > span {
+  font-size: 9px;
+  white-space: nowrap;
+}
+.previewChoice:hover,
+.eyeChoice:hover {
+  background: rgb(128 128 140 / 0.055);
+  color: var(--foreground);
+}
+.previewChoice[aria-pressed="true"] {
+  background: rgb(255 255 255 / 0.78);
+  color: var(--foreground);
+  border-color: rgb(100 100 110 / 0.1);
+  box-shadow: 0 2px 8px #20203004;
+}
+:global(.dark) .previewChoice[aria-pressed="true"] {
+  background: rgb(255 255 255 / 0.07);
+  border-color: rgb(255 255 255 / 0.08);
+}
+.eyeGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 7px;
+}
+.eyeChoice {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  border-radius: 11px;
+  background: transparent;
+  padding: 5px 3px;
+  color: var(--muted-foreground);
+  border: 1px solid transparent;
+}
+.eyeChoice > svg {
+  width: 31px;
+  height: 31px;
+}
+.eyeChoice > span {
+  font-size: 10px;
+}
+.eyeChoice[aria-pressed="true"] {
+  background: color-mix(in srgb, var(--foreground) 5%, transparent);
+  border-color: rgb(128 128 140 / 0.1);
+  color: var(--foreground);
+}
+.colorInput {
+  background: transparent;
+  text-align: right;
+  color: var(--muted-foreground);
+  width: 76px;
+  outline-offset: 2px;
+  padding: 3px 0;
+  font-size: 10px;
+  font-family: var(--font-heading);
+  text-transform: uppercase;
+  font-weight: 400;
+}
+.colorInput[aria-invalid="true"] {
+  color: var(--destructive);
+}
+.palette {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 12px 14px;
+  padding: 2px 3px 3px;
+}
+.palette button {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1px solid #8882;
+  justify-self: center;
+}
+.palette button[aria-pressed="true"] {
+  outline: 1.5px solid var(--foreground);
+  outline-offset: 3px;
+}
+.error {
+  color: var(--destructive);
+  font-size: 11px;
+  margin-top: 8px;
+}
+.details {
+  margin-bottom: 17px;
+  font-size: 12px;
+}
+.details summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  padding-block: 6px;
+  list-style: none;
+}
+.details summary::-webkit-details-marker {
+  display: none;
+}
+.details summary svg {
+  color: var(--muted-foreground);
+  transition: transform 140ms;
+}
+.details[open] summary svg {
+  transform: rotate(180deg);
+}
+.geometry {
+  display: grid;
+  gap: 14px;
+  padding: 15px 1px 0;
+}
+.textButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  background: transparent;
+  color: var(--muted-foreground);
+  font-size: 10px;
+  padding-block: 4px;
+}
+.settingRow,
+.surfaceRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding-block: 9px;
+  font-size: 11px;
+}
+.surfaceRow {
+  margin-top: 8px;
+  color: var(--muted-foreground);
+}
+.surfaces {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-right: 2px;
+}
+.surfaces button {
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  border: 1px solid #8884;
+}
+.surfaces [data-surface="paper"] {
+  background: #f5f3f0;
+}
+.surfaces [data-surface="dark"] {
+  background: #252528;
+}
+.surfaces [data-surface="transparent"] {
+  background: repeating-conic-gradient(#d2d2d7 0% 25%, #fff 0% 50%) 0 / 7px 7px;
+}
+.surfaces [aria-pressed="true"] {
+  outline: 1px solid var(--muted-foreground);
+  outline-offset: 3px;
+}

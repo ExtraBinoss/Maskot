@@ -55,7 +55,7 @@ export function parsePreset(text: string): MascotPreset {
     })
   ) {
     throw new Error(
-      "Ce fichier ne contient pas un look et une séquence valides pour MascotLab.",
+      "Ce fichier ne contient pas un look et une séquence valides pour Maskot.",
     );
   }
   return {

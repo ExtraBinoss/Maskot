@@ -1,12 +1,13 @@
 {
-  "name": "mascotlab",
+  "name": "maskot",
   "version": "0.1.0",
   "private": true,
   "type": "module",
   "packageManager": "bun@1.4.2",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
-    "build": "tsc --noEmit && vite build",
+    "build": "bun run generate:eye-fit && tsc --noEmit && vite build",
+    "generate:eye-fit": "bun scripts/generate-eye-fit.ts",
     "preview": "vite preview --host 127.0.0.1",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",

@@ -1,0 +1,98 @@
+.about {
+  padding-top: 7px;
+}
+.tag {
+  display: inline-block;
+  font-size: 8px;
+  letter-spacing: 1.3px;
+  color: var(--muted-foreground);
+}
+.intro h3 {
+  font-size: 27px;
+  font-weight: 450;
+  letter-spacing: -1.25px;
+  line-height: 1.22;
+  margin: 19px 0 25px;
+}
+.intro h3 span {
+  color: var(--muted-foreground);
+}
+.intro p,
+.credits p {
+  font-size: 12px;
+  line-height: 1.8;
+  color: var(--muted-foreground);
+  margin-top: 14px;
+}
+.credits {
+  margin-top: 39px;
+}
+.credits h4 {
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: -0.25px;
+}
+.credits p a {
+  display: inline;
+  color: var(--foreground);
+}
+.credits p a svg {
+  display: inline;
+  vertical-align: middle;
+  margin-left: 3px;
+}
+.sourceLink,
+.licenseLink {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+}
+.sourceLink {
+  margin-top: 23px;
+}
+.licenseLink {
+  margin-top: 14px;
+  color: var(--muted-foreground);
+  font-size: 10px;
+}
+.footer {
+  margin-top: 45px;
+  padding-top: 19px;
+  border-top: 1px solid rgb(128 128 140 / 0.13);
+  color: var(--muted-foreground);
+  font-size: 9px;
+}
+.footerRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+.footerRow a {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.footer > p {
+  margin-top: 9px;
+  font-size: 9px;
+}
+.footer p a {
+  color: var(--foreground);
+}
+.footerWordmark {
+  display: block;
+  font: 600 74px/0.95 var(--font-heading);
+  text-align: center;
+  letter-spacing: -6px;
+  color: transparent;
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--foreground) 25%, transparent),
+    color-mix(in srgb, var(--foreground) 3%, transparent)
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+  margin: 32px -8px 0;
+  padding-bottom: 4px;
+}

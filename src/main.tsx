@@ -1,7 +1,7 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { Provider } from "jotai";
-import { MotionConfig } from "motion/react";
+import { LazyMotion, domAnimation, MotionConfig } from "motion/react";
 import { App } from "./App";
 import { ThemeSync } from "./state/theme";
 import { createLabStore, PRESET_KEY } from "./state/lab";
@@ -20,9 +20,11 @@ createRoot(document.getElementById("root")!).render(
     <Provider store={store}>
       <MotionConfig reducedMotion="user">
         <ThemeSync />
-        <PlayerProvider player={player}>
-          <App />
-        </PlayerProvider>
+        <LazyMotion features={domAnimation} strict>
+          <PlayerProvider player={player}>
+            <App />
+          </PlayerProvider>
+        </LazyMotion>
       </MotionConfig>
     </Provider>
   </StrictMode>,
