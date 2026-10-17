@@ -1,6 +1,6 @@
 # Provenance et licences
 
-MascotLab porte en React l’atelier de mascottes de [Beam](https://github.com/BeamRecorder/Beam).
+Maskot (anciennement MascotLab) porte en React l’atelier de mascottes de [Beam](https://github.com/BeamRecorder/Beam).
 Le modèle, la validation, l’export, le lecteur, le rendu SVG et l’organisation des contrôles
 proviennent de `apps/desktop/src/components/brand/lab/` et `brand/Beamy/BeamySvg.vue`.
 Les adaptations de ces sources sont distribuées sous MPL-2.0, dont le texte est conservé dans `LICENSE`.
@@ -14,4 +14,6 @@ La configuration React, les tokens de thème et le bouton shadcn/Base UI suivent
 Space Grotesk et Source Sans 3 sont servis localement via leurs packages Fontsource,
 avec leurs licences OFL fournies dans les dépendances.
 
-Le code source de MascotLab est disponible sur https://github.com/ExtraBinoss/MascotLab.
+La présentation de Maskot fait référence à l’inspiration du Grok bot de xAI. Le projet est indépendant et n’est pas affilié à xAI.
+
+Le code source de Maskot est disponible sur https://github.com/ExtraBinoss/Maskot.

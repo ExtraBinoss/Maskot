@@ -1,13 +1,13 @@
-MascotLab — https://github.com/ExtraBinoss/MascotLab
+Maskot — https://github.com/ExtraBinoss/Maskot
 
 Atelier adapté de Beam (https://github.com/BeamRecorder/Beam), MPL-2.0.
-Le code source et les adaptations sont disponibles dans le dépôt MascotLab.
+Le code source et les adaptations sont disponibles dans le dépôt Maskot.
 Texte de la licence : /licenses/Beam-MPL-2.0.txt
 
 Moteur adapté de Bloub par Jérémy Perret, MIT.
 https://github.com/jeremy-prt/bloub
 Texte de la licence : /licenses/Bloub-MIT.txt
-Notice d’origine : /licenses/Bloub-NOTICE.md
+Notice d’origine : /licenses/Bloub-NOTICE.txt
 
 Polices : Space Grotesk et Source Sans 3 (SIL Open Font License).
 Fichiers de licences : /licenses/Space-Grotesk-OFL.txt et /licenses/Source-Sans-3-OFL.txt

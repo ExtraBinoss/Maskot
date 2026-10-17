@@ -12,3 +12,6 @@ artifacts/
 *.local
 test-results/
 playwright-report/
+*.[mM][dD]
+*.markdown
+*.mdx

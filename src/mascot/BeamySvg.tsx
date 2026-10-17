@@ -1,4 +1,4 @@
-// React port of Beam's BeamySvg.vue (MPL-2.0). See NOTICE.md and engine/NOTICE.md.
+// React port of Beam's BeamySvg.vue (MPL-2.0). See NOTICE.txt and engine/NOTICE.txt.
 import { useId, type Ref } from "react";
 import type { BotFrame, DotRender } from "./engine/bot-types";
 import { NOTIF_BLUE } from "./engine/decor";
