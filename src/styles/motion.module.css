@@ -103,7 +103,7 @@
   bottom: 0;
   left: 88px;
   right: calc(var(--panel-width) + var(--edge) * 2);
-  height: 224px;
+  height: 244px;
   padding: 14px 4px 20px;
   z-index: 3;
   min-width: 0;
@@ -113,11 +113,15 @@
   top: -24px;
   left: 50%;
   transform: translateX(-50%);
-  display: flex;
+  display: grid;
+  grid-template-columns: 48px 44px 48px;
   align-items: center;
   gap: 13px;
   font-size: 13px;
   font-variant-numeric: tabular-nums;
+}
+.playback > span:first-child {
+  text-align: right;
 }
 .playback > span:last-child {
   color: var(--muted-foreground);
@@ -319,16 +323,57 @@
   color: var(--muted-foreground);
   margin-left: 4px;
 }
-.addCard select {
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  width: 100%;
-  cursor: pointer;
+.addCard:hover,
+.addCard[data-popup-open] {
+  background: var(--accent-soft);
+  color: var(--primary);
+  border-color: var(--primary);
 }
-.addCard:focus-within {
-  outline: 2px solid var(--foreground);
-  outline-offset: 2px;
+.addPopover {
+  width: min(360px, calc(100vw - 32px));
+  max-height: min(440px, var(--available-height));
+  overflow-y: auto;
+  scrollbar-width: thin;
+  padding: 16px;
+  gap: 10px;
+  border: 1px solid var(--control-border);
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--popover) 82%, transparent);
+  backdrop-filter: blur(24px);
+  box-shadow: var(--shadow-popover);
+}
+.addPopover [data-slot="popover-title"] {
+  font: 500 13px var(--font-sans);
+}
+.addGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 4px;
+}
+.addGrid button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  min-width: 0;
+  padding: 5px 2px 8px;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--muted-foreground);
+  transition:
+    background 120ms,
+    color 120ms;
+}
+.addGrid button:hover,
+.addGrid button:focus-visible {
+  background: var(--accent-soft);
+  color: var(--primary);
+}
+.addGrid span {
+  font-size: 10px;
+  text-align: center;
+  line-height: 1.2;
 }
 .cursor {
   position: absolute;
@@ -356,7 +401,7 @@
   justify-content: flex-end;
   gap: 16px;
   margin-top: 5px;
-  height: 22px;
+  height: 50px;
   color: var(--muted-foreground);
   font-size: 11px;
 }
@@ -365,31 +410,25 @@
   font-size: 10px;
   opacity: 0.7;
 }
+.history {
+  order: -1;
+}
+.history button {
+  border-radius: 8px;
+}
 .zoom {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 10px;
+  width: 200px;
+  min-width: 140px;
+  margin-left: auto;
 }
-.zoom input {
-  width: 90px;
-  height: 3px;
-  accent-color: var(--primary);
+.zoom > div {
+  flex: 1;
 }
-.zoom span {
-  min-width: 31px;
-  font-variant-numeric: tabular-nums;
-}
-.counter {
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
-.replay {
-  display: grid;
-  place-items: center;
-  background: transparent;
-  color: inherit;
-  width: 24px;
-  height: 24px;
+.zoom label {
+  font-size: 10px;
 }
 .exportDialog {
   margin: auto;
@@ -497,15 +536,15 @@
   .timelineTools {
     gap: 10px;
   }
-  .zoom input {
-    width: 60px;
+  .zoom {
+    width: 180px;
   }
 }
 @media (max-width: 760px) {
   .timeline {
     left: 78px;
     right: 16px;
-    height: 192px;
+    height: 226px;
     padding: 10px 0 12px;
     background: var(--background);
   }
@@ -530,6 +569,7 @@
   }
   .playback {
     top: -33px;
+    grid-template-columns: 40px 38px 40px;
   }
   .playButton {
     width: 38px;
@@ -545,16 +585,16 @@
     gap: 8px;
     font-size: 10px;
   }
-  .zoom input {
-    width: 42px;
+  .zoom {
+    width: 160px;
+    min-width: 0;
   }
-  .zoom svg,
-  .replay {
+  .zoom > svg {
     display: none;
   }
   :global([data-view="motion"]) > :global(#settings) {
     top: 33dvh;
-    bottom: 242px;
+    bottom: 276px;
   }
   .movement > span {
     font-size: 9px;

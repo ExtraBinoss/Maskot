@@ -1,9 +1,15 @@
 import { useTranslation } from "react-i18next";
 // Horizontal montage adapted from Bloub's Timeline / TimelineTrack (MIT).
-import { useRef, useState, type PointerEvent } from "react";
+import { useEffect, useRef, useState, type PointerEvent } from "react";
 import { useAtom, useAtomValue, useStore } from "jotai";
-import { Pause, Play, Plus, X, ZoomIn } from "lucide-react";
+import { Pause, Play, Plus, X, ZoomIn, Undo2, Redo2 } from "lucide-react";
 import {
+  beginTimelineEditAtom,
+  finishTimelineEditAtom,
+  canUndoTimelineAtom,
+  canRedoTimelineAtom,
+  undoTimelineAtom,
+  redoTimelineAtom,
   activeStepAtom,
   boardAtom,
   durationAtom,
@@ -15,10 +21,18 @@ import {
 } from "../state/lab";
 import { STATE_LABELS, timelineDuration } from "../mascot/mascot-catalog";
 import { SEQUENCE } from "../mascot/engine/states";
-import type { StateId } from "../mascot/engine/bot-types";
 import { usePlayer } from "../mascot/PlayerProvider";
 import { MascotThumbnail } from "./MascotThumbnail";
 import { VideoExport } from "./VideoExport";
+import { Range } from "./ui/range";
+import { Button } from "./ui/button";
+import { ButtonGroup } from "./ui/button-group";
+import {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+  PopoverTitle,
+} from "./ui/popover";
 import s from "../styles/motion.module.css";
 
 const timeLabel = (seconds: number) =>
@@ -87,15 +101,6 @@ function Seek() {
     />
   );
 }
-function Counter() {
-  const elapsed = useAtomValue(elapsedAtom),
-    total = useAtomValue(durationAtom);
-  return (
-    <span className={s.counter}>
-      {timeLabel(elapsed)} / {timeLabel(total)}
-    </span>
-  );
-}
 type Drag = {
   from: number;
   to: number;
@@ -113,6 +118,7 @@ export default function SequenceEditor() {
     sequencing = useAtomValue(sequencingAtom);
   const store = useStore(),
     player = usePlayer();
+  useEffect(() => () => store.set(finishTimelineEditAtom, true), [store]);
   const track = useRef<HTMLDivElement>(null);
   const dragRef = useRef<Drag | null>(null);
   const resizeRef = useRef<{
@@ -122,6 +128,9 @@ export default function SequenceEditor() {
   } | null>(null);
   const [drag, setDrag] = useState<Drag | null>(null);
   const [zoom, setZoom] = useState(1);
+  const [addOpen, setAddOpen] = useState(false);
+  const canUndo = useAtomValue(canUndoTimelineAtom);
+  const canRedo = useAtomValue(canRedoTimelineAtom);
   const scale = 48 * zoom,
     total = timelineDuration(steps);
   const offset = (index: number) => timelineDuration(steps.slice(0, index));
@@ -337,6 +346,7 @@ export default function SequenceEditor() {
                     })}
                     onPointerDown={(e) => {
                       e.currentTarget.setPointerCapture(e.pointerId);
+                      store.set(beginTimelineEditAtom);
                       resizeRef.current = {
                         index,
                         x: e.clientX,
@@ -353,9 +363,17 @@ export default function SequenceEditor() {
                     }}
                     onPointerUp={() => {
                       resizeRef.current = null;
+                      store.set(finishTimelineEditAtom);
                     }}
                     onPointerCancel={() => {
                       resizeRef.current = null;
+                      store.set(finishTimelineEditAtom, true);
+                    }}
+                    onLostPointerCapture={() => {
+                      if (resizeRef.current) {
+                        resizeRef.current = null;
+                        store.set(finishTimelineEditAtom, true);
+                      }
                     }}
                     onKeyDown={(e) => {
                       if (
@@ -379,30 +397,49 @@ export default function SequenceEditor() {
                 </article>
               );
             })}
-            <label className={s.addCard}>
-              <Plus size={18} />
-              <select
-                value=""
-                aria-label={t("Ajouter un mouvement")}
-                disabled={steps.length >= 32}
-                onChange={(e) => {
-                  const state = e.currentTarget.value as StateId;
-                  if (steps.length < 32 && SEQUENCE.includes(state)) {
-                    setSteps([...steps, { state, duration: 2 }]);
-                    player.seek(total);
-                  }
-                }}
+            <Popover open={addOpen} onOpenChange={setAddOpen}>
+              <PopoverTrigger
+                render={
+                  <button
+                    className={s.addCard}
+                    aria-label={t("Ajouter un mouvement")}
+                    disabled={steps.length >= 32}
+                  >
+                    <Plus size={18} />
+                  </button>
+                }
+              />
+              <PopoverContent
+                side="top"
+                align="end"
+                sideOffset={12}
+                className={s.addPopover}
               >
-                <option value="" disabled>
-                  {t("Ajouter")}
-                </option>
-                {SEQUENCE.map((state) => (
-                  <option key={state} value={state}>
-                    {t(STATE_LABELS[state])}
-                  </option>
-                ))}
-              </select>
-            </label>
+                <PopoverTitle>{t("Ajouter un mouvement")}</PopoverTitle>
+                <div className={s.addGrid}>
+                  {SEQUENCE.map((state) => (
+                    <button
+                      key={state}
+                      aria-label={t(STATE_LABELS[state])}
+                      onClick={() => {
+                        if (steps.length >= 32) return;
+                        setSteps([...steps, { state, duration: 2 }]);
+                        player.seek(total);
+                        setAddOpen(false);
+                      }}
+                    >
+                      <MascotThumbnail
+                        look={look}
+                        state={state}
+                        portrait={false}
+                        size={54}
+                      />
+                      <span>{t(STATE_LABELS[state])}</span>
+                    </button>
+                  ))}
+                </div>
+              </PopoverContent>
+            </Popover>
           </div>
           <Cursor scale={scale} />
         </div>
@@ -411,27 +448,43 @@ export default function SequenceEditor() {
         <span className={s.keyboardHint}>
           {t("Glisser · étirer · Alt + ← → pour déplacer")}
         </span>
-        <label className={s.zoom}>
-          <ZoomIn size={13} />
-          <input
-            type="range"
-            aria-label={t("Zoom de la timeline")}
-            min={0.5}
-            max={2.5}
-            step={0.1}
-            value={zoom}
-            onChange={(e) => setZoom(Number(e.currentTarget.value))}
-          />
-          <span>{Math.round(zoom * 100)} %</span>
-        </label>
-        <Counter />
-        <button
-          aria-label={t("Jouer la séquence")}
-          className={s.replay}
-          onClick={player.playSequence}
+        <ButtonGroup
+          aria-label={t("Historique du montage")}
+          className={s.history}
         >
-          <Play size={12} />
-        </button>
+          <Button
+            variant="outline"
+            size="icon-sm"
+            aria-label={t("Annuler la modification")}
+            title={t("Annuler (Ctrl/⌘ Z)")}
+            disabled={!canUndo}
+            onClick={() => store.set(undoTimelineAtom)}
+          >
+            <Undo2 />
+          </Button>
+          <Button
+            variant="outline"
+            size="icon-sm"
+            aria-label={t("Rétablir")}
+            title={t("Rétablir (Ctrl/⌘ Maj Z)")}
+            disabled={!canRedo}
+            onClick={() => store.set(redoTimelineAtom)}
+          >
+            <Redo2 />
+          </Button>
+        </ButtonGroup>
+        <div className={s.zoom}>
+          <ZoomIn size={14} />
+          <Range
+            label={t("Zoom de la timeline")}
+            value={Math.round(zoom * 100)}
+            onChange={(value) => setZoom(value / 100)}
+            min={50}
+            max={250}
+            step={10}
+            suffix=" %"
+          />
+        </div>
       </div>
     </section>
   );

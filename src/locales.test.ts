@@ -7,6 +7,7 @@ import {
   STATE_LABELS,
 } from "./mascot/mascot-catalog";
 import { EYE_STYLES } from "./mascot/engine/eye-styles";
+import { FIGURES } from "./mascot/figures";
 
 describe("studio translations", () => {
   it("covers the entire shape, eye, mood and motion catalogs in both languages", () => {
@@ -15,6 +16,7 @@ describe("studio translations", () => {
       ...Object.values(EXPRESSION_LABELS),
       ...Object.values(STATE_LABELS),
       ...EYE_STYLES.map((eye) => eye.label),
+      ...FIGURES.map((figure) => figure.label),
     ];
     for (const label of labels) {
       expect(en[label], label).toBeTruthy();

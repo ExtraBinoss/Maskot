@@ -1,6 +1,5 @@
-import { BotEngine } from "./engine/engine";
+import { StudioEngine } from "./studio-engine";
 import { EXPRESSION_BY_ID } from "./engine/expressions";
-import { SHAPE_BY_ID } from "./engine/skins";
 import { RAYON } from "./engine/repere";
 import { DEFAULT_EYE_GEOMETRY } from "./engine/eye-geometry";
 import type { ExpressionId, ShapeId, StateId } from "./engine/bot-types";
@@ -123,11 +122,11 @@ export const PALETTE = [
 export function createMascotEngine(
   look: MascotLook,
   state: StateId = "idle",
-): BotEngine {
-  const engine = new BotEngine(
+): StudioEngine {
+  const engine = new StudioEngine(
     RAYON,
     state,
-    SHAPE_BY_ID.get(look.shape)!.radii,
+    look.shape,
     EXPRESSION_BY_ID.get(look.expression)!,
   );
   engine.setEyes(look.eyes, -1);

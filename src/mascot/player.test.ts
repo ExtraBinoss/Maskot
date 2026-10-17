@@ -11,6 +11,8 @@ import {
   paintAtom,
   previewColorAtom,
   commitColorAtom,
+  previewEyeGeometryAtom,
+  commitEyeGeometryAtom,
   presetAtom,
   reducedMotionAtom,
   sequencingAtom,
@@ -69,6 +71,27 @@ describe("React/Jotai mascot playback", () => {
     callbacks.clear();
     pending.forEach((callback) => callback(ms));
   };
+  it("previews eye geometry immediately without persisting or retargeting a morph on each drag", () => {
+    const { store } = setup(true);
+    const original = store.get(lookAtom);
+    for (const size of [1.1, 1.3, 1.5]) {
+      const geometry = { ...original.eyeGeometry, size };
+      store.set(previewEyeGeometryAtom, geometry);
+      const expected = createMascotEngine({
+        ...original,
+        eyeGeometry: geometry,
+      }).sample(0);
+      expect(store.get(frameAtom).eyes).toEqual(expected.eyes);
+      expect(store.get(lookAtom)).toBe(original);
+      expect(env.save).not.toHaveBeenCalled();
+    }
+    const shown = store.get(frameAtom);
+    store.set(commitEyeGeometryAtom, store.get(previewEyeGeometryAtom)!);
+    expect(store.get(frameAtom).eyes).toEqual(shown.eyes);
+    expect(store.get(previewEyeGeometryAtom)).toBeNull();
+    expect(env.save).toHaveBeenCalledTimes(1);
+    expect(callbacks.size).toBe(0);
+  });
   it("owns one loop, freezes on pause and resumes without a time jump", () => {
     const { store } = setup();
     expect(callbacks.size).toBe(1);

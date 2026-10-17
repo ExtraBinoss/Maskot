@@ -2,7 +2,14 @@ import { useTranslation } from "react-i18next";
 import { lazy, Suspense, useEffect, useRef } from "react";
 import { useAtomValue, useStore } from "jotai";
 import { m } from "motion/react";
-import { boardAtom, playingAtom, statusAtom, viewAtom } from "../state/lab";
+import {
+  boardAtom,
+  playingAtom,
+  statusAtom,
+  viewAtom,
+  undoTimelineAtom,
+  redoTimelineAtom,
+} from "../state/lab";
 import { Sidebar } from "./Sidebar";
 import { Canvas } from "./Canvas";
 import StaticPanel from "./StaticPanel";
@@ -57,6 +64,28 @@ export function Workspace() {
   }, [view]);
   useEffect(() => {
     const keyboard = (event: KeyboardEvent) => {
+      if (
+        store.get(viewAtom) === "motion" &&
+        (event.ctrlKey || event.metaKey) &&
+        !event.altKey &&
+        !event.defaultPrevented &&
+        !event.repeat &&
+        !(
+          event.target instanceof Element &&
+          event.target.closest(
+            'input, textarea, [contenteditable]:not([contenteditable="false"])',
+          )
+        )
+      ) {
+        const key = event.key.toLowerCase();
+        if (key === "z" || (key === "y" && !event.shiftKey)) {
+          event.preventDefault();
+          store.set(
+            key === "y" || event.shiftKey ? redoTimelineAtom : undoTimelineAtom,
+          );
+          return;
+        }
+      }
       if (
         event.code !== "Space" ||
         event.defaultPrevented ||

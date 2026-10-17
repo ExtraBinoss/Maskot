@@ -42,6 +42,11 @@
   font-size: 11px;
   white-space: nowrap;
 }
+.previewChoice > span:last-child {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 .previewChoice:hover,
 .eyeChoice:hover {
   background: rgb(128 128 140 / 0.055);
@@ -359,4 +364,10 @@
 .eyeChoice[aria-pressed="true"] {
   background: var(--accent-soft);
   color: var(--primary);
+}
+
+.familyLabel {
+  margin: 14px 0 7px;
+  font: 500 11px var(--font-sans);
+  color: var(--muted-foreground);
 }

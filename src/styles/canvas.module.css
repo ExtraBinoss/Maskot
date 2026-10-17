@@ -5,16 +5,6 @@
   background: var(--background);
   color: var(--foreground);
 }
-.canvas[data-surface="dark"] {
-  background: #1c1c20;
-  color: #eae9ec;
-}
-.canvas[data-surface="transparent"] {
-  background:
-    repeating-conic-gradient(rgb(128 128 140 / 0.04) 0% 25%, transparent 0% 50%)
-      0 / 20px 20px,
-    var(--background);
-}
 .scene {
   position: absolute;
   inset: 0;
@@ -26,23 +16,27 @@
     calc(100vw - var(--panel-width) - 130px)
   );
   position: absolute;
-  left: 50%;
+  left: calc((100vw - var(--panel-width) - var(--edge) * 2 + 88px) / 2);
   top: 50%;
   width: var(--avatar-size);
   aspect-ratio: 1;
   display: grid;
   place-items: center;
-  transform: translate(calc(-50% - var(--panel-width) / 2), calc(-50% - 95px))
-    scale(1);
+  transform: translate(-50%, calc(-50% - 95px)) scale(1);
   transition: transform 1s cubic-bezier(0.22, 1, 0.36, 1);
 }
-.mascot > svg {
+.arrival {
+  width: 100%;
+  aspect-ratio: 1;
+}
+.arrival > svg {
   display: block;
   width: 100%;
   height: auto;
   overflow: visible;
 }
 .canvas[data-view="about"] .mascot {
+  left: 50%;
   --avatar-size: min(520px, 70dvh);
   transform: translate(calc(-50% + 40vw), -50%) scale(2.8);
 }

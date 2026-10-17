@@ -12,6 +12,7 @@ export function Range({
   label,
   value,
   onChange,
+  onChangeEnd,
   min,
   max,
   step = 1,
@@ -22,6 +23,7 @@ export function Range({
   label: string;
   value: number;
   onChange: (value: number) => void;
+  onChangeEnd?: (value: number) => void;
   min: number;
   max: number;
   step?: number;
@@ -46,6 +48,7 @@ export function Range({
     const rounded = Number(next.toFixed(8));
     setDraft({ source: rounded, text: String(rounded) });
     onChange(rounded);
+    onChangeEnd?.(rounded);
   };
   return (
     <div className={styles.range}>
@@ -72,6 +75,7 @@ export function Range({
                           text: String(defaultValue),
                         });
                         onChange(defaultValue);
+                        onChangeEnd?.(defaultValue);
                       }}
                     >
                       <RotateCcw size={13} />
@@ -119,6 +123,7 @@ export function Range({
         step={step}
         value={value}
         onValueChange={(next) => onChange(next as number)}
+        onValueCommitted={(next) => onChangeEnd?.(next as number)}
         showTooltip
         tooltipContent={(next) => `${Number(next.toFixed(2))}${suffix}`}
       />

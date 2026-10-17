@@ -1,6 +1,6 @@
 // Playback adapted from Beam's useMascotPlayer.ts (MPL-2.0).
 import { EXPRESSION_BY_ID } from "./engine/expressions";
-import { mixHex, SHAPE_BY_ID } from "./engine/skins";
+import { mixHex } from "./engine/skins";
 import { clamp } from "./engine/math";
 import { SEQUENCE } from "./engine/states";
 import type { StateId } from "./engine/bot-types";
@@ -13,6 +13,7 @@ import {
   followAtom,
   frameAtom,
   paintAtom,
+  previewEyeGeometryAtom,
   lookAtom,
   playingAtom,
   presetAtom,
@@ -191,7 +192,7 @@ export function createMascotPlayer(store: LabStore, env: PlayerEnvironment) {
     const at = animated ? appearanceClock : appearanceClock - 1;
     let geometryChanged = false;
     if (look.shape !== appliedLook.shape) {
-      engine.setShape(SHAPE_BY_ID.get(look.shape)!.radii, at);
+      engine.setFigure(look.shape, at, clock);
       geometryChanged = true;
     }
     if (look.expression !== appliedLook.expression) {
@@ -209,7 +210,10 @@ export function createMascotPlayer(store: LabStore, env: PlayerEnvironment) {
           appliedLook.eyeGeometry[key as keyof typeof look.eyeGeometry],
       )
     ) {
-      engine.setEyeGeometry(look.eyeGeometry, at);
+      engine.setEyeGeometry(
+        look.eyeGeometry,
+        store.get(previewEyeGeometryAtom) ? undefined : at,
+      );
       geometryChanged = true;
     }
     const paintTargetChanged =
@@ -224,10 +228,11 @@ export function createMascotPlayer(store: LabStore, env: PlayerEnvironment) {
     }
     if (!geometryChanged && !paintChanged) return;
     if (geometryChanged) {
-      geometryUntil = animated ? appearanceClock + 0.45 : -1;
-      geometryAnimating = animated;
+      geometryAnimating = animated && !store.get(previewEyeGeometryAtom);
+      geometryUntil = geometryAnimating ? appearanceClock + 0.45 : -1;
     }
-    if (animated) appearanceUntil = appearanceClock + 0.45;
+    if (animated && (geometryAnimating || paintChanged))
+      appearanceUntil = appearanceClock + 0.45;
     draw(geometryChanged);
     // Retarget an active gesture without cancelling its existing frame clock.
     if (raf === null) synchronize();
@@ -238,6 +243,12 @@ export function createMascotPlayer(store: LabStore, env: PlayerEnvironment) {
     const cleanups = [
       store.sub(playingAtom, synchronize),
       store.sub(lookAtom, applyLook),
+      store.sub(previewEyeGeometryAtom, () => {
+        const geometry = store.get(previewEyeGeometryAtom);
+        if (!geometry) return;
+        engine.setEyeGeometry(geometry);
+        draw();
+      }),
       store.sub(timelineAtom, () => {
         if (store.get(sequencingAtom))
           seek(Math.min(store.get(elapsedAtom), store.get(durationAtom)));
@@ -267,7 +278,7 @@ export function createMascotPlayer(store: LabStore, env: PlayerEnvironment) {
         } catch {
           store.set(
             statusAtom,
-            "Le navigateur ne permet pas de sauvegarder. Tu peux exporter tes réglages en JSON.",
+            "Le navigateur ne permet pas de sauvegarder tes réglages.",
           );
         }
       }),

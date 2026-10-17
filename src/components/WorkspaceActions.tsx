@@ -1,15 +1,9 @@
 import { useTranslation } from "react-i18next";
-import { useRef, useState, type RefObject } from "react";
+import { useState, type RefObject } from "react";
 import { useAtomValue, useStore } from "jotai";
-import { ArrowDown, Download, RotateCcw, Upload } from "lucide-react";
-import {
-  boardAtom,
-  presetAtom,
-  stateAtom,
-  statusAtom,
-  viewAtom,
-} from "../state/lab";
-import { defaultPreset, parsePreset } from "../mascot/mascot-storage";
+import { ArrowDown, RotateCcw } from "lucide-react";
+import { boardAtom, presetAtom, stateAtom, statusAtom } from "../state/lab";
+import { defaultPreset } from "../mascot/mascot-storage";
 import {
   downloadBlob,
   mascotPng,
@@ -28,7 +22,6 @@ export function WorkspaceActions({
 
   const store = useStore();
   const player = usePlayer();
-  const file = useRef<HTMLInputElement>(null);
   const [exporting, setExporting] = useState(false);
   const board = useAtomValue(boardAtom);
   const exportImage = async (format: "svg" | "png") => {
@@ -55,49 +48,12 @@ export function WorkspaceActions({
       setExporting(false);
     }
   };
-  const exportPreset = () => {
-    try {
-      downloadBlob(
-        new Blob([JSON.stringify(store.get(presetAtom), null, 2)], {
-          type: "application/json",
-        }),
-        "maskot-look.json",
-      );
-      store.set(statusAtom, "Look et chorégraphie exportés.");
-    } catch {
-      store.set(
-        statusAtom,
-        "Impossible d’exporter le look dans ce navigateur.",
-      );
-    }
-  };
-  const importPreset = async (input: HTMLInputElement) => {
-    const selected = input.files?.[0];
-    if (!selected) return;
-    try {
-      if (selected.size > 65536)
-        throw new Error(
-          "Ce fichier est trop volumineux pour un réglage de mascotte (64 Ko maximum).",
-        );
-      store.set(presetAtom, parsePreset(await selected.text()));
-      store.set(viewAtom, "static");
-      player.choose("idle");
-      store.set(statusAtom, "Look et chorégraphie importés.");
-    } catch (error) {
-      store.set(
-        statusAtom,
-        error instanceof Error
-          ? error.message
-          : "Impossible de lire ce fichier.",
-      );
-    } finally {
-      input.value = "";
-    }
-  };
   return (
     <div className={s.panelActions}>
       <div className={s.fileActions}>
-        <button
+        <Button
+          variant="ghost"
+          size="sm"
           title={t("Repartir de zéro")}
           aria-label={t("Repartir de zéro")}
           onClick={() => {
@@ -108,22 +64,7 @@ export function WorkspaceActions({
         >
           <RotateCcw size={13} />
           {t("Réinitialiser")}
-        </button>
-        <span />
-        <button
-          title={t("Importer un look")}
-          aria-label={t("Importer un look")}
-          onClick={() => file.current?.click()}
-        >
-          <Upload size={14} />
-        </button>
-        <button
-          title={t("Exporter le look en JSON")}
-          aria-label={t("Exporter le look")}
-          onClick={exportPreset}
-        >
-          <Download size={14} />
-        </button>
+        </Button>
       </div>
       <div className={s.exportActions}>
         <Button
@@ -141,17 +82,9 @@ export function WorkspaceActions({
           onClick={() => void exportImage("png")}
         >
           <ArrowDown />
-          PNG<span className={s.exportSize}>1024px</span>
+          PNG
         </Button>
       </div>
-      <input
-        ref={file}
-        type="file"
-        hidden
-        accept=".json,application/json"
-        aria-label={t("Importer un réglage de mascotte")}
-        onChange={(event) => void importPreset(event.currentTarget)}
-      />
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { m } from "motion/react";
 import { ButtonGroup } from "./ui/button-group";
+import { Button } from "./ui/button";
 import { ThemePicker } from "./ThemePicker";
 import s from "../styles/about.module.css";
 
@@ -27,14 +28,15 @@ export default function About() {
                   { id: "fr", label: "Français" },
                 ] as const
               ).map(({ id, label }) => (
-                <button
+                <Button
+                  variant="outline"
                   key={id}
                   lang={id}
                   aria-pressed={i18n.resolvedLanguage === id}
                   onClick={() => void i18n.changeLanguage(id)}
                 >
                   {label}
-                </button>
+                </Button>
               ))}
             </ButtonGroup>
           </div>

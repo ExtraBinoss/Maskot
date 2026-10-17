@@ -1,18 +1,14 @@
 import { useLayoutEffect, useRef, type ComponentProps } from "react";
-import {
-  animate,
-  motionValue,
-  type AnimationPlaybackControls,
-  type MotionValue,
-} from "motion";
+import { animate, type AnimationPlaybackControls } from "motion";
+import { svgInterpolator } from "../lib/svg-morph";
 
 type Attribute = {
-  value: MotionValue<string | number>;
+  value: string | number;
   animation?: AnimationPlaybackControls;
 };
 
-// Animate the SVG attributes themselves: projected eye matrices keep their SVG
-// coordinate system, and Motion shares one scheduler across all visible paths.
+// One numeric progress tween per attribute uses Motion's shared scheduler.
+// Coordinates never pass through its general CSS complex-string parser.
 export function MorphPath({
   d,
   fill,
@@ -44,25 +40,33 @@ export function MorphPath({
         active.delete(name);
         continue;
       }
-      const next = typeof target === "number" ? target : String(target);
       let attribute = active.get(name);
       if (!attribute) {
-        attribute = { value: motionValue<string | number>(next) };
+        attribute = { value: target };
         active.set(name, attribute);
         continue;
       }
-      if (attribute.value.get() === next) continue;
+      if (attribute.value === target) continue;
       attribute.animation?.stop();
-      if (reduced || document.hidden) {
-        attribute.value.set(next);
-        element.setAttribute(name, String(next));
+      const interpolate = svgInterpolator(name, attribute.value, target);
+      if (reduced || document.hidden || !interpolate) {
+        attribute.value = target;
+        element.setAttribute(name, String(target));
         continue;
       }
-      element.setAttribute(name, String(attribute.value.get()));
-      attribute.animation = animate(attribute.value, next, {
+      element.setAttribute(name, String(attribute.value));
+      const current = attribute;
+      current.animation = animate(0, 1, {
         duration: 0.45,
         ease: [0.22, 1, 0.36, 1],
-        onUpdate: (value) => element.setAttribute(name, String(value)),
+        onUpdate: (progress) => {
+          current.value = interpolate(progress);
+          element.setAttribute(name, String(current.value));
+        },
+        onComplete: () => {
+          current.value = target;
+          element.setAttribute(name, String(target));
+        },
       });
     }
     return () => {

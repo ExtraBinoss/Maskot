@@ -1,0 +1,9 @@
+Thinking Orbs
+Copyright (c) 2026 Jakub Antalik — MIT License
+https://github.com/Jakubantalik/thinking-orbs
+Source revision: de85557ca220332586d070d8788c0e1d6e877a0d
+
+The geometry engine and tuned presets are vendored from the upstream source.
+Maskot supplies its own SVG renderer, shared player clock, color, morphs and exports.
+Unused painter parameter removed for the host TypeScript checks.
+See /licenses/Thinking-Orbs-MIT.txt for the complete license.

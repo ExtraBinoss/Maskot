@@ -20,7 +20,6 @@
   border: 1px solid var(--glass-border);
   box-shadow: var(--glass-shadow);
   backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
   border-radius: 18px;
 }
 .sidebar {
@@ -113,10 +112,11 @@
 }
 .fileActions button:hover {
   color: var(--foreground);
+  background: var(--control-hover);
 }
 .exportActions {
   display: grid;
-  grid-template-columns: 0.8fr 1.2fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
 }
 .exportActions button {
@@ -124,46 +124,25 @@
   height: 38px;
   font-size: 12px;
 }
-.exportSize {
-  opacity: 0.55;
-  font-size: 10px;
-  margin-left: 4px;
-  font-weight: 400;
-}
 .themePicker {
-  display: flex;
-  gap: 3px;
-  padding: 3px;
+  display: inline-flex;
+  gap: 0;
+  padding: 0;
   border-radius: 11px;
-  border: 1px solid var(--border);
-  background: color-mix(in srgb, var(--secondary) 60%, transparent);
+  box-shadow: var(--control-shadow);
 }
 .themePicker button {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   gap: 6px;
-  background: transparent;
-  padding: 6px 6px;
-  font-size: 12px;
-  height: 32px;
+  padding-inline: 10px;
+  height: 36px;
+  font-size: 13px;
+  border-radius: 11px;
   color: var(--muted-foreground);
-  border-radius: 8px;
 }
 .themePicker button[aria-pressed="true"] {
-  color: var(--foreground);
-}
-.themeSelection {
-  position: absolute;
-  inset: 0;
-  background: var(--card);
-  border-radius: 8px;
-  box-shadow: 0 1px 4px #0001;
-}
-.themePicker button > svg,
-.themePicker button > span:not(.themeSelection) {
-  position: relative;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border-color: var(--primary);
 }
 .toast {
   position: absolute;
@@ -214,7 +193,6 @@
   .glass,
   .toast {
     backdrop-filter: none;
-    -webkit-backdrop-filter: none;
     background: var(--card);
   }
 }
@@ -225,6 +203,11 @@
   }
 }
 @media (max-width: 760px) {
+  .themePicker button {
+    padding-inline: 6px;
+    font-size: 12px;
+    gap: 5px;
+  }
   .workspace {
     --edge: 16px;
     --panel-width: calc(100vw - 94px);

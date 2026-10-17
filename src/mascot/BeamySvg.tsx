@@ -33,29 +33,58 @@ export function BeamySvg({
 }: BeamySvgProps) {
   const Path = morph ? MorphPath : "path";
   const id = useId().replace(/[^a-zA-Z0-9_-]/g, "");
-  const dots = frame.dots.map((dot: DotRender, i) => {
-    const fill =
-      dot.color ??
-      (dot.depth === undefined ? color : mixHex(paper, color, dot.depth));
-    return dot.d ? (
-      <Path
-        key={i}
-        d={dot.d}
-        fill={fill}
-        opacity={dot.opacity}
-        transform={`translate(${dot.x} ${dot.y}) rotate(${dot.rot ?? 0}) scale(${RAYON})`}
-      />
-    ) : (
-      <circle
-        key={i}
-        fill={fill}
-        opacity={dot.opacity}
-        cx={dot.x}
-        cy={dot.y}
-        r={dot.r}
-      />
-    );
-  });
+  // Dense orbs stay vector artwork, with at most twelve painted paths instead
+  // of hundreds of React circle nodes changing on every animation frame.
+  const buckets = new Map<number, string[]>();
+  if (
+    frame.dots.length > 64 &&
+    frame.dots.every((dot) => !dot.d && !dot.color && dot.depth === undefined)
+  ) {
+    for (const dot of frame.dots) {
+      if (dot.r <= 0 || dot.opacity <= 0.01) continue;
+      const opacity = Math.max(1, Math.min(12, Math.round(dot.opacity * 12)));
+      const paths = buckets.get(opacity) ?? [];
+      const x = Number(dot.x.toFixed(2)),
+        y = Number(dot.y.toFixed(2)),
+        r = Number(dot.r.toFixed(2));
+      paths.push(
+        `M${x - r} ${y}a${r} ${r} 0 1 0 ${r * 2} 0a${r} ${r} 0 1 0 ${-r * 2} 0Z`,
+      );
+      buckets.set(opacity, paths);
+    }
+  }
+  const dots = buckets.size
+    ? [...buckets].map(([opacity, paths]) => (
+        <Path
+          key={opacity}
+          d={paths.join("")}
+          fill={color}
+          opacity={opacity / 12}
+        />
+      ))
+    : frame.dots.map((dot: DotRender, i) => {
+        const fill =
+          dot.color ??
+          (dot.depth === undefined ? color : mixHex(paper, color, dot.depth));
+        return dot.d ? (
+          <Path
+            key={i}
+            d={dot.d}
+            fill={fill}
+            opacity={dot.opacity}
+            transform={`translate(${dot.x} ${dot.y}) rotate(${dot.rot ?? 0}) scale(${RAYON})`}
+          />
+        ) : (
+          <circle
+            key={i}
+            fill={fill}
+            opacity={dot.opacity}
+            cx={dot.x}
+            cy={dot.y}
+            r={dot.r}
+          />
+        );
+      });
   return (
     <svg
       ref={ref}
@@ -71,33 +100,6 @@ export function BeamySvg({
       aria-label={label}
     >
       <defs>
-        <mask
-          id={`${id}-face`}
-          maskUnits="userSpaceOnUse"
-          x="-158"
-          y="-158"
-          width="316"
-          height="316"
-        >
-          <Path d={frame.bodyPath} fill="white" />
-          {frame.eyes.map((eye, i) => (
-            <Path
-              key={i}
-              d={eye.d}
-              transform={eye.matrix}
-              opacity={eye.alpha}
-              fill="black"
-            />
-          ))}
-          {frame.notch && (
-            <circle
-              cx={frame.notch.x}
-              cy={frame.notch.y}
-              r={frame.notch.r}
-              fill="black"
-            />
-          )}
-        </mask>
         <clipPath id={`${id}-body`}>
           <Path d={frame.bodyPath} />
         </clipPath>
@@ -134,8 +136,20 @@ export function BeamySvg({
       </g>
       {frame.dotsBehind && <g>{dots}</g>}
       <g opacity={frame.bodyAlpha}>
-        <Path d={frame.bodyPath} fill={paper} />
-        <Path d={frame.bodyPath} fill={color} mask={`url(#${id}-face)`} />
+        <Path d={frame.bodyPath} fill={color} />
+        <g clipPath={`url(#${id}-body)`} fill={eyeColor ?? paper}>
+          {frame.eyes.map((eye, i) => (
+            <Path
+              key={i}
+              d={eye.d}
+              transform={eye.matrix}
+              opacity={eye.alpha}
+            />
+          ))}
+          {frame.notch && (
+            <circle cx={frame.notch.x} cy={frame.notch.y} r={frame.notch.r} />
+          )}
+        </g>
         {(blush || morph) && (
           <g clipPath={`url(#${id}-body)`}>
             {frame.eyes.map((eye, i) =>
@@ -163,18 +177,6 @@ export function BeamySvg({
           </g>
         )}
       </g>
-      {eyeColor && (
-        <g fill={eyeColor}>
-          {frame.eyes.map((eye, i) => (
-            <Path
-              key={i}
-              d={eye.d}
-              transform={eye.matrix}
-              opacity={eye.alpha}
-            />
-          ))}
-        </g>
-      )}
       {!frame.dotsBehind && <g>{dots}</g>}
       {frame.notif && (
         <circle

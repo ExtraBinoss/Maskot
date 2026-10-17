@@ -1,9 +1,13 @@
-import type { ExpressionId, EyeGeometry, EyeStyle, ShapeId, StateId } from './engine/bot-types';
-
-export type PreviewSurface = 'paper' | 'dark' | 'transparent';
+import type {
+  ExpressionId,
+  EyeGeometry,
+  EyeStyle,
+  StateId,
+} from "./engine/bot-types";
+import type { MascotShapeId } from "./figures";
 
 export interface MascotLook {
-  shape: ShapeId;
+  shape: MascotShapeId;
   color: string;
   expression: ExpressionId;
   eyes: EyeStyle;

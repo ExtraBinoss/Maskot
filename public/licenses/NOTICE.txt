@@ -24,3 +24,7 @@ See ReUI-LICENSE.txt.
 GitHub mark: Octicons by GitHub, Inc. (MIT).
 https://github.com/primer/octicons
 See Octicons-MIT.txt.
+
+Thinking Orbs geometry and presets by Jakub Antalik (MIT).
+https://github.com/Jakubantalik/thinking-orbs
+License: Thinking-Orbs-MIT.txt

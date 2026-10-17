@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next";
+import { useDeferredValue } from "react";
 import { useAtom } from "jotai";
 import { EXPRESSIONS } from "../mascot/engine/expressions";
 import { EXPRESSION_LABELS } from "../mascot/mascot-catalog";
@@ -12,6 +13,7 @@ export function Expressions() {
   const { t } = useTranslation();
 
   const [look, setLook] = useAtom(lookAtom);
+  const previewLook = useDeferredValue(look);
   const player = usePlayer();
   return (
     <section className={s.section}>
@@ -35,7 +37,7 @@ export function Expressions() {
               }}
             >
               <VisibleMascotThumbnail
-                look={{ ...look, expression: id }}
+                look={{ ...previewLook, expression: id }}
                 size={46}
               />
               <span>{t(EXPRESSION_LABELS[id])}</span>

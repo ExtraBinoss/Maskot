@@ -1,8 +1,8 @@
 import { useAtom } from "jotai";
 import { useTranslation } from "react-i18next";
-import { m } from "motion/react";
 import { Monitor, Moon, Sun } from "lucide-react";
 import { ButtonGroup } from "./ui/button-group";
+import { Button } from "./ui/button";
 import { themeAtom } from "../state/theme";
 import s from "../styles/workspace.module.css";
 
@@ -26,7 +26,8 @@ export function ThemePicker() {
           { id: "light", label: "Clair", aria: "Thème clair", Icon: Sun },
         ] as const
       ).map(({ id, label, aria, Icon }) => (
-        <button
+        <Button
+          variant="outline"
           key={id}
           aria-label={t(aria)}
           aria-pressed={theme === id}
@@ -43,16 +44,9 @@ export function ThemePicker() {
             setTheme(id);
           }}
         >
-          {theme === id && (
-            <m.span
-              className={s.themeSelection}
-              layoutId="theme-selection"
-              transition={{ type: "spring", stiffness: 460, damping: 36 }}
-            />
-          )}
           <Icon size={14} aria-hidden />
           <span>{t(label)}</span>
-        </button>
+        </Button>
       ))}
     </ButtonGroup>
   );

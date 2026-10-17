@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { useEffect, useRef, type RefObject } from "react";
+import { m, useReducedMotion } from "motion/react";
 import { useAtomValue, useSetAtom, useStore } from "jotai";
 import {
   boardAtom,
@@ -7,7 +8,6 @@ import {
   paintAtom,
   previewColorAtom,
   lookAtom,
-  surfaceAtom,
   viewAtom,
   followAtom,
   playingAtom,
@@ -74,7 +74,7 @@ export function Canvas({
 }) {
   const { t } = useTranslation();
 
-  const surface = useAtomValue(surfaceAtom);
+  const reduced = useReducedMotion();
   const view = useAtomValue(viewAtom);
   const board = useAtomValue(boardAtom);
   const { color } = useAtomValue(lookAtom);
@@ -91,7 +91,7 @@ export function Canvas({
   useEffect(() => {
     rect.current = null;
     if (view !== "about") return;
-    const scene = svgRef.current?.parentElement;
+    const scene = svgRef.current?.parentElement?.parentElement;
     const invalidate = () => {
       rect.current = null;
     };
@@ -112,7 +112,6 @@ export function Canvas({
   return (
     <section
       className={s.canvas}
-      data-surface={view === "about" ? "paper" : surface}
       data-view={view}
       aria-label={t("Aperçu")}
       style={{ "--mascot-color": color } as React.CSSProperties}
@@ -139,8 +138,25 @@ export function Canvas({
         {board ? (
           <Board />
         ) : (
-          <div className={s.mascot} data-mascot-preview>
-            <LiveMascot svgRef={svgRef} />
+          <div className={s.mascot}>
+            <m.div
+              className={s.arrival}
+              data-mascot-preview
+              initial={
+                reduced
+                  ? false
+                  : { opacity: 0, scale: 0.55, y: 44, rotate: -14 }
+              }
+              animate={{ opacity: 1, scale: 1, y: 0, rotate: 0 }}
+              transition={{
+                type: "spring",
+                stiffness: 145,
+                damping: 16,
+                mass: 0.85,
+              }}
+            >
+              <LiveMascot svgRef={svgRef} />
+            </m.div>
           </div>
         )}
       </div>

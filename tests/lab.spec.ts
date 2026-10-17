@@ -229,8 +229,12 @@ test("composes, reorders, seeks backward and forward, then plays the timeline", 
     exact: true,
   });
   await page
-    .getByLabel("Ajouter un mouvement", { exact: true })
-    .selectOption("burst");
+    .getByRole("button", { name: "Ajouter un mouvement", exact: true })
+    .click();
+  await page
+    .getByRole("dialog")
+    .getByRole("button", { name: "Confettis", exact: true })
+    .click();
   await expect(timeline.locator("article")).toHaveCount(5);
   await page
     .getByRole("slider", { name: "Durée du mouvement 5", exact: true })
@@ -255,7 +259,7 @@ test("composes, reorders, seeks backward and forward, then plays the timeline", 
   await setRange(page, "Position dans la séquence", 4.8);
   expect(await artwork(page)).toBe(at);
   await page
-    .getByRole("button", { name: "Jouer la séquence", exact: true })
+    .getByRole("button", { name: "Animer la mascotte", exact: true })
     .click();
   await expect(
     page.getByRole("button", { name: "Mettre en pause", exact: true }),
@@ -283,7 +287,7 @@ test("composes, reorders, seeks backward and forward, then plays the timeline", 
   await expect(preview(page)).toBeVisible();
 });
 
-test("downloads standalone SVG, transparent 1024px PNG and compatible JSON", async ({
+test("downloads standalone SVG and transparent 1024px PNG", async ({
   page,
 }) => {
   await page.getByRole("button", { name: "Motion", exact: true }).click();
@@ -333,25 +337,11 @@ test("downloads standalone SVG, transparent 1024px PNG and compatible JSON", asy
     };
   }, png.bytes.toString("base64"));
   expect(pixels).toEqual({ corner: 0, visible: true });
-  const json = await getDownload("Exporter le look");
-  const preset = JSON.parse(json.bytes.toString());
-  expect(preset.version).toBe(1);
-  expect(preset.timeline).toHaveLength(5);
-  expect(preset.look.eyeGeometry.size).toBe(1);
 });
 
-test("imports legacy presets and rejects malformed, invalid and oversized files", async ({
+test("restores legacy saved presets, validates saved data and enforces montage limits", async ({
   page,
 }) => {
-  const input = page.getByLabel("Importer un réglage de mascotte", {
-    exact: true,
-  });
-  const importJson = async (value: string) =>
-    input.setInputFiles({
-      name: "look.json",
-      mimeType: "application/json",
-      buffer: Buffer.from(value),
-    });
   const preset = {
     version: 1,
     look: {
@@ -363,40 +353,26 @@ test("imports legacy presets and rejects malformed, invalid and oversized files"
     },
     timeline: [{ state: "orbit", duration: 0.6 }],
   };
-  await importJson(JSON.stringify(preset));
-  await expect(
-    page.getByRole("status", { name: "Messages de l’atelier", exact: true }),
-  ).toContainText("importés");
-  await expect(
-    page.getByRole("button", { name: "Triangle", exact: true }),
-  ).toHaveAttribute("aria-pressed", "true");
-  expect(
-    await page.evaluate(
-      (key) => JSON.parse(localStorage.getItem(key)!).look.eyeGeometry.size,
+  const restore = async (value: string) => {
+    await page.evaluate(({ key, value }) => localStorage.setItem(key, value), {
       key,
-    ),
-  ).toBe(1);
-  await importJson("{");
-  await expect(
-    page.getByRole("status", { name: "Messages de l’atelier", exact: true }),
-  ).toContainText("JSON valide");
-  await importJson(
-    JSON.stringify({
-      ...preset,
-      timeline: [{ state: "orbit", duration: 0.5 }],
-    }),
-  );
-  await expect(
-    page.getByRole("status", { name: "Messages de l’atelier", exact: true }),
-  ).toContainText("séquence valides");
-  await importJson(" ".repeat(65537));
-  await expect(
-    page.getByRole("status", { name: "Messages de l’atelier", exact: true }),
-  ).toContainText("trop volumineux");
+      value,
+    });
+    await page.reload();
+  };
+  await restore(JSON.stringify(preset));
   await expect(
     page.getByRole("button", { name: "Triangle", exact: true }),
   ).toHaveAttribute("aria-pressed", "true");
-  await importJson(
+  await page.getByRole("button", { name: "Motion", exact: true }).click();
+  await expect(
+    page.getByRole("button", {
+      name: "Retirer le mouvement 1",
+      exact: true,
+      includeHidden: true,
+    }),
+  ).toBeDisabled();
+  await restore(
     JSON.stringify({
       ...preset,
       timeline: Array.from({ length: 32 }, () => ({
@@ -407,17 +383,15 @@ test("imports legacy presets and rejects malformed, invalid and oversized files"
   );
   await page.getByRole("button", { name: "Motion", exact: true }).click();
   await expect(
-    page.getByLabel("Ajouter un mouvement", { exact: true }),
+    page.getByRole("button", { name: "Ajouter un mouvement", exact: true }),
   ).toBeDisabled();
-  await importJson(JSON.stringify(preset));
-  await page.getByRole("button", { name: "Motion", exact: true }).click();
+  await restore("{");
   await expect(
-    page.getByRole("button", {
-      name: "Retirer le mouvement 1",
-      exact: true,
-      includeHidden: true,
-    }),
-  ).toBeDisabled();
+    page.getByRole("status", { name: "Messages de l’atelier", exact: true }),
+  ).toContainText("n’a pas pu être relu");
+  await expect(
+    page.getByRole("button", { name: "Bulle", exact: true }),
+  ).toHaveAttribute("aria-pressed", "true");
 });
 
 test("handles denied local storage and continues to support editing and exports", async ({
@@ -465,16 +439,9 @@ test("renders mobile and dark mode without page overflow or network font depende
   await expect(page.locator("html")).toHaveClass("dark");
   await expect(preview(page)).toBeVisible();
   await page.screenshot({ path: "artifacts/mobile-dark.png", fullPage: true });
-  await page.getByRole("button", { name: "Fond sombre", exact: true }).click();
-  await expect(
-    page.getByRole("button", { name: "Fond sombre", exact: true }),
-  ).toHaveAttribute("aria-pressed", "true");
-  await page
-    .getByRole("button", { name: "Fond transparent", exact: true })
-    .click();
-  await expect(
-    page.getByRole("button", { name: "Fond transparent", exact: true }),
-  ).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByText("Fond du canevas", { exact: true })).toHaveCount(
+    0,
+  );
   const fonts = await page.evaluate(async () => {
     await document.fonts.ready;
     return [...document.fonts].map((font) => ({
@@ -584,7 +551,7 @@ test("keeps About on one screen and follows the pointer without enabling Motion 
   await page.setViewportSize({ width: 1440, height: 900 });
   const eyes = () =>
     preview(page)
-      .locator("mask path[transform]")
+      .locator("g[clip-path] > path[transform]")
       .first()
       .getAttribute("transform");
   await page.mouse.move(100, 200);
@@ -725,7 +692,7 @@ test("scrolls the complete eye and mood catalogs and persists the new styles", a
 }) => {
   await expect(
     page.getByLabel("Silhouettes", { exact: true }).getByRole("button"),
-  ).toHaveCount(32);
+  ).toHaveCount(57);
   const shapes = page.getByLabel("Silhouettes", { exact: true });
   await expect.poll(() => shapes.getByRole("img").count()).toBeGreaterThan(0);
   expect(await shapes.getByRole("img").count()).toBeLessThan(32);
@@ -809,16 +776,14 @@ test("exports a real WebM with the complete montage and lazy-loads the encoder",
   expect(
     (await resourceNames()).some((name) => /mascot-video-/.test(name)),
   ).toBe(false);
-  await page
-    .getByLabel("Importer un réglage de mascotte", { exact: true })
-    .setInputFiles({
-      name: "video.json",
-      mimeType: "application/json",
-      buffer: Buffer.from(
+  await page.evaluate(
+    (key) =>
+      localStorage.setItem(
+        key,
         JSON.stringify({
           version: 1,
           look: {
-            shape: "cercle",
+            shape: "orb-working",
             color: "#8b5cf6",
             expression: "complice",
             eyes: "heart",
@@ -830,7 +795,9 @@ test("exports a real WebM with the complete montage and lazy-loads the encoder",
           ],
         }),
       ),
-    });
+    key,
+  );
+  await page.reload();
   await page.getByRole("button", { name: "Motion", exact: true }).click();
   expect(
     (await resourceNames()).some((name) => /mascot-video-/.test(name)),
@@ -938,7 +905,7 @@ test("blinks naturally in Static and morphs eyes, silhouette and paint", async (
     await new Promise<void>((resolve) => {
       function sample() {
         const path = document.querySelector(
-          "[data-mascot-preview] mask path[transform]",
+          "[data-mascot-preview] g[clip-path] > path[transform]",
         )!;
         const m = path
           .getAttribute("transform")!
@@ -957,9 +924,11 @@ test("blinks naturally in Static and morphs eyes, silhouette and paint", async (
   const frames = await page.evaluate(async () => {
     const svg = document.querySelector("[data-mascot-preview] > svg")!;
     const read = () => ({
-      body: svg.querySelector("mask path")!.getAttribute("d"),
-      eye: svg.querySelector("mask path[transform]")!.getAttribute("d"),
-      color: svg.querySelector("path[mask]")!.getAttribute("fill"),
+      body: svg.querySelector("g[opacity] > path")!.getAttribute("d"),
+      eye: svg
+        .querySelector("g[clip-path] > path[transform]")!
+        .getAttribute("d"),
+      color: svg.querySelector("g[opacity] > path")!.getAttribute("fill"),
     });
     const before = read();
     (
@@ -1013,7 +982,7 @@ test("morphs the property thumbnails and eye previews in place", async ({
   await expect(happy.getByRole("img")).toBeVisible();
   const shapeFrames = await happy.evaluate(async (button) => {
     const svg = button.querySelector("svg")!;
-    const body = svg.querySelector("mask path")!;
+    const body = svg.querySelector("g[opacity] > path")!;
     const before = body.getAttribute("d");
     (
       document.querySelector('[aria-label="Nuage"]') as HTMLButtonElement
@@ -1039,7 +1008,7 @@ test("morphs the property thumbnails and eye previews in place", async ({
   expect(shapeFrames.sameNode).toBe(true);
   expect(shapeFrames.finite).toBe(true);
   const eyeFrames = await happy.evaluate(async (button) => {
-    const eye = button.querySelector("mask path[transform]")!;
+    const eye = button.querySelector("g[clip-path] > path[transform]")!;
     const before = eye.getAttribute("d");
     (
       document.querySelector('[aria-label="Étoiles"]') as HTMLButtonElement
@@ -1056,7 +1025,7 @@ test("morphs the property thumbnails and eye previews in place", async ({
   expect(eyeFrames.middle).not.toBe(eyeFrames.before);
   expect(eyeFrames.middle).not.toBe(eyeFrames.after);
   const colorFrames = await happy.evaluate(async (button) => {
-    const painted = button.querySelector("path[mask]")!;
+    const painted = button.querySelector("g[opacity] > path")!;
     const read = () => getComputedStyle(painted).fill;
     const before = read();
     (
@@ -1077,7 +1046,7 @@ test("morphs the property thumbnails and eye previews in place", async ({
   expect(colorFrames.middle).not.toBe(colorFrames.after);
   expect(colorFrames.after).toBe("rgb(139, 92, 246)");
   const cheeks = await happy.evaluate(async (button) => {
-    const cheek = button.querySelector("g[clip-path] path")!;
+    const cheek = button.querySelector('g[clip-path] path[fill="#fffaf3"]')!;
     const read = () => Number(cheek.getAttribute("opacity"));
     const before = read();
     (
@@ -1443,7 +1412,7 @@ test("previews a picker drag immediately and commits without repainting the cata
     };
   }, key);
   const rect = (await area.boundingBox())!;
-  const paint = preview(page).locator("path[mask]");
+  const paint = preview(page).locator("g[opacity] > path");
   const before = await paint.getAttribute("fill");
   await page.mouse.move(rect.x + rect.width * 0.2, rect.y + rect.height * 0.3);
   await page.mouse.down();
@@ -1479,4 +1448,251 @@ test("previews a picker drag immediately and commits without repainting the cata
   await red.fill("128");
   await red.press("Enter");
   await expect.poll(() => paint.getAttribute("fill")).toMatch(/^#80/i);
+});
+
+test("uses a glass add popover, centered playback, styled zoom and timeline undo/redo", async ({
+  page,
+}) => {
+  await page.getByRole("button", { name: "Motion", exact: true }).click();
+  const timeline = page.getByRole("region", {
+    name: "Chorégraphie",
+    exact: true,
+  });
+  const play = page.getByRole("button", {
+    name: "Animer la mascotte",
+    exact: true,
+  });
+  const [playBox, mascotBox] = await Promise.all([
+    play.boundingBox(),
+    preview(page).boundingBox(),
+  ]);
+  expect(
+    Math.abs(
+      playBox!.x + playBox!.width / 2 - mascotBox!.x - mascotBox!.width / 2,
+    ),
+  ).toBeLessThan(1);
+  const undo = page.getByRole("button", {
+    name: "Annuler la modification",
+    exact: true,
+  });
+  const redo = page.getByRole("button", { name: "Rétablir", exact: true });
+  await expect(undo).toBeDisabled();
+  await page
+    .getByRole("button", { name: "Ajouter un mouvement", exact: true })
+    .click();
+  const popover = page.getByRole("dialog");
+  await expect(popover.locator('[data-slot="popover-title"]')).toHaveText(
+    "Ajouter un mouvement",
+  );
+  expect(
+    await popover.evaluate((el) => getComputedStyle(el).backdropFilter),
+  ).toContain("blur");
+  await expect(popover.locator("select")).toHaveCount(0);
+  await popover.getByRole("button", { name: "Confettis", exact: true }).click();
+  await expect(popover).toBeHidden();
+  await expect(timeline.locator("article")).toHaveCount(5);
+  await undo.click();
+  await expect(timeline.locator("article")).toHaveCount(4);
+  await page.keyboard.press("Control+Shift+z");
+  await expect(timeline.locator("article")).toHaveCount(5);
+  const duration = page.getByRole("slider", {
+    name: "Durée du mouvement 5",
+    exact: true,
+  });
+  const box = (await duration.boundingBox())!;
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(box.x + box.width / 2 + 48, box.y + box.height / 2, {
+    steps: 12,
+  });
+  await page.mouse.up();
+  await expect(duration).toHaveAttribute("aria-valuenow", "3");
+  await page.keyboard.press("Control+z");
+  await expect(duration).toHaveAttribute("aria-valuenow", "2");
+  await redo.click();
+  await expect(duration).toHaveAttribute("aria-valuenow", "3");
+  const zoom = page.getByRole("textbox", {
+    name: "Valeur — Zoom de la timeline",
+    exact: true,
+  });
+  await zoom.fill("150");
+  await zoom.press("Enter");
+  await expect(
+    page.getByRole("slider", { name: "Zoom de la timeline", exact: true }),
+  ).toHaveValue("150");
+});
+
+test("updates eyes throughout a drag without catalog churn, persistence or a trailing morph", async ({
+  page,
+}) => {
+  await page
+    .getByRole("button", { name: "Ajuster les yeux", exact: true })
+    .click();
+  const input = page.getByRole("slider", {
+    name: "Taille des yeux",
+    exact: true,
+  });
+  const control = input.locator("xpath=../..");
+  await control.scrollIntoViewIfNeeded();
+  const baseline = await page
+    .getByLabel("Styles des yeux", { exact: true })
+    .innerHTML();
+  await page.evaluate(() => {
+    const original = Storage.prototype.setItem;
+    (window as typeof window & { presetWrites: number }).presetWrites = 0;
+    Storage.prototype.setItem = function (key, value) {
+      if (key === "mascotlab.preset.v1")
+        (window as typeof window & { presetWrites: number }).presetWrites++;
+      return original.call(this, key, value);
+    };
+  });
+  const eye = preview(page).locator("g[clip-path] > path").first();
+  const before = await eye.getAttribute("d");
+  const box = (await control.boundingBox())!;
+  await page.mouse.move(box.x + box.width * 0.25, box.y + box.height / 2);
+  await page.mouse.down();
+  const states: string[] = [];
+  for (const fraction of [0.4, 0.55, 0.7, 0.85]) {
+    await page.mouse.move(
+      box.x + box.width * fraction,
+      box.y + box.height / 2,
+      { steps: 3 },
+    );
+    states.push((await eye.getAttribute("d"))!);
+  }
+  expect(new Set(states).size).toBe(4);
+  expect(states[0]).not.toBe(before);
+  expect(
+    await page.getByLabel("Styles des yeux", { exact: true }).innerHTML(),
+  ).toBe(baseline);
+  expect(
+    await page.evaluate(
+      () => (window as typeof window & { presetWrites: number }).presetWrites,
+    ),
+  ).toBe(0);
+  await page.mouse.up();
+  const released = await eye.getAttribute("d");
+  await page.waitForTimeout(160);
+  expect(await eye.getAttribute("d")).toBe(released);
+  expect(
+    await page.evaluate(
+      () => (window as typeof window & { presetWrites: number }).presetWrites,
+    ),
+  ).toBe(1);
+  const reset = page.getByRole("button", {
+    name: "Réinitialiser les yeux",
+    exact: true,
+  });
+  const resting = await reset.evaluate(
+    (el) => getComputedStyle(el).backgroundColor,
+  );
+  await reset.hover();
+  await expect
+    .poll(() => reset.evaluate((el) => getComputedStyle(el).backgroundColor))
+    .not.toBe(resting);
+});
+
+test("offers 16 symbols and 9 vendored orbs with vector exports and no unused face settings", async ({
+  page,
+}) => {
+  const shapes = page.getByLabel("Silhouettes", { exact: true });
+  await shapes
+    .getByRole("button", { name: "Exclamation", exact: true })
+    .click();
+  await expect(
+    page.getByRole("heading", { name: /Style des yeux/ }),
+  ).toHaveCount(0);
+  await expect(preview(page).locator("circle")).toHaveCount(1);
+  const symbol = await artwork(page);
+  await shapes.getByRole("button", { name: "Chargement", exact: true }).click();
+  expect(await artwork(page)).not.toBe(symbol);
+  await shapes
+    .getByRole("button", { name: "Orbe · Recherche", exact: true })
+    .click();
+  await expect(
+    shapes.getByRole("button", { name: "Orbe · Recherche", exact: true }),
+  ).toHaveAttribute("aria-pressed", "true");
+  expect(await preview(page).locator("path").count()).toBeLessThan(20);
+  const pending = page.waitForEvent("download");
+  await page
+    .getByRole("button", { name: "Exporter en SVG", exact: true })
+    .click();
+  const svg = (await readFile((await (await pending).path())!)).toString();
+  expect(svg).not.toMatch(/canvas|<image|NaN|Infinity/);
+  expect(svg).toContain("<path");
+  await page.reload();
+  await expect(
+    shapes.getByRole("button", { name: "Orbe · Recherche", exact: true }),
+  ).toHaveAttribute("aria-pressed", "true");
+  await shapes.getByRole("button", { name: "Bulle", exact: true }).click();
+  await expect(
+    page.getByRole("heading", {
+      name: "Style des yeux 32 regards",
+      exact: true,
+    }),
+  ).toBeVisible();
+  const [svgBox, pngBox] = await Promise.all([
+    page
+      .getByRole("button", { name: "Exporter en SVG", exact: true })
+      .boundingBox(),
+    page
+      .getByRole("button", { name: "Exporter en PNG", exact: true })
+      .boundingBox(),
+  ]);
+  expect(svgBox!.width).toBe(pngBox!.width);
+  expect(svgBox!.height).toBe(pngBox!.height);
+  await expect(
+    page.getByRole("button", { name: "Importer un look", exact: true }),
+  ).toHaveCount(0);
+});
+
+test("enters on every load and keeps antialiased body edges blue in dark mode", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await page.addInitScript(() =>
+    localStorage.setItem("mascotlab-theme", JSON.stringify("dark")),
+  );
+  await page.reload();
+  const arrival = preview(page).locator("..");
+  await expect
+    .poll(() => arrival.evaluate((el) => Number(getComputedStyle(el).opacity)))
+    .toBe(1);
+  await expect
+    .poll(() => arrival.evaluate((el) => getComputedStyle(el).transform))
+    .toMatch(/^none$|^matrix\(1, 0, 0, 1, 0, 0\)$/);
+  const pixels = await preview(page).evaluate(async (element) => {
+    const image = new Image();
+    image.src =
+      "data:image/svg+xml," +
+      encodeURIComponent(new XMLSerializer().serializeToString(element));
+    await image.decode();
+    const canvas = document.createElement("canvas");
+    canvas.width = canvas.height = 1024;
+    const context = canvas.getContext("2d")!;
+    context.drawImage(image, 0, 0, 1024, 1024);
+    const data = context.getImageData(0, 0, 1024, 1024).data;
+    let edges = 0,
+      pale = 0;
+    for (let i = 0; i < data.length; i += 4) {
+      if (data[i + 3] > 30 && data[i + 3] < 225) {
+        edges++;
+        if (data[i] > 90 || data[i + 1] > 140) pale++;
+      }
+    }
+    return { edges, pale };
+  });
+  expect(pixels.edges).toBeGreaterThan(100);
+  expect(pixels.pale).toBe(0);
+  await page.getByRole("button", { name: "À propos", exact: true }).click();
+  const group = page.getByRole("group", {
+    name: "Thème de l’interface",
+    exact: true,
+  });
+  await expect(group).toHaveAttribute("data-slot", "button-group");
+  const dark = group.getByRole("button", { name: "Thème sombre", exact: true });
+  expect(
+    await dark.evaluate((el) => getComputedStyle(el).backgroundColor),
+  ).toBe("rgb(37, 99, 235)");
+  await expect(group.getByRole("button")).toHaveCount(3);
 });

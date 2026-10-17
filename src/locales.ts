@@ -1,4 +1,36 @@
 export const en: Record<string, string> = {
+  Symboles: "Symbols",
+  "Thinking orbs": "Thinking orbs",
+  Exclamation: "Exclamation",
+  Question: "Question",
+  Addition: "Plus sign",
+  "Croix douce": "Soft cross",
+  Éclair: "Lightning",
+  Validation: "Checkmark",
+  Chargement: "Loading",
+  Anneau: "Ring",
+  Croissant: "Crescent",
+  Infini: "Infinity",
+  "Trois points": "Three dots",
+  Égaliseur: "Equalizer",
+  Onde: "Waveform",
+  Cible: "Target",
+  Atome: "Atom",
+  Sablier: "Hourglass",
+  "Orbe · Travail": "Orb · Working",
+  "Orbe · Recherche": "Orb · Searching",
+  "Orbe · Résolution": "Orb · Solving",
+  "Orbe · Écoute": "Orb · Listening",
+  "Orbe · Connexion": "Orb · Connecting",
+  "Orbe · Tressage": "Orb · Weaving",
+  "Orbe · Composition": "Orb · Composing",
+  "Orbe · Respiration": "Orb · Breathing",
+  "Orbe · Métamorphose": "Orb · Shaping",
+  "Historique du montage": "Timeline history",
+  "Annuler la modification": "Undo",
+  Rétablir: "Redo",
+  "Annuler (Ctrl/⌘ Z)": "Undo (Ctrl/⌘ Z)",
+  "Rétablir (Ctrl/⌘ Maj Z)": "Redo (Ctrl/⌘ Shift Z)",
   "Réglages des yeux invalides.": "Invalid eye settings.",
   "Réglage des yeux invalide : {{field}}.": "Invalid eye setting: {{field}}.",
   "L’export WebM nécessite un navigateur compatible WebCodecs, comme Chrome ou Edge.":
@@ -138,8 +170,8 @@ export const en: Record<string, string> = {
     "This file does not contain a valid Maskot look and sequence.",
   "Le look enregistré n’a pas pu être relu. Les réglages par défaut sont affichés.":
     "The saved look could not be loaded. Default settings are shown.",
-  "Le navigateur ne permet pas de sauvegarder. Tu peux exporter tes réglages en JSON.":
-    "This browser cannot save your settings. You can export them as JSON.",
+  "Le navigateur ne permet pas de sauvegarder tes réglages.":
+    "This browser cannot save your settings.",
   "Impossible de convertir la mascotte en image.":
     "Unable to convert the mascot to an image.",
   "Le navigateur ne permet pas l’export PNG.":

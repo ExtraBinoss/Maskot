@@ -1,6 +1,7 @@
 import { EXPRESSIONS } from "./engine/expressions";
 import { EYE_STYLES } from "./engine/eye-styles";
 import { SHAPES } from "./engine/skins";
+import { isFigure } from "./figures";
 import { SEQUENCE } from "./engine/states";
 import {
   DEFAULT_EYE_GEOMETRY,
@@ -26,7 +27,10 @@ export function parsePreset(text: string): MascotPreset {
   const look = value.look as Record<string, unknown>;
   if (
     value?.version !== 1 ||
-    !SHAPES.some((s) => s.id === look.shape) ||
+    !(
+      SHAPES.some((s) => s.id === look.shape) ||
+      (typeof look.shape === "string" && isFigure(look.shape))
+    ) ||
     !EXPRESSIONS.some((e) => e.id === look.expression) ||
     typeof look.color !== "string" ||
     !/^#[0-9a-f]{6}$/i.test(look.color) ||

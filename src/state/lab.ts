@@ -1,10 +1,9 @@
 import { atom, createStore } from "jotai";
-import type { StateId } from "../mascot/engine/bot-types";
+import type { StateId, EyeGeometry } from "../mascot/engine/bot-types";
 import type {
   MascotLook,
   MascotPreset,
   MascotStep,
-  PreviewSurface,
 } from "../mascot/mascot-types";
 import { createMascotEngine, timelineDuration } from "../mascot/mascot-catalog";
 import {
@@ -13,16 +12,90 @@ import {
   PRESET_KEY,
 } from "../mascot/mascot-storage";
 
-export const presetAtom = atom<MascotPreset>(defaultPreset());
+const presetValueAtom = atom<MascotPreset>(defaultPreset());
+type TimelineHistory = { past: MascotStep[][]; future: MascotStep[][] };
+const timelineHistoryAtom = atom<TimelineHistory>({ past: [], future: [] });
+const timelineGestureAtom = atom<MascotStep[] | null>(null);
+const sameTimeline = (a: MascotStep[], b: MascotStep[]) =>
+  a.length === b.length &&
+  a.every(
+    (step, i) => step.state === b[i].state && step.duration === b[i].duration,
+  );
+export const presetAtom = atom(
+  (get) => get(presetValueAtom),
+  (get, set, preset: MascotPreset) => {
+    if (!sameTimeline(get(presetValueAtom).timeline, preset.timeline)) {
+      set(timelineHistoryAtom, { past: [], future: [] });
+      set(timelineGestureAtom, null);
+    }
+    set(presetValueAtom, preset);
+  },
+);
 export const lookAtom = atom(
   (get) => get(presetAtom).look,
   (get, set, look: MascotLook) => set(presetAtom, { ...get(presetAtom), look }),
 );
 export const timelineAtom = atom(
   (get) => get(presetAtom).timeline,
-  (get, set, timeline: MascotStep[]) =>
-    set(presetAtom, { ...get(presetAtom), timeline }),
+  (get, set, timeline: MascotStep[]) => {
+    const preset = get(presetValueAtom);
+    if (sameTimeline(preset.timeline, timeline)) return;
+    if (!get(timelineGestureAtom)) {
+      const { past } = get(timelineHistoryAtom);
+      set(timelineHistoryAtom, {
+        past: [...past.slice(-99), preset.timeline],
+        future: [],
+      });
+    }
+    set(presetValueAtom, { ...preset, timeline });
+  },
 );
+export const beginTimelineEditAtom = atom(null, (get, set) => {
+  if (!get(timelineGestureAtom)) set(timelineGestureAtom, get(timelineAtom));
+});
+export const finishTimelineEditAtom = atom(null, (get, set, cancel = false) => {
+  const before = get(timelineGestureAtom);
+  if (!before) return;
+  set(timelineGestureAtom, null);
+  if (cancel)
+    set(presetValueAtom, { ...get(presetValueAtom), timeline: before });
+  else if (!sameTimeline(before, get(timelineAtom))) {
+    const { past } = get(timelineHistoryAtom);
+    set(timelineHistoryAtom, {
+      past: [...past.slice(-99), before],
+      future: [],
+    });
+  }
+});
+export const canUndoTimelineAtom = atom(
+  (get) => get(timelineHistoryAtom).past.length > 0,
+);
+export const canRedoTimelineAtom = atom(
+  (get) => get(timelineHistoryAtom).future.length > 0,
+);
+export const undoTimelineAtom = atom(null, (get, set) => {
+  if (get(timelineGestureAtom)) return;
+  const { past, future } = get(timelineHistoryAtom);
+  if (!past.length) return;
+  set(timelineHistoryAtom, {
+    past: past.slice(0, -1),
+    future: [get(timelineAtom), ...future],
+  });
+  set(presetValueAtom, {
+    ...get(presetValueAtom),
+    timeline: past[past.length - 1],
+  });
+});
+export const redoTimelineAtom = atom(null, (get, set) => {
+  if (get(timelineGestureAtom)) return;
+  const { past, future } = get(timelineHistoryAtom);
+  if (!future.length) return;
+  set(timelineHistoryAtom, {
+    past: [...past, get(timelineAtom)],
+    future: future.slice(1),
+  });
+  set(presetValueAtom, { ...get(presetValueAtom), timeline: future[0] });
+});
 export const durationAtom = atom((get) => timelineDuration(get(timelineAtom)));
 export const playingAtom = atom(true);
 export const sequencingAtom = atom(false);
@@ -44,12 +117,20 @@ export const commitColorAtom = atom(null, (get, set, color: string) => {
   if (look.color !== color) set(lookAtom, { ...look, color });
   set(previewColorAtom, null);
 });
+// Continuous eye edits bypass the catalog and persistence until release.
+export const previewEyeGeometryAtom = atom<EyeGeometry | null>(null);
+export const commitEyeGeometryAtom = atom(
+  null,
+  (get, set, geometry: EyeGeometry) => {
+    set(lookAtom, { ...get(lookAtom), eyeGeometry: geometry });
+    set(previewEyeGeometryAtom, null);
+  },
+);
 export const frameAtom = atom(
   createMascotEngine(defaultPreset().look).sample(0),
 );
 export const reducedMotionAtom = atom(false);
 export const boardAtom = atom(false);
-export const surfaceAtom = atom<PreviewSurface>("paper");
 export const statusAtom = atom<
   string | { key: string; values: Record<string, string | number> }
 >("");

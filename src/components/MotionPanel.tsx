@@ -16,7 +16,6 @@ import { SEQUENCE } from "../mascot/engine/states";
 import { STATE_LABELS, timelineDuration } from "../mascot/mascot-catalog";
 import { usePlayer } from "../mascot/PlayerProvider";
 import { MascotThumbnail } from "./MascotThumbnail";
-import { SurfacePicker } from "./SurfacePicker";
 import { Switch } from "./ui/switch";
 import { WorkspaceActions } from "./WorkspaceActions";
 import SequenceEditor from "./SequenceEditor";
@@ -140,7 +139,6 @@ export default function MotionPanel({
                 onCheckedChange={setFollow}
               />
             </label>
-            <SurfacePicker />
             {reduced && (
               <p className={s.hint}>
                 {t(
