@@ -816,3 +816,309 @@ test("blinks naturally in Static and morphs eyes, silhouette and paint", async (
   await expect(motion.locator("span")).toHaveText("Motion");
   await expect(motion.locator("span")).toHaveCSS("opacity", "1");
 });
+
+test("morphs the property thumbnails and eye previews in place", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await page.reload();
+  const happy = page.getByRole("button", {
+    name: "Expression Heureux",
+    exact: true,
+  });
+  await happy.scrollIntoViewIfNeeded();
+  await expect(happy.getByRole("img")).toBeVisible();
+  const shapeFrames = await happy.evaluate(async (button) => {
+    const svg = button.querySelector("svg")!;
+    const body = svg.querySelector("mask path")!;
+    const before = body.getAttribute("d");
+    (
+      document.querySelector('[aria-label="Nuage"]') as HTMLButtonElement
+    ).click();
+    let middle = before;
+    for (let i = 0; i < 60; i++) {
+      await new Promise(requestAnimationFrame);
+      middle = body.getAttribute("d");
+      if (middle !== before) break;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 550));
+    const after = body.getAttribute("d");
+    return {
+      before,
+      middle,
+      after,
+      sameNode: svg === button.querySelector("svg"),
+      finite: !String(after).match(/NaN|Infinity/),
+    };
+  });
+  expect(shapeFrames.middle).not.toBe(shapeFrames.before);
+  expect(shapeFrames.middle).not.toBe(shapeFrames.after);
+  expect(shapeFrames.sameNode).toBe(true);
+  expect(shapeFrames.finite).toBe(true);
+  const eyeFrames = await happy.evaluate(async (button) => {
+    const eye = button.querySelector("mask path[transform]")!;
+    const before = eye.getAttribute("d");
+    (
+      document.querySelector('[aria-label="Étoiles"]') as HTMLButtonElement
+    ).click();
+    let middle = before;
+    for (let i = 0; i < 60; i++) {
+      await new Promise(requestAnimationFrame);
+      middle = eye.getAttribute("d");
+      if (middle !== before) break;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 550));
+    return { before, middle, after: eye.getAttribute("d") };
+  });
+  expect(eyeFrames.middle).not.toBe(eyeFrames.before);
+  expect(eyeFrames.middle).not.toBe(eyeFrames.after);
+  const colorFrames = await happy.evaluate(async (button) => {
+    const painted = button.querySelector("path[mask]")!;
+    const read = () => getComputedStyle(painted).fill;
+    const before = read();
+    (
+      document.querySelector(
+        '[aria-label="Couleur #8b5cf6"]',
+      ) as HTMLButtonElement
+    ).click();
+    let middle = before;
+    for (let i = 0; i < 60; i++) {
+      await new Promise(requestAnimationFrame);
+      middle = read();
+      if (middle !== before) break;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 550));
+    return { before, middle, after: read() };
+  });
+  expect(colorFrames.middle).not.toBe(colorFrames.before);
+  expect(colorFrames.middle).not.toBe(colorFrames.after);
+  expect(colorFrames.after).toBe("rgb(139, 92, 246)");
+  const cheeks = await happy.evaluate(async (button) => {
+    const cheek = button.querySelector("g[clip-path] path")!;
+    const read = () => Number(cheek.getAttribute("opacity"));
+    const before = read();
+    (
+      document.querySelector(
+        '[aria-label="Petites joues rosées"]',
+      ) as HTMLButtonElement
+    ).click();
+    let middle = before;
+    for (let i = 0; i < 60; i++) {
+      await new Promise(requestAnimationFrame);
+      middle = read();
+      if (middle !== before) break;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 550));
+    return { before, middle, after: read() };
+  });
+  expect(cheeks.middle).toBeGreaterThan(cheeks.before);
+  expect(cheeks.middle).toBeLessThan(cheeks.after);
+  const eyes = page.getByRole("button", { name: "Gélules", exact: true });
+  await eyes.scrollIntoViewIfNeeded();
+  await page.getByText("Ajuster les yeux", { exact: true }).click();
+  const geometry = await eyes.evaluate(async (button) => {
+    const path = button.querySelector("path")!;
+    const before = path.getAttribute("d");
+    const input = document.querySelector(
+      '[aria-label="Taille des yeux"]',
+    ) as HTMLInputElement;
+    Object.getOwnPropertyDescriptor(
+      HTMLInputElement.prototype,
+      "value",
+    )!.set!.call(input, "150");
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    input.dispatchEvent(new Event("change", { bubbles: true }));
+    let middle = before;
+    for (let i = 0; i < 60; i++) {
+      await new Promise(requestAnimationFrame);
+      middle = path.getAttribute("d");
+      if (middle !== before) break;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 550));
+    return { before, middle, after: path.getAttribute("d") };
+  });
+  expect(geometry.middle).not.toBe(geometry.before);
+  expect(geometry.middle).not.toBe(geometry.after);
+});
+
+test("hands wheel scrolling to the parent at both ends of a property list", async ({
+  page,
+}) => {
+  const list = page.getByLabel("Expressions", { exact: true });
+  await list.scrollIntoViewIfNeeded();
+  await list.evaluate((el) => {
+    el.scrollTop = 100;
+  });
+  const initial = await list.evaluate((el) => ({
+    inner: el.scrollTop,
+    parent: el.parentElement!.parentElement!.parentElement!.scrollTop,
+  }));
+  await list.hover();
+  await page.mouse.wheel(0, 70);
+  await expect
+    .poll(() => list.evaluate((el) => el.scrollTop))
+    .toBeGreaterThan(initial.inner);
+  const parentSelector = await list.evaluate((el) => {
+    const parent = el.closest("#settings")!.querySelector("div")!;
+    parent.setAttribute("data-wheel-parent", "");
+    return "[data-wheel-parent]";
+  });
+  const parent = page.locator(parentSelector);
+  await list.evaluate((el) => {
+    el.scrollTop = el.scrollHeight;
+  });
+  const atBottom = await parent.evaluate((el) => el.scrollTop);
+  await page.mouse.wheel(0, 200);
+  await expect
+    .poll(() => parent.evaluate((el) => el.scrollTop))
+    .toBeGreaterThan(atBottom);
+  await list.scrollIntoViewIfNeeded();
+  await list.evaluate((el) => {
+    el.scrollTop = 0;
+  });
+  await list.hover();
+  const atTop = await parent.evaluate((el) => el.scrollTop);
+  expect(atTop).toBeGreaterThan(0);
+  await page.mouse.wheel(0, -200);
+  await expect
+    .poll(() => parent.evaluate((el) => el.scrollTop))
+    .toBeLessThan(atTop);
+});
+
+test("edits slider values with the input, keyboard and reset controls", async ({
+  page,
+}) => {
+  const accordion = page.getByRole("button", {
+    name: "Ajuster les yeux",
+    exact: true,
+  });
+  await accordion.focus();
+  await page.keyboard.press("Enter");
+  await expect(accordion).toHaveAttribute("aria-expanded", "true");
+  const input = page.getByRole("textbox", {
+    name: "Valeur — Taille des yeux",
+    exact: true,
+  });
+  const slider = page.getByRole("slider", {
+    name: "Taille des yeux",
+    exact: true,
+  });
+  await input.fill("147");
+  await input.press("Enter");
+  await expect(slider).toHaveValue("147");
+  await input.fill("999");
+  await input.press("Tab");
+  await expect(input).toHaveValue("180");
+  await expect(slider).toHaveValue("180");
+  await input.fill("invalid");
+  await input.press("Enter");
+  await expect(input).toHaveValue("180");
+  await input.fill("12");
+  await input.press("Escape");
+  await expect(input).toHaveValue("180");
+  await page
+    .getByRole("button", { name: "Réinitialiser taille des yeux", exact: true })
+    .click();
+  await expect(input).toHaveValue("100");
+  await slider.focus();
+  await page.keyboard.press("ArrowRight");
+  await expect(input).toHaveValue("101");
+  const control = slider.locator("xpath=../..");
+  const rect = (await control.boundingBox())!;
+  await page.mouse.move(rect.x + rect.width / 2, rect.y + rect.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(rect.x + rect.width * 0.7, rect.y + rect.height / 2, {
+    steps: 5,
+  });
+  await expect(control.locator('span[aria-hidden="true"]')).toContainText("%");
+  await page.mouse.up();
+  await expect(control.locator('span[aria-hidden="true"]')).toHaveCount(0);
+  await expect
+    .poll(() =>
+      page.evaluate(
+        (key) => JSON.parse(localStorage.getItem(key)!).look.eyeGeometry.size,
+        key,
+      ),
+    )
+    .toBe(Number(await input.inputValue()) / 100);
+  const vertical = page.getByRole("textbox", {
+    name: "Valeur — Position verticale",
+    exact: true,
+  });
+  await vertical.fill("-12,5");
+  await vertical.press("Tab");
+  await expect(vertical).toHaveValue("-12");
+  await expect(
+    page.getByRole("slider", { name: "Position verticale", exact: true }),
+  ).toHaveValue("-12");
+  await accordion.click();
+  await expect(accordion).toHaveAttribute("aria-expanded", "false");
+  await expect(input).toBeHidden();
+});
+
+for (const width of [1440, 390]) {
+  test(`adds custom colors from the first swatch and restores the palette at ${width}px`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width, height: 900 });
+    const trigger = page.getByRole("button", {
+      name: "Choisir une couleur personnalisée",
+      exact: true,
+    });
+    const palette = trigger.locator("..");
+    await expect(palette.getByRole("button").first()).toHaveAccessibleName(
+      "Choisir une couleur personnalisée",
+    );
+    await trigger.click();
+    const popup = page.getByRole("dialog", { name: "Une couleur bien à toi" });
+    await expect(popup).toBeVisible();
+    const box = (await popup.boundingBox())!;
+    expect(box.x).toBeGreaterThanOrEqual(0);
+    expect(box.x + box.width).toBeLessThanOrEqual(width);
+    const hex = popup.getByRole("textbox", { name: "Code hexadécimal" });
+    await hex.fill("#12");
+    const add = popup.getByRole("button", {
+      name: "Ajouter cette couleur à la palette",
+    });
+    await expect(add).toBeDisabled();
+    await hex.fill("#123ABC");
+    await expect(add).toBeEnabled();
+    await add.click();
+    await expect(popup).toBeHidden();
+    const swatch = page.getByRole("button", {
+      name: "Couleur #123abc",
+      exact: true,
+    });
+    await expect(swatch).toHaveAttribute("aria-pressed", "true");
+    expect(
+      await page.evaluate(() =>
+        JSON.parse(localStorage.getItem("maskot.colors.v1")!),
+      ),
+    ).toEqual(["#123abc"]);
+    await page.reload();
+    await expect(swatch).toHaveCount(1);
+    await expect(swatch).toHaveAttribute("aria-pressed", "true");
+    await trigger.click();
+    await popup
+      .getByRole("slider", { name: "Saturation", exact: true })
+      .focus();
+    await page.keyboard.press("ArrowLeft");
+    const changed = await hex.inputValue();
+    expect(changed).not.toBe("#123abc");
+    await page.keyboard.press("Escape");
+    await expect(popup).toBeHidden();
+    await swatch.click();
+    await trigger.click();
+    await add.click();
+    await expect(swatch).toHaveCount(1);
+    expect(
+      await page.evaluate(() =>
+        JSON.parse(localStorage.getItem("maskot.colors.v1")!),
+      ),
+    ).toEqual(["#123abc"]);
+    await page
+      .getByRole("button", { name: "Repartir de zéro", exact: true })
+      .click();
+    await expect(swatch).toHaveCount(1);
+  });
+}

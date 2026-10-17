@@ -7,6 +7,7 @@ import { ThemeSync } from "./state/theme";
 import { createLabStore, PRESET_KEY } from "./state/lab";
 import { browserEnvironment, createMascotPlayer } from "./mascot/player";
 import { PlayerProvider } from "./mascot/PlayerProvider";
+import { TooltipProvider } from "./components/ui/tooltip";
 import "./styles/global.css";
 
 const store = createLabStore(
@@ -22,7 +23,9 @@ createRoot(document.getElementById("root")!).render(
         <ThemeSync />
         <LazyMotion features={domAnimation} strict>
           <PlayerProvider player={player}>
-            <App />
+            <TooltipProvider delay={250}>
+              <App />
+            </TooltipProvider>
           </PlayerProvider>
         </LazyMotion>
       </MotionConfig>

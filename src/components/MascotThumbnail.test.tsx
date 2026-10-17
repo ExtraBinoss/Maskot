@@ -8,10 +8,13 @@ describe("preview sampling", () => {
   it("reuses geometry for paint edits and resamples when the eye style changes", () => {
     const create = vi.spyOn(catalog, "createMascotEngine");
     const look = defaultPreset().look;
-    const { container, rerender } = render(<MascotThumbnail look={look} />);
+    const { container, rerender } = render(
+      <MascotThumbnail look={look} morph={false} />,
+    );
     const before = container.innerHTML;
     rerender(
       <MascotThumbnail
+        morph={false}
         look={{ ...look, color: "#123456", blush: !look.blush }}
       />,
     );
@@ -19,7 +22,9 @@ describe("preview sampling", () => {
     expect(container.innerHTML).not.toBe(before);
     expect(container.innerHTML).toContain("#123456");
     const painted = container.innerHTML;
-    rerender(<MascotThumbnail look={{ ...look, eyes: "star" }} />);
+    rerender(
+      <MascotThumbnail look={{ ...look, eyes: "star" }} morph={false} />,
+    );
     expect(create).toHaveBeenCalledTimes(2);
     expect(container.innerHTML).not.toBe(painted);
   });

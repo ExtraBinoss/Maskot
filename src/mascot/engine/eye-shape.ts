@@ -185,11 +185,13 @@ export function eyeShapePath(
   from: EyeStyle | EyeStyleMix,
   to: EyeStyle,
   mix: number,
+  canonical = false,
 ): string {
   const progress = clamp(mix);
   if (
-    (to === "capsule" && progress === 1) ||
-    (from === "capsule" && progress === 0)
+    !canonical &&
+    ((to === "capsule" && progress === 1) ||
+      (from === "capsule" && progress === 0))
   )
     return capsulePath(width, height);
   const radius = Math.min(width, height) / 2;

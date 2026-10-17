@@ -118,6 +118,44 @@
   outline: 1.5px solid var(--foreground);
   outline-offset: 3px;
 }
+.palette .pickerTrigger {
+  display: grid;
+  place-items: center;
+  border: 0;
+  color: var(--foreground);
+  background: conic-gradient(
+    #f5a7bd,
+    #dfb9ff,
+    #a8c6ff,
+    #b1e8dc,
+    #ffe6ad,
+    #f5a7bd
+  );
+  position: relative;
+  isolation: isolate;
+}
+.pickerTrigger::before {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  border-radius: inherit;
+  background: var(--card);
+  z-index: -1;
+}
+.colorPopover {
+  width: min(280px, calc(100vw - 32px));
+  border-radius: 18px;
+  padding: 16px;
+  gap: 14px;
+  background: color-mix(in srgb, var(--card) 90%, transparent);
+  backdrop-filter: blur(24px);
+  box-shadow: 0 10px 50px #0f172a15;
+}
+.pickerTitle {
+  font-family: var(--font-heading);
+  font-size: 14px;
+  font-weight: 500;
+}
 .error {
   color: var(--destructive);
   font-size: 11px;
@@ -126,29 +164,43 @@
 .details {
   margin-bottom: 17px;
   font-size: 12px;
+  border: 0;
+  border-radius: 0;
+  overflow: visible;
 }
-.details summary {
+.geometryItem[data-open] {
+  background: transparent;
+}
+.geometryTrigger {
   display: flex;
   align-items: center;
   justify-content: space-between;
   cursor: pointer;
-  padding-block: 6px;
-  list-style: none;
+  padding: 8px 0;
+  font-size: 13px;
+  font-weight: 500;
+  border: 0;
+  border-radius: 6px;
 }
-.details summary::-webkit-details-marker {
-  display: none;
+.geometryTrigger:hover {
+  text-decoration: none;
+  color: var(--primary);
 }
-.details summary svg {
+.geometryTrigger:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
+}
+.geometryTrigger svg {
   color: var(--muted-foreground);
-  transition: transform 140ms;
 }
-.details[open] summary svg {
-  transform: rotate(180deg);
+.details [data-slot="accordion-content"] {
+  padding: 0;
 }
 .geometry {
   display: grid;
-  gap: 14px;
-  padding: 15px 1px 0;
+  gap: 15px;
+  height: auto;
+  padding: 15px 1px 3px;
 }
 .textButton {
   display: inline-flex;
@@ -203,7 +255,7 @@
 .scrollShadow {
   max-height: 228px;
   overflow-y: auto;
-  overscroll-behavior: contain;
+  overscroll-behavior: auto;
   scrollbar-width: thin;
   scrollbar-color: color-mix(in srgb, var(--foreground) 20%, transparent)
     transparent;

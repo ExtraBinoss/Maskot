@@ -1,6 +1,5 @@
-import { useState } from "react";
 import { useAtom } from "jotai";
-import { ChevronDown, RotateCcw } from "lucide-react";
+import { RotateCcw } from "lucide-react";
 import { lookAtom } from "../state/lab";
 import { EYE_STYLES } from "../mascot/engine/eye-styles";
 import { ScrollShadow } from "./ScrollShadow";
@@ -10,13 +9,20 @@ import {
   EYE_GEOMETRY_LIMITS,
 } from "../mascot/engine/eye-geometry";
 import type { EyeGeometry } from "../mascot/engine/bot-types";
-import { PALETTE, SHAPE_LABELS } from "../mascot/mascot-catalog";
+import { SHAPE_LABELS } from "../mascot/mascot-catalog";
 import { VisibleMascotThumbnail } from "./VisibleMascotThumbnail";
 import { EyePreview } from "./EyePreview";
 import { Expressions } from "./Expressions";
 import { SurfacePicker } from "./SurfacePicker";
 import { Switch } from "./ui/switch";
 import { Range } from "./ui/range";
+import { ColorControl } from "./ColorControl";
+import {
+  Accordion,
+  AccordionItem,
+  AccordionTrigger,
+  AccordionContent,
+} from "./ui/accordion";
 import s from "../styles/settings.module.css";
 
 const geometryControls: { key: keyof EyeGeometry; label: string }[] = [
@@ -26,54 +32,6 @@ const geometryControls: { key: keyof EyeGeometry; label: string }[] = [
   { key: "spacing", label: "Écartement des yeux" },
   { key: "offsetY", label: "Position verticale" },
 ];
-
-function ColorControl() {
-  const [look, setLook] = useAtom(lookAtom);
-  const color = look.color;
-  const [draft, setDraft] = useState({ source: color, text: color });
-  const value = draft.source === color ? draft.text : color;
-  const valid = /^#[0-9a-f]{6}$/i.test(value);
-  return (
-    <section className={s.section}>
-      <h3>
-        Couleur
-        <input
-          className={s.colorInput}
-          aria-label="Couleur personnalisée au format hexadécimal"
-          value={value}
-          aria-invalid={!valid}
-          aria-describedby={!valid ? "color-error" : undefined}
-          maxLength={7}
-          spellCheck={false}
-          onChange={(event) => {
-            const text = event.currentTarget.value;
-            setDraft({ source: color, text });
-            if (/^#[0-9a-f]{6}$/i.test(text)) setLook({ ...look, color: text });
-          }}
-        />
-      </h3>
-      <div className={s.palette}>
-        {PALETTE.map((color) => (
-          <button
-            key={color}
-            style={{ background: color }}
-            aria-label={"Couleur " + color}
-            aria-pressed={look.color.toLowerCase() === color}
-            onClick={() => {
-              setDraft({ source: color, text: color });
-              setLook({ ...look, color });
-            }}
-          />
-        ))}
-      </div>
-      {!valid && (
-        <p id="color-error" className={s.error}>
-          Utilise une couleur comme #FF5A1F.
-        </p>
-      )}
-    </section>
-  );
-}
 
 export default function StaticPanel() {
   const [look, setLook] = useAtom(lookAtom);
@@ -126,39 +84,41 @@ export default function StaticPanel() {
       </section>
       <Expressions />
       <ColorControl />
-      <details className={s.details}>
-        <summary>
-          Ajuster les yeux
-          <ChevronDown size={14} />
-        </summary>
-        <div className={s.geometry}>
-          {geometryControls.map(({ key, label }) => (
-            <Range
-              key={key}
-              label={label}
-              suffix=" %"
-              value={Math.round(look.eyeGeometry[key] * 100)}
-              min={EYE_GEOMETRY_LIMITS[key][0] * 100}
-              max={EYE_GEOMETRY_LIMITS[key][1] * 100}
-              onChange={(value) =>
-                setLook({
-                  ...look,
-                  eyeGeometry: { ...look.eyeGeometry, [key]: value / 100 },
-                })
+      <Accordion className={s.details}>
+        <AccordionItem value="geometry" className={s.geometryItem}>
+          <AccordionTrigger className={s.geometryTrigger}>
+            Ajuster les yeux
+          </AccordionTrigger>
+          <AccordionContent className={s.geometry}>
+            {geometryControls.map(({ key, label }) => (
+              <Range
+                key={key}
+                label={label}
+                suffix=" %"
+                defaultValue={DEFAULT_EYE_GEOMETRY[key] * 100}
+                value={Math.round(look.eyeGeometry[key] * 100)}
+                min={EYE_GEOMETRY_LIMITS[key][0] * 100}
+                max={EYE_GEOMETRY_LIMITS[key][1] * 100}
+                onChange={(value) =>
+                  setLook({
+                    ...look,
+                    eyeGeometry: { ...look.eyeGeometry, [key]: value / 100 },
+                  })
+                }
+              />
+            ))}
+            <button
+              className={s.textButton}
+              onClick={() =>
+                setLook({ ...look, eyeGeometry: { ...DEFAULT_EYE_GEOMETRY } })
               }
-            />
-          ))}
-          <button
-            className={s.textButton}
-            onClick={() =>
-              setLook({ ...look, eyeGeometry: { ...DEFAULT_EYE_GEOMETRY } })
-            }
-          >
-            <RotateCcw size={12} />
-            Réinitialiser les yeux
-          </button>
-        </div>
-      </details>
+            >
+              <RotateCcw size={12} />
+              Réinitialiser les yeux
+            </button>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
       <div className={s.settingRow}>
         <span>Petites joues rosées</span>
         <Switch

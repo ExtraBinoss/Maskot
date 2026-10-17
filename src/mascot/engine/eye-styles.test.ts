@@ -43,3 +43,14 @@ describe("extended eyes and moods", () => {
     },
   );
 });
+
+it("provides matching cubic path topology for property preview interpolation", () => {
+  const engine = createMascotEngine(defaultPreset().look);
+  const native = engine.sample(0.9);
+  const preview = engine.sample(0.9, 0.9, true);
+  expect(preview.bodyPath).toBe(native.bodyPath);
+  expect(preview.eyes.map((e) => e.matrix)).toEqual(
+    native.eyes.map((e) => e.matrix),
+  );
+  for (const eye of preview.eyes) expect(eye.d.match(/C/g)).toHaveLength(64);
+});

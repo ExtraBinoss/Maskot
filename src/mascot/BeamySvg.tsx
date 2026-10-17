@@ -1,12 +1,14 @@
 // React port of Beam's BeamySvg.vue (MPL-2.0). See NOTICE.txt and engine/NOTICE.txt.
 import { useId, type Ref } from "react";
 import type { BotFrame, DotRender } from "./engine/bot-types";
+import { MorphPath } from "../components/MorphPath";
 import { NOTIF_BLUE } from "./engine/decor";
 import { mixHex } from "./engine/skins";
 import { DEMI_VIEWBOX, RAYON } from "./engine/repere";
 
 interface BeamySvgProps {
   frame: BotFrame;
+  morph?: boolean;
   color: string;
   size?: number;
   blush?: boolean | number;
@@ -19,6 +21,7 @@ interface BeamySvgProps {
 
 export function BeamySvg({
   frame,
+  morph = false,
   color,
   size = 320,
   blush = false,
@@ -28,13 +31,14 @@ export function BeamySvg({
   eyeColor,
   ref,
 }: BeamySvgProps) {
+  const Path = morph ? MorphPath : "path";
   const id = useId().replace(/[^a-zA-Z0-9_-]/g, "");
   const dots = frame.dots.map((dot: DotRender, i) => {
     const fill =
       dot.color ??
       (dot.depth === undefined ? color : mixHex(paper, color, dot.depth));
     return dot.d ? (
-      <path
+      <Path
         key={i}
         d={dot.d}
         fill={fill}
@@ -75,9 +79,9 @@ export function BeamySvg({
           width="316"
           height="316"
         >
-          <path d={frame.bodyPath} fill="white" />
+          <Path d={frame.bodyPath} fill="white" />
           {frame.eyes.map((eye, i) => (
-            <path
+            <Path
               key={i}
               d={eye.d}
               transform={eye.matrix}
@@ -95,7 +99,7 @@ export function BeamySvg({
           )}
         </mask>
         <clipPath id={`${id}-body`}>
-          <path d={frame.bodyPath} />
+          <Path d={frame.bodyPath} />
         </clipPath>
         {frame.arcs.map((arc) => (
           <linearGradient
@@ -119,7 +123,7 @@ export function BeamySvg({
       </defs>
       <g fill="none" strokeLinecap="round">
         {frame.arcs.map((arc) => (
-          <path
+          <Path
             key={arc.id}
             d={arc.back}
             stroke={`url(#${id}-${arc.id})`}
@@ -130,29 +134,39 @@ export function BeamySvg({
       </g>
       {frame.dotsBehind && <g>{dots}</g>}
       <g opacity={frame.bodyAlpha}>
-        <path d={frame.bodyPath} fill={paper} />
-        <path d={frame.bodyPath} fill={color} mask={`url(#${id}-face)`} />
-        {blush && (
+        <Path d={frame.bodyPath} fill={paper} />
+        <Path d={frame.bodyPath} fill={color} mask={`url(#${id}-face)`} />
+        {(blush || morph) && (
           <g clipPath={`url(#${id}-body)`}>
-            {frame.eyes.map((eye, i) => (
-              <ellipse
-                key={i}
-                cx="0"
-                cy="29"
-                rx="12"
-                ry="5"
-                transform={eye.matrix}
-                fill="#fffaf3"
-                opacity={eye.alpha * 0.22 * Number(blush)}
-              />
-            ))}
+            {frame.eyes.map((eye, i) =>
+              morph ? (
+                <MorphPath
+                  key={i}
+                  d="M -12 29 A 12 5 0 1 0 12 29 A 12 5 0 1 0 -12 29 Z"
+                  transform={eye.matrix}
+                  fill="#fffaf3"
+                  opacity={eye.alpha * 0.22 * Number(blush)}
+                />
+              ) : (
+                <ellipse
+                  key={i}
+                  cx="0"
+                  cy="29"
+                  rx="12"
+                  ry="5"
+                  transform={eye.matrix}
+                  fill="#fffaf3"
+                  opacity={eye.alpha * 0.22 * Number(blush)}
+                />
+              ),
+            )}
           </g>
         )}
       </g>
       {eyeColor && (
         <g fill={eyeColor}>
           {frame.eyes.map((eye, i) => (
-            <path
+            <Path
               key={i}
               d={eye.d}
               transform={eye.matrix}
@@ -172,7 +186,7 @@ export function BeamySvg({
       )}
       <g fill="none" strokeLinecap="round">
         {frame.arcs.map((arc) => (
-          <path
+          <Path
             key={arc.id}
             d={arc.front}
             stroke={`url(#${id}-${arc.id})`}

@@ -32,25 +32,46 @@
 }
 .range {
   display: grid;
-  gap: 7px;
+  gap: 5px;
   min-width: 0;
 }
-.rangeLabel {
+.rangeHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  color: var(--muted-foreground);
+}
+.rangeLabel {
+  color: var(--foreground);
   font-size: 12px;
+  font-weight: 400;
 }
-.rangeLabel output {
+.rangeActions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.rangeReset {
+  color: var(--muted-foreground);
+  border-radius: 7px;
+}
+.rangeInputWrap {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.rangeInputWrap > span {
   font-size: 11px;
-  font-variant-numeric: tabular-nums;
+  color: var(--muted-foreground);
 }
-.range input {
-  width: 100%;
-  height: 15px;
-  accent-color: var(--primary);
-  cursor: pointer;
-  margin: 0;
+.rangeInput {
+  height: 27px;
+  width: 46px;
+  padding: 0 5px;
+  text-align: center;
+  border-radius: 7px;
+  border: 1px solid var(--control-border);
+  background: var(--control-bg);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
 }

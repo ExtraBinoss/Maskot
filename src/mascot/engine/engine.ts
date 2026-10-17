@@ -385,7 +385,7 @@ export class BotEngine {
     if (Number.isFinite(now)) this.blinkAt = now;
   }
 
-  sample(now: number, appearanceNow = now): BotFrame {
+  sample(now: number, appearanceNow = now, canonicalEyes = false): BotFrame {
     const geometry = this.geometryAtTime(appearanceNow);
     const R = this.scale;
     const def = STATE_BY_ID.get(this.cur)!;
@@ -488,6 +488,7 @@ export class BotEngine {
             easings.easeOutQuint(
               clamp((appearanceNow - this.eyeAt) / BotEngine.SHAPE_MORPH),
             ),
+            canonicalEyes,
           ),
           matrix: `matrix(${r2(ax)},${r2(ay * k)},${r2(cx2)},${r2(cy2 * k)},${r2(e.x * fit + (offX + decalage.x) * R)},${r2(e.y * fit + (offY + decalage.y + geometry.offsetY) * R)})`,
           alpha: pose.eyeAlpha * clamp(e.depth / 0.12),
