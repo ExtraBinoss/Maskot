@@ -31,17 +31,6 @@ export function ThemePicker() {
           Icon: Sun,
         },
       ]}
-      onInteract={(element) => {
-        const rect = element.getBoundingClientRect();
-        document.documentElement.style.setProperty(
-          "--theme-x",
-          `${rect.x + rect.width / 2}px`,
-        );
-        document.documentElement.style.setProperty(
-          "--theme-y",
-          `${rect.y + rect.height / 2}px`,
-        );
-      }}
       onChange={(value) => {
         if (value === "system" || value === "dark" || value === "light")
           setTheme(value);

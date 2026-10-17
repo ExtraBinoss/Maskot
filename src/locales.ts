@@ -1,3 +1,5 @@
+import { SITE_META } from "./site-meta";
+
 export const en: Record<string, string> = {
   Symboles: "Symbols",
   "Thinking orbs": "Thinking orbs",
@@ -39,7 +41,7 @@ export const en: Record<string, string> = {
     "This browser has no WebM encoder. Try Chrome or Edge.",
   "Impossible de préparer la vidéo.": "Unable to prepare the video.",
   "La vidéo est vide.": "The video is empty.",
-  "Maskot — A little character studio": "Maskot — A little character studio",
+  "Maskot — A little character studio": SITE_META.en.title,
   Static: "Static",
   Motion: "Motion",
   About: "About",
@@ -309,5 +311,5 @@ export const fr: Record<string, string> = {
   Static: "Statique",
   About: "À propos",
   Add: "Ajouter",
-  "Maskot — A little character studio": "Maskot — Atelier de mascottes",
+  "Maskot — A little character studio": SITE_META.fr.title,
 };

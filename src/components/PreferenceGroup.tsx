@@ -1,4 +1,3 @@
-import { useId } from "react";
 import { m } from "motion/react";
 import type { LucideIcon } from "lucide-react";
 import { ToggleGroup, ToggleGroupItem } from "./ui/toggle-group";
@@ -16,15 +15,12 @@ export function PreferenceGroup({
   value,
   options,
   onChange,
-  onInteract,
 }: {
   label: string;
   value: string;
   options: readonly Option[];
   onChange: (value: string) => void;
-  onInteract?: (element: HTMLElement) => void;
 }) {
-  const id = useId();
   const selected = Math.max(
     0,
     options.findIndex((option) => option.value === value),
@@ -41,7 +37,6 @@ export function PreferenceGroup({
       style={{ "--segments": options.length } as React.CSSProperties}
     >
       <m.span
-        key={id}
         data-slot="segmented-indicator"
         aria-hidden
         className={s.indicator}
@@ -55,11 +50,6 @@ export function PreferenceGroup({
           value={choice}
           lang={lang}
           aria-label={ariaLabel ?? label}
-          onPointerDown={(event) => onInteract?.(event.currentTarget)}
-          onKeyDown={(event) => {
-            if (event.key === " " || event.key === "Enter")
-              onInteract?.(event.currentTarget);
-          }}
         >
           {Icon && <Icon size={14} aria-hidden />}
           <span>{label}</span>

@@ -186,24 +186,26 @@
   mix-blend-mode: normal;
 }
 ::view-transition-old(root) {
-  animation: themeFadeOut 220ms ease-out both;
+  animation: none;
 }
 ::view-transition-new(root) {
-  animation: themeReveal 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: themeFadeIn 950ms cubic-bezier(0.4, 0, 0.2, 1) both;
 }
-@keyframes themeReveal {
+@keyframes themeFadeIn {
   from {
-    clip-path: circle(0 at var(--theme-x, 50%) var(--theme-y, 50%));
-  }
-  to {
-    clip-path: circle(150vmax at var(--theme-x, 50%) var(--theme-y, 50%));
-  }
-}
-@keyframes themeFadeOut {
-  from {
-    opacity: 1;
-  }
-  to {
     opacity: 0;
   }
+  to {
+    opacity: 1;
+  }
+}
+html[data-theme-transition],
+html[data-theme-transition] body,
+html[data-theme-transition] button,
+html[data-theme-transition] input,
+html[data-theme-transition] aside {
+  transition:
+    background-color 950ms cubic-bezier(0.4, 0, 0.2, 1),
+    color 950ms cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 950ms cubic-bezier(0.4, 0, 0.2, 1);
 }

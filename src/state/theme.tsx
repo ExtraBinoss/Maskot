@@ -78,11 +78,16 @@ export function ThemeSync() {
       void transition.finished.catch(() => {});
       return () => transition.skipTransition();
     }
+    const root = document.documentElement;
+    root.dataset.themeTransition = "";
     apply();
-    document.documentElement.animate([{ opacity: 0.65 }, { opacity: 1 }], {
-      duration: 180,
-      easing: "ease-out",
-    });
+    const timer = window.setTimeout(() => {
+      delete root.dataset.themeTransition;
+    }, 1000);
+    return () => {
+      window.clearTimeout(timer);
+      delete root.dataset.themeTransition;
+    };
   }, [dark]);
   return null;
 }

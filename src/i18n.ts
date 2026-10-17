@@ -1,6 +1,7 @@
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 import { en, fr } from "./locales";
+import { SITE_META } from "./site-meta";
 
 export const LANGUAGE_KEY = "maskot.language.v1";
 function initialLanguage() {
@@ -26,15 +27,20 @@ void i18n.use(initReactI18next).init({
 
 function synchronizeLanguage(language: string) {
   document.documentElement.lang = language;
-  document.title = i18n.t("Maskot — A little character studio");
-  document
-    .querySelector('meta[name="description"]')
-    ?.setAttribute(
-      "content",
-      i18n.t(
-        "Crée une mascotte inspirée du Grok bot. Formes, yeux, humeurs et mouvements. Un outil libre par Plinka.",
-      ),
-    );
+  const meta = SITE_META[language === "fr" ? "fr" : "en"];
+  document.title = meta.title;
+  for (const [selector, content] of [
+    ['meta[name="description"]', meta.description],
+    ['meta[property="og:title"]', meta.title],
+    ['meta[property="og:description"]', meta.description],
+    ['meta[property="og:locale"]', meta.locale],
+    ['meta[property="og:locale:alternate"]', meta.alternateLocale],
+    ['meta[property="og:image:alt"]', meta.imageAlt],
+    ['meta[name="twitter:title"]', meta.title],
+    ['meta[name="twitter:description"]', meta.description],
+    ['meta[name="twitter:image:alt"]', meta.imageAlt],
+  ])
+    document.querySelector(selector)?.setAttribute("content", content);
   try {
     localStorage.setItem(LANGUAGE_KEY, language);
   } catch {

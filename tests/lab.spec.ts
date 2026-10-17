@@ -36,7 +36,7 @@ test.afterEach(async ({ page }) => {
 test("keeps Static still, opens tools immediately and reserves the footer for About", async ({
   page,
 }) => {
-  await expect(page).toHaveTitle("Maskot — Atelier de mascottes");
+  await expect(page).toHaveTitle("Maskot — Créateur de mascottes SVG");
   const lazyTools = () =>
     page.evaluate(() =>
       performance
@@ -599,7 +599,7 @@ test("switches the whole studio between French and English and remembers the lan
   const original = await preview(page).elementHandle();
   await page.getByRole("button", { name: "English", exact: true }).click();
   await expect(page.locator("html")).toHaveAttribute("lang", "en");
-  await expect(page).toHaveTitle("Maskot — A little character studio");
+  await expect(page).toHaveTitle("Maskot — Free SVG Mascot Creator");
   await expect(
     page.getByRole("button", { name: "System theme", exact: true }),
   ).toBeVisible();

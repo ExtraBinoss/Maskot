@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1200, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>Maskot — Social card</title>
+    <style>
+      @font-face {
+        font-family: "Space Grotesk";
+        src: url("./assets/heading.woff2") format("woff2");
+        font-weight: 300 700;
+      }
+      @font-face {
+        font-family: "Source Sans 3";
+        src: url("./assets/body.woff2") format("woff2");
+        font-weight: 200 900;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        width: 1200px;
+        height: 630px;
+        overflow: hidden;
+      }
+      body {
+        padding: 26px;
+        background:
+          radial-gradient(ellipse at 0% 100%, #f8d8bd 0%, transparent 60%),
+          radial-gradient(ellipse at 100% 0%, #d4e2ff 0%, transparent 65%),
+          #f0eff3;
+        color: #17213c;
+        font-family: "Source Sans 3", sans-serif;
+      }
+      .card {
+        position: relative;
+        height: 100%;
+        overflow: hidden;
+        border: 1px solid rgb(255 255 255 / 90%);
+        border-radius: 30px;
+        background: rgb(255 255 255 / 80%);
+        box-shadow: 0 16px 50px -28px rgb(43 52 82 / 25%);
+      }
+      header {
+        position: absolute;
+        inset: 32px 42px auto;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        color: #7e8597;
+        font-size: 19px;
+      }
+      .wordmark {
+        color: #17213c;
+        font-family: "Space Grotesk", sans-serif;
+        font-size: 27px;
+        font-weight: 600;
+        letter-spacing: -1.5px;
+      }
+      .wordmark i {
+        color: #2563eb;
+        font-style: normal;
+      }
+      .hero {
+        position: absolute;
+        width: 418px;
+        height: 418px;
+        left: 27px;
+        top: 114px;
+        transform: rotate(-10deg);
+        filter: drop-shadow(0 22px 18px rgb(255 90 31 / 8%));
+      }
+      .copy {
+        position: absolute;
+        left: 500px;
+        top: 133px;
+      }
+      h1 {
+        margin: 0 0 12px;
+        font-family: "Space Grotesk", sans-serif;
+        font-size: 98px;
+        line-height: 1;
+        font-weight: 600;
+        letter-spacing: -7px;
+      }
+      h1 span {
+        color: #2563eb;
+      }
+      .tagline {
+        margin: 0;
+        color: #5f687d;
+        font-size: 29px;
+        line-height: 1.28;
+        font-weight: 400;
+        letter-spacing: -0.5px;
+      }
+      .tagline strong {
+        color: #17213c;
+        font-weight: 500;
+      }
+      .faces {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin: 30px 0 10px -8px;
+      }
+      .faces img {
+        width: 78px;
+        height: 78px;
+      }
+      .features {
+        margin: 0;
+        color: #8a91a1;
+        font-size: 18px;
+      }
+      .features span {
+        padding: 0 11px;
+        color: #bac0cc;
+      }
+      footer {
+        position: absolute;
+        inset: auto 42px 29px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: #9197a6;
+        font-size: 17px;
+      }
+      .url {
+        color: #2563eb;
+        font-size: 20px;
+        font-weight: 600;
+      }
+      .url span {
+        padding-left: 8px;
+        font-weight: 400;
+      }
+      .plinka {
+        color: #606b81;
+        font-weight: 600;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="card">
+      <header>
+        <div class="wordmark">maskot<i>.</i></div>
+        <span>A little character studio</span>
+      </header>
+      <img
+        class="hero"
+        src="./assets/hero.svg"
+        alt="Orange mascot with capsule eyes"
+      />
+      <section class="copy">
+        <h1>Maskot<span>.</span></h1>
+        <p class="tagline">
+          Grok bot inspired.<br /><strong>Made to be yours.</strong>
+        </p>
+        <div class="faces" aria-label="A few of the faces you can create">
+          <img src="./assets/bubble.svg" alt="Happy blue mascot" />
+          <img src="./assets/star.svg" alt="Golden star mascot" />
+          <img src="./assets/cloud.svg" alt="Playful purple cloud" />
+          <img src="./assets/mochi.svg" alt="Mint mochi mascot" />
+          <img src="./assets/flower.svg" alt="Pink flower with heart eyes" />
+          <img src="./assets/pebble.svg" alt="Curious blue pebble" />
+        </div>
+        <p class="features">
+          Shapes<span>·</span>Eyes<span>·</span>Moods<span>·</span>Motion
+        </p>
+      </section>
+      <footer>
+        <div class="url">maskot.plinka.eu<span>↗</span></div>
+        <div>
+          Free &amp; open source <span aria-hidden="true">·</span> by
+          <span class="plinka">Plinka</span>
+        </div>
+      </footer>
+    </main>
+    <script>
+      window.beamComposition = { seek() {} };
+    </script>
+  </body>
+</html>
