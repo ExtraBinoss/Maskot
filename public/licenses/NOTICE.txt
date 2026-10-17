@@ -16,3 +16,7 @@ Fichiers de licences : /licenses/Space-Grotesk-OFL.txt et /licenses/Source-Sans-
 Encodage vidéo : Mediabunny par Vanilagy, MPL-2.0.
 Version 1.61.6, dépendance non modifiée : https://github.com/Vanilagy/mediabunny/tree/v1.61.6
 Texte de la licence : /licenses/Mediabunny-MPL-2.0.txt
+
+Color Picker: adapted from ReUI by Keenthemes Inc (MIT).
+https://reui.io/components/color-picker
+See ReUI-LICENSE.txt.

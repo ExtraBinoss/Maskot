@@ -35,6 +35,15 @@ export const paintAtom = atom({
   color: defaultPreset().look.color,
   blush: Number(defaultPreset().look.blush),
 });
+// Picker drags preview only the live artwork; catalogs and persistence update
+// once the gesture is committed.
+export const previewColorAtom = atom<string | null>(null);
+export const commitColorAtom = atom(null, (get, set, color: string) => {
+  set(paintAtom, { ...get(paintAtom), color });
+  const look = get(lookAtom);
+  if (look.color !== color) set(lookAtom, { ...look, color });
+  set(previewColorAtom, null);
+});
 export const frameAtom = atom(
   createMascotEngine(defaultPreset().look).sample(0),
 );

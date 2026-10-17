@@ -62,11 +62,14 @@ export function createMascotPlayer(store: LabStore, env: PlayerEnvironment) {
   let appearanceUntil = -1;
   let paintStart = -10;
   let paintFrom = store.get(paintAtom);
+  let appliedLook = store.get(lookAtom);
+  let geometryUntil = -1;
+  let geometryAnimating = false;
   let sequenceStart = 0;
   let last: number | null = null;
   let raf: number | null = null;
   let mounted = false;
-  const draw = () => {
+  const draw = (geometry = true) => {
     const look = store.get(lookAtom);
     const k = Math.min(1, Math.max(0, (appearanceClock - paintStart) / 0.45));
     const eased = 1 - (1 - k) ** 5;
@@ -79,7 +82,7 @@ export function createMascotPlayer(store: LabStore, env: PlayerEnvironment) {
         : paintFrom.blush + (Number(look.blush) - paintFrom.blush) * eased;
     if (color !== paint.color || blush !== paint.blush)
       store.set(paintAtom, { color, blush });
-    store.set(frameAtom, engine.sample(clock, appearanceClock));
+    if (geometry) store.set(frameAtom, engine.sample(clock, appearanceClock));
   };
   const choose = (id: StateId) => {
     store.set(sequencingAtom, false);
@@ -90,6 +93,8 @@ export function createMascotPlayer(store: LabStore, env: PlayerEnvironment) {
       clock = 0;
       appearanceClock = 0;
       appearanceUntil = -1;
+      geometryUntil = -1;
+      geometryAnimating = false;
       paintStart = -10;
     }
     draw();
@@ -108,6 +113,8 @@ export function createMascotPlayer(store: LabStore, env: PlayerEnvironment) {
     clock = at;
     appearanceClock = at;
     appearanceUntil = -1;
+    geometryUntil = -1;
+    geometryAnimating = false;
     paintStart = -10;
     sequenceStart = 0;
     store.set(elapsedAtom, at);
@@ -152,7 +159,8 @@ export function createMascotPlayer(store: LabStore, env: PlayerEnvironment) {
       }
       store.set(elapsedAtom, elapsed);
     }
-    draw();
+    draw(playing || geometryAnimating);
+    if (appearanceClock >= geometryUntil) geometryAnimating = false;
     if (playing || appearanceClock < appearanceUntil)
       raf = env.requestFrame(tick);
     else last = null;
@@ -176,15 +184,48 @@ export function createMascotPlayer(store: LabStore, env: PlayerEnvironment) {
     const look = store.get(lookAtom);
     const animated = !store.get(reducedMotionAtom);
     const at = animated ? appearanceClock : appearanceClock - 1;
-    paintFrom = store.get(paintAtom);
-    paintStart = at;
-    engine.setShape(SHAPE_BY_ID.get(look.shape)!.radii, at);
-    engine.setExpression(EXPRESSION_BY_ID.get(look.expression)!, at);
-    engine.setEyes(look.eyes, at);
-    engine.setEyeGeometry(look.eyeGeometry, at);
+    let geometryChanged = false;
+    if (look.shape !== appliedLook.shape) {
+      engine.setShape(SHAPE_BY_ID.get(look.shape)!.radii, at);
+      geometryChanged = true;
+    }
+    if (look.expression !== appliedLook.expression) {
+      engine.setExpression(EXPRESSION_BY_ID.get(look.expression)!, at);
+      geometryChanged = true;
+    }
+    if (look.eyes !== appliedLook.eyes) {
+      engine.setEyes(look.eyes, at);
+      geometryChanged = true;
+    }
+    if (
+      Object.entries(look.eyeGeometry).some(
+        ([key, value]) =>
+          value !==
+          appliedLook.eyeGeometry[key as keyof typeof look.eyeGeometry],
+      )
+    ) {
+      engine.setEyeGeometry(look.eyeGeometry, at);
+      geometryChanged = true;
+    }
+    const paintTargetChanged =
+      look.color !== appliedLook.color || look.blush !== appliedLook.blush;
+    appliedLook = look;
+    const paint = store.get(paintAtom);
+    const paintChanged =
+      paint.color !== look.color || paint.blush !== Number(look.blush);
+    if (paintChanged || paintTargetChanged) {
+      paintFrom = paint;
+      paintStart = at;
+    }
+    if (!geometryChanged && !paintChanged) return;
+    if (geometryChanged) {
+      geometryUntil = animated ? appearanceClock + 0.45 : -1;
+      geometryAnimating = animated;
+    }
     if (animated) appearanceUntil = appearanceClock + 0.45;
-    draw();
-    synchronize();
+    draw(geometryChanged);
+    // Retarget an active gesture without cancelling its existing frame clock.
+    if (raf === null) synchronize();
   };
   const mount = () => {
     if (mounted) throw new Error("Le lecteur est déjà monté.");

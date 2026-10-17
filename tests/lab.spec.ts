@@ -1080,7 +1080,8 @@ for (const width of [1440, 390]) {
     const add = popup.getByRole("button", {
       name: "Ajouter cette couleur à la palette",
     });
-    await expect(add).toBeDisabled();
+    await hex.press("Tab");
+    await expect(hex).toHaveValue("2563EB");
     await hex.fill("#123ABC");
     await expect(add).toBeEnabled();
     await add.click();
@@ -1099,12 +1100,10 @@ for (const width of [1440, 390]) {
     await expect(swatch).toHaveCount(1);
     await expect(swatch).toHaveAttribute("aria-pressed", "true");
     await trigger.click();
-    await popup
-      .getByRole("slider", { name: "Saturation", exact: true })
-      .focus();
+    await popup.getByRole("slider", { name: "Couleur", exact: true }).focus();
     await page.keyboard.press("ArrowLeft");
     const changed = await hex.inputValue();
-    expect(changed).not.toBe("#123abc");
+    expect(changed).not.toBe("123ABC");
     await page.keyboard.press("Escape");
     await expect(popup).toBeHidden();
     await swatch.click();
@@ -1122,3 +1121,83 @@ for (const width of [1440, 390]) {
     await expect(swatch).toHaveCount(1);
   });
 }
+
+test("previews a picker drag immediately and commits without repainting the catalogs on every move", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await page.reload();
+  await page
+    .getByRole("button", {
+      name: "Choisir une couleur personnalisée",
+      exact: true,
+    })
+    .click();
+  const popup = page.getByRole("dialog", { name: "Une couleur bien à toi" });
+  const area = popup.getByRole("slider", { name: "Couleur", exact: true });
+  await expect(area).toBeVisible();
+  await expect(
+    popup.getByRole("button", { name: "Prélever une couleur à l’écran" }),
+  ).toBeVisible();
+  await expect(
+    popup.getByRole("button", { name: /Format de couleur/ }),
+  ).toBeVisible();
+  const catalogMarkup = () =>
+    page.evaluate(() =>
+      ["Silhouettes", "Styles des yeux", "Expressions"].map(
+        (label) => document.querySelector(`[aria-label="${label}"]`)!.innerHTML,
+      ),
+    );
+  await page.evaluate(() => new Promise(requestAnimationFrame));
+  const catalogs = await catalogMarkup();
+  const storedBefore = await page.evaluate(
+    (key) => localStorage.getItem(key),
+    key,
+  );
+  await page.evaluate((key) => {
+    const original = Storage.prototype.setItem;
+    const state = window as typeof window & { pickerSaves: number };
+    state.pickerSaves = 0;
+    Storage.prototype.setItem = function (name, value) {
+      if (name === key) state.pickerSaves++;
+      return original.call(this, name, value);
+    };
+  }, key);
+  const rect = (await area.boundingBox())!;
+  const paint = preview(page).locator("path[mask]");
+  const before = await paint.getAttribute("fill");
+  await page.mouse.move(rect.x + rect.width * 0.2, rect.y + rect.height * 0.3);
+  await page.mouse.down();
+  await page.mouse.move(
+    rect.x + rect.width * 0.75,
+    rect.y + rect.height * 0.7,
+    { steps: 25 },
+  );
+  const during = await paint.getAttribute("fill");
+  expect(during).not.toBe(before);
+  expect(await page.evaluate((key) => localStorage.getItem(key), key)).toBe(
+    storedBefore,
+  );
+  expect(await catalogMarkup()).toEqual(catalogs);
+  await page.mouse.up();
+  await expect
+    .poll(() =>
+      page.evaluate(
+        (key) => JSON.parse(localStorage.getItem(key)!).look.color,
+        key,
+      ),
+    )
+    .toBe(during);
+  await expect(paint).toHaveAttribute("fill", during!);
+  expect(
+    await page.evaluate(
+      () => (window as typeof window & { pickerSaves: number }).pickerSaves,
+    ),
+  ).toBe(1);
+  await popup.getByRole("button", { name: /Format de couleur/ }).click();
+  await page.getByRole("menuitemradio", { name: /^RGB/ }).click();
+  const red = popup.getByRole("spinbutton", { name: "Rouge", exact: true });
+  await red.fill("128");
+  await red.press("Enter");
+  await expect.poll(() => paint.getAttribute("fill")).toMatch(/^#80/i);
+});

@@ -4,6 +4,7 @@ import {
   boardAtom,
   frameAtom,
   paintAtom,
+  previewColorAtom,
   lookAtom,
   surfaceAtom,
   viewAtom,
@@ -20,11 +21,12 @@ import s from "../styles/canvas.module.css";
 function LiveMascot({ svgRef }: { svgRef: RefObject<SVGSVGElement | null> }) {
   const frame = useAtomValue(frameAtom);
   const { color, blush } = useAtomValue(paintAtom);
+  const previewColor = useAtomValue(previewColorAtom);
   return (
     <BeamySvg
       ref={svgRef}
       frame={frame}
-      color={color}
+      color={previewColor ?? color}
       blush={blush}
       size={520}
       label="Aperçu de la mascotte"

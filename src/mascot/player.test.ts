@@ -9,6 +9,8 @@ import {
   lookAtom,
   playingAtom,
   paintAtom,
+  previewColorAtom,
+  commitColorAtom,
   presetAtom,
   reducedMotionAtom,
   sequencingAtom,
@@ -22,6 +24,7 @@ import {
 import { createMascotPlayer, type PlayerEnvironment } from "./player";
 import { createMascotEngine, DEFAULT_LOOK } from "./mascot-catalog";
 import { defaultPreset } from "./mascot-storage";
+import { BotEngine } from "./engine/engine";
 
 describe("React/Jotai mascot playback", () => {
   let callbacks: Map<number, FrameRequestCallback>;
@@ -313,6 +316,55 @@ describe("React/Jotai mascot playback", () => {
     store.set(statusAtom, "");
     store.set(lookAtom, { ...store.get(lookAtom), color: "#000000" });
     expect(store.get(statusAtom)).toBe("");
+  });
+  it("previews a color drag without touching geometry or storage, then commits once", () => {
+    const { store } = setup();
+    store.set(playingAtom, false);
+    const sample = vi.spyOn(BotEngine.prototype, "sample");
+    const geometry = vi.spyOn(BotEngine.prototype, "setEyeGeometry");
+    const frame = store.get(frameAtom);
+    const look = store.get(lookAtom);
+    for (const color of ["#123456", "#abcdef", "#fedcba"])
+      store.set(previewColorAtom, color);
+    expect(store.get(lookAtom)).toBe(look);
+    expect(env.save).not.toHaveBeenCalled();
+    expect(callbacks.size).toBe(0);
+    store.set(commitColorAtom, "#fedcba");
+    expect(store.get(lookAtom).color).toBe("#fedcba");
+    expect(store.get(paintAtom).color).toBe("#fedcba");
+    expect(store.get(previewColorAtom)).toBeNull();
+    expect(env.save).toHaveBeenCalledTimes(1);
+    expect(store.get(frameAtom)).toBe(frame);
+    expect(sample).not.toHaveBeenCalled();
+    expect(geometry).not.toHaveBeenCalled();
+    expect(callbacks.size).toBe(0);
+  });
+  it("morphs a palette color without resampling frozen geometry or restarting its clock", () => {
+    const { store } = setup();
+    store.set(playingAtom, false);
+    const sample = vi.spyOn(BotEngine.prototype, "sample");
+    const geometry = vi.spyOn(BotEngine.prototype, "setEyeGeometry");
+    store.set(lookAtom, { ...store.get(lookAtom), color: "#ff0000" });
+    const pending = [...callbacks.keys()];
+    store.set(lookAtom, { ...store.get(lookAtom), color: "#00ff00" });
+    expect([...callbacks.keys()]).toEqual(pending);
+    for (let ms = 0; ms <= 640; ms += 64) tick(ms);
+    expect(store.get(paintAtom).color).toBe("#00ff00");
+    expect(sample).not.toHaveBeenCalled();
+    expect(geometry).not.toHaveBeenCalled();
+    expect(callbacks.size).toBe(0);
+  });
+  it("keeps a committed picker color when a previous palette transition was still running", () => {
+    const { store } = setup();
+    store.set(lookAtom, { ...store.get(lookAtom), color: "#ff0000" });
+    tick(0);
+    tick(64);
+    store.set(previewColorAtom, "#00ff00");
+    store.set(commitColorAtom, "#00ff00");
+    for (let ms = 128; ms <= 640; ms += 64) {
+      tick(ms);
+      expect(store.get(paintAtom).color).toBe("#00ff00");
+    }
   });
   it("releases pointer gaze while paused without invalidating the frozen frame", () => {
     const { store, player } = setup(true);

@@ -1,12 +1,16 @@
-import { useId, useState } from "react";
-import { useAtom, useSetAtom } from "jotai";
+import { lazy, Suspense, useId, useState } from "react";
+import { useAtom, useSetAtom, useStore } from "jotai";
 import { m } from "motion/react";
 import { Plus } from "lucide-react";
-import { lookAtom, statusAtom } from "../state/lab";
+import {
+  commitColorAtom,
+  lookAtom,
+  previewColorAtom,
+  statusAtom,
+} from "../state/lab";
 import { customColorsAtom } from "../state/palette";
 import { PALETTE } from "../mascot/mascot-catalog";
 import { normalizeHex } from "../lib/color";
-import { ColorPicker } from "./ui/color-picker";
 import {
   Popover,
   PopoverContent,
@@ -15,10 +19,13 @@ import {
 } from "./ui/popover";
 import s from "../styles/settings.module.css";
 
+const ColorPickerEditor = lazy(() => import("./ColorPickerEditor"));
+
 export function ColorControl() {
   const [look, setLook] = useAtom(lookAtom);
   const [customColors, addColor] = useAtom(customColorsAtom);
   const setStatus = useSetAtom(statusAtom);
+  const store = useStore();
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState({ source: look.color, text: look.color });
   const errorId = useId();
@@ -49,7 +56,16 @@ export function ColorControl() {
         />
       </h3>
       <div className={s.palette}>
-        <Popover open={open} onOpenChange={setOpen}>
+        <Popover
+          open={open}
+          onOpenChange={(next) => {
+            if (!next) {
+              const color = store.get(previewColorAtom);
+              if (color) store.set(commitColorAtom, color);
+            }
+            setOpen(next);
+          }}
+        >
           <PopoverTrigger
             render={
               <m.button
@@ -70,17 +86,23 @@ export function ColorControl() {
             <PopoverTitle className={s.pickerTitle}>
               Une couleur bien à toi
             </PopoverTitle>
-            <ColorPicker
-              value={look.color}
-              onChange={select}
-              onAdd={(color) => {
-                select(color);
-                if ([...PALETTE, ...customColors].includes(color)) {
-                  setStatus("Cette couleur est déjà dans ta palette.");
-                } else addColor(color);
-                setOpen(false);
-              }}
-            />
+            <Suspense
+              fallback={
+                <p className="py-8 text-center text-xs text-muted-foreground">
+                  Un petit instant…
+                </p>
+              }
+            >
+              <ColorPickerEditor
+                value={look.color}
+                onAdd={(color) => {
+                  if ([...PALETTE, ...customColors].includes(color)) {
+                    setStatus("Cette couleur est déjà dans ta palette.");
+                  } else addColor(color);
+                  setOpen(false);
+                }}
+              />
+            </Suspense>
           </PopoverContent>
         </Popover>
         {[...PALETTE, ...customColors].map((color) => (
