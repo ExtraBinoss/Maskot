@@ -18,10 +18,11 @@
     "format": "oxfmt .",
     "test": "vitest run",
     "test:browser": "playwright test",
-    "deploy": "wrangler pages deploy dist --project-name maskot-plinka --branch main",
+    "deploy": "wrangler deploy",
     "lint:oxlint": "oxlint .",
     "lint:react": "eslint . --max-warnings 0",
-    "format:check": "oxfmt --check ."
+    "format:check": "oxfmt --check .",
+    "deploy:check": "wrangler deploy --dry-run"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",
