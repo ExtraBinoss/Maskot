@@ -6,6 +6,16 @@ const browserErrors = new WeakMap<Page, string[]>();
 const preview = (page: Page) =>
   page.getByRole("img", { name: "Aperçu de la mascotte", exact: true });
 const artwork = (page: Page) => preview(page).innerHTML();
+const openMobileSettings = async (page: Page) => {
+  if (page.viewportSize()!.width <= 760) {
+    await page
+      .getByRole("button", { name: "Réglages de Maskot", exact: true })
+      .click();
+    await expect(
+      page.getByRole("dialog", { name: "Réglages de Maskot", exact: true }),
+    ).toBeVisible();
+  }
+};
 const setRange = (page: Page, label: string, value: number) =>
   page
     .getByRole("slider", { name: label, exact: true })
@@ -463,7 +473,7 @@ test("renders mobile and dark mode without page overflow or network font depende
   });
 });
 
-test("opens About as a page and animates the same mascot to the right", async ({
+test("opens About as a page and keeps the mascot appearance on the right", async ({
   page,
 }) => {
   await page.emulateMedia({ reducedMotion: "no-preference" });
@@ -472,8 +482,13 @@ test("opens About as a page and animates the same mascot to the right", async ({
   await expect(nav.getByRole("link")).toHaveCount(0);
   const navBox = await nav.boundingBox();
   expect(Math.abs(navBox!.y + navBox!.height / 2 - 500)).toBeLessThan(2);
-  const original = await preview(page).elementHandle();
-  const before = await preview(page).boundingBox();
+  const originalColor = await preview(page)
+    .locator(":scope > g[opacity] > path")
+    .first()
+    .getAttribute("fill");
+  // The SVG has an entrance transform; compare its stable positioning parent.
+  const scene = page.locator("[data-mascot-preview]").locator("..");
+  const before = await scene.boundingBox();
   await page.getByRole("button", { name: "À propos", exact: true }).click();
   await expect(
     page.getByRole("complementary", { name: "Réglages de Maskot" }),
@@ -482,22 +497,19 @@ test("opens About as a page and animates the same mascot to the right", async ({
     page.getByRole("region", { name: "À propos de Maskot" }),
   ).toBeVisible();
   await expect
-    .poll(async () => (await preview(page).boundingBox())!.x)
+    .poll(async () => (await scene.boundingBox())!.x)
     .toBeGreaterThan(before!.x + 200);
-  expect(
-    await original!.evaluate(
-      (node) => node === document.querySelector("[data-mascot-preview] > svg"),
-    ),
-  ).toBe(true);
+  await expect(preview(page)).toHaveCount(1);
+  await expect(
+    preview(page).locator(":scope > g[opacity] > path").first(),
+  ).toHaveAttribute("fill", originalColor!);
   await expect(
     page.getByRole("link", { name: "Plinka", exact: true }),
   ).toHaveAttribute("href", "https://plinka.eu");
   await page.screenshot({ path: "artifacts/about-desktop.png" });
   await page.getByRole("button", { name: "Statique", exact: true }).click();
   await expect
-    .poll(async () =>
-      Math.abs((await preview(page).boundingBox())!.x - before!.x),
-    )
+    .poll(async () => Math.abs((await scene.boundingBox())!.x - before!.x))
     .toBeLessThan(2);
   const live = await artwork(page);
   await page.waitForTimeout(250);
@@ -966,7 +978,7 @@ test("blinks naturally in Static and morphs eyes, silhouette and paint", async (
   expect(frames.after.color).toBe("#8b5cf6");
   const motion = page.getByRole("button", { name: "Mouvement", exact: true });
   await motion.hover();
-  await expect(motion.locator("span").last()).toHaveText("Motion");
+  await expect(motion.locator("span").last()).toHaveText("Mouvement");
   await expect(motion.locator("span").last()).toHaveCSS("opacity", "1");
 });
 
@@ -1216,6 +1228,7 @@ for (const width of [1440, 390]) {
     await page.setViewportSize({ width, height: 900 });
     await page.emulateMedia({ reducedMotion: "no-preference" });
     await page.reload();
+    await openMobileSettings(page);
     const trigger = page.getByRole("button", {
       name: "Choisir une couleur personnalisée",
       exact: true,
@@ -1310,6 +1323,7 @@ for (const width of [1440, 390]) {
     page,
   }) => {
     await page.setViewportSize({ width, height: 900 });
+    await openMobileSettings(page);
     const trigger = page.getByRole("button", {
       name: "Choisir une couleur personnalisée",
       exact: true,
@@ -1346,6 +1360,7 @@ for (const width of [1440, 390]) {
       ),
     ).toEqual(["#123abc"]);
     await page.reload();
+    await openMobileSettings(page);
     await expect(swatch).toHaveCount(1);
     await expect(swatch).toHaveAttribute("aria-pressed", "true");
     await trigger.click();

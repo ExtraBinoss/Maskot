@@ -58,16 +58,25 @@ test("keeps the properties panel and its scrolling area at their full available 
     await page.setViewportSize(viewport);
     for (const view of ["Statique", "Mouvement"]) {
       await page.getByRole("button", { name: view, exact: true }).click();
+      if (viewport.width <= 760) {
+        await page
+          .getByRole("button", { name: "Réglages de Maskot", exact: true })
+          .click();
+        await expect(
+          page.getByRole("dialog", { name: "Réglages de Maskot", exact: true }),
+        ).toBeVisible();
+      }
       await expect(async () => {
         const geometry = await page.locator("#settings").evaluate((el) => {
-          const root = el.closest("main")!.getBoundingClientRect(),
+          const drawer = el.closest('[data-slot="drawer-content"]');
+          const root = (drawer ?? el.closest("main"))!.getBoundingClientRect(),
             panel = el.getBoundingClientRect(),
             scroll = el.firstElementChild!.getBoundingClientRect();
           const styles = getComputedStyle(el);
           const bottomText = styles
             .getPropertyValue("--inspector-bottom")
             .trim();
-          const bottom = Number.parseFloat(bottomText);
+          const bottom = drawer ? 0 : Number.parseFloat(bottomText);
           return {
             root: root.height,
             top: panel.top - root.top,
@@ -90,6 +99,12 @@ test("keeps the properties panel and its scrolling area at their full available 
             Math.abs(geometry.scrollBottom - geometry.height),
           ).toBeLessThan(1);
       }).toPass({ timeout: 3000 });
+      if (viewport.width <= 760) {
+        await page.keyboard.press("Escape");
+        await expect(
+          page.getByRole("dialog", { name: "Réglages de Maskot", exact: true }),
+        ).toBeHidden();
+      }
     }
   }
 });
