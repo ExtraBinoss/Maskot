@@ -145,6 +145,18 @@ export function createLabStore(
   view: WorkspaceView = "static",
 ) {
   const store = createStore();
+  restoreLabStore(store, readSaved, reducedMotion);
+  store.set(viewAtom, view);
+  return store;
+}
+
+// The browser calls this only after the deterministic build-time tree hydrates.
+// No storage subscription is mounted yet, so restoring never saves defaults.
+export function restoreLabStore(
+  store: LabStore,
+  readSaved: () => string | null,
+  reducedMotion: boolean,
+) {
   let preset = defaultPreset();
   try {
     const saved = readSaved();
@@ -157,14 +169,12 @@ export function createLabStore(
   }
   store.set(presetAtom, preset);
   store.set(frameAtom, createMascotEngine(preset.look).sample(0));
-  store.set(viewAtom, view);
   store.set(paintAtom, {
     color: preset.look.color,
     blush: Number(preset.look.blush),
   });
   store.set(playingAtom, !reducedMotion);
   store.set(reducedMotionAtom, reducedMotion);
-  return store;
 }
 
 export type LabStore = ReturnType<typeof createLabStore>;

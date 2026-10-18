@@ -1,5 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { SITE_META, SITE_URL, SOCIAL_IMAGE } from "../src/site-meta";
+import { defaultPreset } from "../src/mascot/mascot-storage";
 
 test("serves complete sharing metadata and useful content without JavaScript", async ({
   browser,
@@ -9,6 +10,12 @@ test("serves complete sharing metadata and useful content without JavaScript", a
   const context = await browser.newContext({ javaScriptEnabled: false });
   const page = await context.newPage();
   await page.goto(baseURL!);
+  const source = await request.get("/");
+  const html = await source.text();
+  expect(html).toContain('data-prerendered="true"');
+  expect(html).toContain("Create a Grok bot inspired mascot");
+  await expect(page.locator("#root main")).toBeVisible();
+  await expect(page.locator("[data-mascot-preview] svg")).toBeVisible();
   await expect(page).toHaveTitle(SITE_META.en.title);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(
     SITE_META.en.title,
@@ -65,6 +72,79 @@ test("serves complete sharing metadata and useful content without JavaScript", a
   await context.close();
 });
 
+test("hydrates the existing SVG and restores preferences without overwriting the preset", async ({
+  page,
+}) => {
+  const preset = defaultPreset();
+  preset.look.shape = "triangle";
+  preset.look.eyes = "star";
+  preset.look.color = "#ab1234";
+  const text = JSON.stringify(preset);
+  await page.addInitScript((saved) => {
+    localStorage.setItem("mascotlab.preset.v1", saved);
+    localStorage.setItem("maskot.language.v1", "fr");
+    localStorage.setItem("maskot.colors.v1", '["#123456"]');
+    localStorage.setItem("mascotlab-theme", '"dark"');
+    const writes: string[] = [];
+    const original = Storage.prototype.setItem.bind(localStorage);
+    Storage.prototype.setItem = function (key, value) {
+      writes.push(key);
+      return original(key, value);
+    };
+    Reflect.set(window, "__storageWrites", writes);
+  }, text);
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  page.on("console", (message) => {
+    if (message.type() === "error") errors.push(message.text());
+  });
+  let resume!: () => void;
+  const scripts = new Promise<void>((resolve) => {
+    resume = resolve;
+  });
+  await page.route(/\/assets\/index-[^/]+\.js$/, async (route) => {
+    await scripts;
+    await route.continue();
+  });
+  await page.goto("/", { waitUntil: "commit" });
+  const mascot = page.locator("[data-mascot-preview] svg");
+  try {
+    await expect(mascot).toBeVisible();
+    await page.evaluate(() => {
+      Reflect.set(
+        window,
+        "__serverMascot",
+        document.querySelector("[data-mascot-preview] svg"),
+      );
+    });
+  } finally {
+    resume();
+  }
+  await expect(
+    page.getByRole("button", { name: "À propos", exact: true }),
+  ).toBeVisible();
+  await expect(mascot.locator('path[fill="#ab1234"]').first()).toBeAttached();
+  await expect(
+    page.getByRole("button", { name: "Couleur #123456", exact: true }),
+  ).toBeAttached();
+  await expect(page.locator("html")).toHaveAttribute("lang", "fr");
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+  expect(
+    await page.evaluate(
+      () =>
+        Reflect.get(window, "__serverMascot") ===
+        document.querySelector("[data-mascot-preview] svg"),
+    ),
+  ).toBe(true);
+  expect(
+    await page.evaluate(() => Reflect.get(window, "__storageWrites")),
+  ).not.toContain("mascotlab.preset.v1");
+  expect(
+    await page.evaluate(() => localStorage.getItem("mascotlab.preset.v1")),
+  ).toBe(text);
+  expect(errors).toEqual([]);
+});
+
 test("keeps search and social descriptions in sync when switching languages", async ({
   page,
 }) => {
@@ -94,6 +174,14 @@ test("keeps search and social descriptions in sync when switching languages", as
       "href",
       `${SITE_URL}/`,
     );
+    const schema = JSON.parse(
+      (await page.locator('script[type="application/ld+json"]').textContent())!,
+    );
+    const app = schema["@graph"].find(
+      (entry: { "@type": string }) => entry["@type"] === "WebApplication",
+    );
+    expect(app.description).toBe(meta.description);
+    expect(app.license).toBe(`${SITE_URL}/licenses/Maskot-MIT.txt`);
   }
 });
 

@@ -1,7 +1,7 @@
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 import { en, fr } from "./locales";
-import { SITE_META } from "./site-meta";
+import { getStructuredData, SITE_META } from "./site-meta";
 
 export const LANGUAGE_KEY = "maskot.language.v1";
 function initialLanguage() {
@@ -18,7 +18,8 @@ void i18n
   .use(initReactI18next)
   .init({
     resources: { en: { translation: en }, fr: { translation: fr } },
-    lng: initialLanguage(),
+    // The first browser render must match the English static document.
+    lng: "en",
     fallbackLng: "en",
     supportedLngs: ["en", "fr"],
     keySeparator: false,
@@ -34,6 +35,8 @@ function synchronizeLanguage(language: string) {
   document.documentElement.lang = language;
   const meta = SITE_META[language === "fr" ? "fr" : "en"];
   document.title = meta.title;
+  const schema = document.querySelector('script[type="application/ld+json"]');
+  if (schema) schema.textContent = JSON.stringify(getStructuredData(language));
   for (const [selector, content] of [
     ['meta[name="description"]', meta.description],
     ['meta[property="og:title"]', meta.title],
@@ -52,7 +55,14 @@ function synchronizeLanguage(language: string) {
     /* Keep the session preference. */
   }
 }
-i18n.on("languageChanged", synchronizeLanguage);
-synchronizeLanguage(i18n.resolvedLanguage ?? "en");
+let initialized = false;
+export function restoreClientLanguage() {
+  if (initialized) return;
+  initialized = true;
+  i18n.on("languageChanged", synchronizeLanguage);
+  void i18n.changeLanguage(initialLanguage()).catch((error: unknown) => {
+    console.error("Language preference could not be restored", error);
+  });
+}
 
 export default i18n;

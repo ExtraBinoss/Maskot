@@ -27,9 +27,12 @@ function readCustomColors(): string[] {
   }
 }
 
-const savedColorsAtom = atom<string[] | null>(null);
+const savedColorsAtom = atom<string[]>([]);
+export const restoreCustomColorsAtom = atom(null, (_get, set) => {
+  set(savedColorsAtom, readCustomColors());
+});
 export const customColorsAtom = atom(
-  (get) => get(savedColorsAtom) ?? readCustomColors(),
+  (get) => get(savedColorsAtom),
   (get, set, color: string) => {
     const colors = parseCustomColors(
       JSON.stringify([...get(customColorsAtom), color]),

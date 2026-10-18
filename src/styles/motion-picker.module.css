@@ -48,3 +48,10 @@
   text-align: center;
   text-wrap: balance;
 }
+
+.choice:hover,
+.choice:focus-visible,
+.choice[aria-pressed="true"] {
+  background: var(--selection-background, var(--accent));
+  color: var(--foreground);
+}

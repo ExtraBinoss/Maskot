@@ -29,10 +29,16 @@ export async function mascotWebm(
   const size = 1024,
     fps = 30;
   const quality = new Quality({ quantizer: 12, bitrate: 6_000_000 });
-  const options = { width: size, height: size, quality };
+  const transparent = background === "transparent";
+  const options = {
+    width: size,
+    height: size,
+    quality,
+    alpha: transparent ? ("keep" as const) : ("discard" as const),
+  };
   const codec = (await canEncodeVideo("vp9", options))
     ? "vp9"
-    : (await canEncodeVideo("vp8", options))
+    : !transparent && (await canEncodeVideo("vp8", options))
       ? "vp8"
       : null;
   if (!codec)
@@ -41,13 +47,17 @@ export async function mascotWebm(
     );
   const canvas = document.createElement("canvas");
   canvas.width = canvas.height = size;
-  const ctx = canvas.getContext("2d", { alpha: false });
+  const ctx = canvas.getContext("2d", { alpha: transparent });
   if (!ctx) throw new Error("Impossible de préparer la vidéo.");
   const output = new Output({
     format: new WebMOutputFormat(),
     target: new BufferTarget(),
   });
-  const source = new CanvasSource(canvas, { codec, quality, alpha: "discard" });
+  const source = new CanvasSource(canvas, {
+    codec,
+    quality,
+    alpha: transparent ? "keep" : "discard",
+  });
   output.addVideoTrack(source, { frameRate: fps });
   const host = document.createElement("div");
   const root = createRoot(host);
@@ -77,7 +87,8 @@ export async function mascotWebm(
             frame={engine.sample(time)}
             color={preset.look.color}
             blush={preset.look.blush}
-            paper={background}
+            paper={transparent ? "#f9f9f9" : background}
+            eyeColor="#f9f9f9"
             size={size}
           />,
         ),
@@ -90,8 +101,11 @@ export async function mascotWebm(
         image.src = url;
         await image.decode();
         signal.throwIfAborted();
-        ctx.fillStyle = background;
-        ctx.fillRect(0, 0, size, size);
+        ctx.clearRect(0, 0, size, size);
+        if (!transparent) {
+          ctx.fillStyle = background;
+          ctx.fillRect(0, 0, size, size);
+        }
         ctx.drawImage(image, 0, 0, size, size);
         await source.add(time, Math.min(1 / fps, duration - time));
       } finally {

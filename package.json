@@ -1,12 +1,15 @@
 {
   "name": "maskot",
   "version": "0.1.0",
+  "license": "MIT",
   "private": true,
   "type": "module",
   "packageManager": "bun@1.4.2",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
-    "build": "bun run generate:eye-fit && tsc --noEmit && vite build",
+    "build": "bun run generate:eye-fit && tsc --noEmit && vite build && vite build --ssr src/entry-server.tsx --outDir artifacts/ssr --emptyOutDir && bun run prerender",
+    "prerender": "bun scripts/prerender.ts",
+    "bench:engine": "bun scripts/benchmark-engine.ts",
     "generate:eye-fit": "bun scripts/generate-eye-fit.ts",
     "preview": "vite preview --host 127.0.0.1",
     "typecheck": "tsc --noEmit",

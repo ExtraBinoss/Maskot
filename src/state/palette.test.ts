@@ -4,6 +4,7 @@ import {
   CUSTOM_COLORS_KEY,
   customColorsAtom,
   parseCustomColors,
+  restoreCustomColorsAtom,
 } from "./palette";
 import { statusAtom } from "./lab";
 
@@ -35,6 +36,8 @@ describe("saved color palette", () => {
   it("restores saved colors and persists additions only once", () => {
     localStorage.setItem(CUSTOM_COLORS_KEY, '["#123456"]');
     const store = createStore();
+    expect(store.get(customColorsAtom)).toEqual([]);
+    store.set(restoreCustomColorsAtom);
     expect(store.get(customColorsAtom)).toEqual(["#123456"]);
     store.set(customColorsAtom, "#ABCDEF");
     store.set(customColorsAtom, "#abcdef");
@@ -42,7 +45,9 @@ describe("saved color palette", () => {
       "#123456",
       "#abcdef",
     ]);
-    expect(createStore().get(customColorsAtom)).toEqual(["#123456", "#abcdef"]);
+    const restored = createStore();
+    restored.set(restoreCustomColorsAtom);
+    expect(restored.get(customColorsAtom)).toEqual(["#123456", "#abcdef"]);
   });
   it("keeps the color for the session when browser storage is blocked", () => {
     vi.spyOn(Storage.prototype, "getItem").mockImplementation(() => {
@@ -52,6 +57,7 @@ describe("saved color palette", () => {
       throw new Error("blocked");
     });
     const store = createStore();
+    store.set(restoreCustomColorsAtom);
     expect(store.get(customColorsAtom)).toEqual([]);
     store.set(customColorsAtom, "#123456");
     expect(store.get(customColorsAtom)).toEqual(["#123456"]);

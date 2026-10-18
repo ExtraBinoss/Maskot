@@ -1,4 +1,5 @@
-// React port of Beam's BeamySvg.vue (MPL-2.0). See NOTICE.txt and engine/NOTICE.txt.
+// SPDX-License-Identifier: MIT
+// React port of Beam's BeamySvg.vue. See NOTICE.txt and engine/NOTICE.txt.
 import { useId, type Ref } from "react";
 import type { BotFrame, DotRender } from "./engine/bot-types";
 import { MorphPath } from "../components/MorphPath";

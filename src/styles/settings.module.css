@@ -289,13 +289,13 @@
   padding: 2px 5px 3px 2px;
   mask-image: linear-gradient(black, black);
 }
-.scrollShadow[data-top="false"][data-bottom="true"] {
+.scrollShadow[data-axis="vertical"][data-top="false"][data-bottom="true"] {
   mask-image: linear-gradient(black calc(100% - 20px), transparent);
 }
-.scrollShadow[data-top="true"][data-bottom="false"] {
+.scrollShadow[data-axis="vertical"][data-top="true"][data-bottom="false"] {
   mask-image: linear-gradient(transparent, black 20px);
 }
-.scrollShadow[data-top="true"][data-bottom="true"] {
+.scrollShadow[data-axis="vertical"][data-top="true"][data-bottom="true"] {
   mask-image: linear-gradient(
     transparent,
     black 20px,
@@ -370,4 +370,44 @@
   margin: 14px 0 7px;
   font: 500 11px var(--font-sans);
   color: var(--muted-foreground);
+}
+
+.scrollShadow[data-axis="horizontal"] {
+  --fade-left: 0px;
+  --fade-right: 0px;
+  max-height: none;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  border-radius: 0;
+  background: transparent;
+  backdrop-filter: none;
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    black var(--fade-left),
+    black calc(100% - var(--fade-right)),
+    transparent
+  );
+}
+.scrollShadow[data-axis="horizontal"][data-top="true"] {
+  --fade-left: 24px;
+}
+.scrollShadow[data-axis="horizontal"][data-bottom="true"] {
+  --fade-right: 24px;
+}
+.scrollShadow[data-axis="horizontal"]::-webkit-scrollbar {
+  height: 4px;
+}
+
+.previewChoice[aria-pressed="true"],
+.eyeChoice[aria-pressed="true"] {
+  color: var(--foreground);
+  background: var(--selection-background, var(--accent));
+  border-color: var(--selection-border, var(--border));
+  box-shadow: none;
+}
+:global(.dark) .previewChoice[aria-pressed="true"] {
+  background: var(--selection-background, var(--accent));
+  border-color: var(--selection-border, var(--border));
 }

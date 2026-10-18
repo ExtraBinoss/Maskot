@@ -15,3 +15,5 @@ playwright-report/
 *.[mM][dD]
 *.markdown
 *.mdx
+!LICENSE.md
+!README.md

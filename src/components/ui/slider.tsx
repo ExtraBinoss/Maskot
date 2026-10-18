@@ -3,6 +3,8 @@ import { Slider as SliderPrimitive } from "@base-ui/react/slider";
 import { AnimatePresence, m } from "motion/react";
 import { cn } from "cn";
 
+const defaultTooltipContent = (value: number) => value;
+
 function Slider({
   className,
   defaultValue,
@@ -10,7 +12,7 @@ function Slider({
   min = 0,
   max = 100,
   showTooltip = false,
-  tooltipContent = (value) => value,
+  tooltipContent = defaultTooltipContent,
   "aria-label": label,
   ...props
 }: SliderPrimitive.Root.Props & {

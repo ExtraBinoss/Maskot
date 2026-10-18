@@ -1,10 +1,12 @@
+import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { m } from "motion/react";
 import { PreferenceGroup } from "./PreferenceGroup";
 import { ThemePicker } from "./ThemePicker";
+import { CreditsDialog } from "./CreditsDialog";
 import s from "../styles/about.module.css";
 
-export default function About() {
+export default function About({ children }: { children: ReactNode }) {
   const { t, i18n } = useTranslation();
   return (
     <m.section
@@ -15,6 +17,7 @@ export default function About() {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.25 }}
     >
+      <div className={s.art}>{children}</div>
       <div className={s.content}>
         <h2>Maskot</h2>
         <section className={s.preferences} aria-label={t("Préférences")}>
@@ -55,22 +58,16 @@ export default function About() {
               aria-label="Plinka"
             >
               <img
+                className={s.plinka}
                 src="/plinka.svg"
                 alt=""
-                width="28"
-                height="28"
+                width="38"
+                height="24"
                 decoding="async"
               />
             </a>
           </div>
-          <a
-            className={s.credits}
-            href="/licenses/NOTICE.txt"
-            target="_blank"
-            rel="noreferrer"
-          >
-            {t("Crédits & licences")}
-          </a>
+          <CreditsDialog triggerClassName={s.credits} />
         </footer>
       </div>
       <a

@@ -23,7 +23,7 @@ test("offers all 29 animations in the panel and the shadcn add popover on deskto
   page,
 }) => {
   await page.goto("/");
-  await page.getByRole("button", { name: "Motion", exact: true }).click();
+  await page.getByRole("button", { name: "Mouvement", exact: true }).click();
   await expect(
     page.getByLabel("Mouvements", { exact: true }).getByRole("button"),
   ).toHaveCount(29);
@@ -41,7 +41,9 @@ test("offers all 29 animations in the panel and the shadcn add popover on deskto
         .getByRole("button"),
     ).toHaveCount(15);
     await expect(
-      dialog.getByRole("region", { name: "Thinking orbs" }).getByRole("button"),
+      dialog
+        .getByRole("region", { name: "Orbes pensants" })
+        .getByRole("button"),
     ).toHaveCount(9);
     await expect(
       dialog
@@ -78,7 +80,7 @@ test("plays hovered and focused previews without editing the timeline and stops 
 }) => {
   await page.emulateMedia({ reducedMotion: "no-preference" });
   await page.goto("/");
-  await page.getByRole("button", { name: "Motion", exact: true }).click();
+  await page.getByRole("button", { name: "Mouvement", exact: true }).click();
   await page
     .getByRole("button", { name: "Mettre en pause", exact: true })
     .click();
@@ -136,7 +138,7 @@ test("adds orbs and symbols as real timeline clips, supports undo and restores t
   page,
 }) => {
   await page.goto("/");
-  await page.getByRole("button", { name: "Motion", exact: true }).click();
+  await page.getByRole("button", { name: "Mouvement", exact: true }).click();
   const timeline = page.getByRole("region", {
     name: "Chorégraphie",
     exact: true,
@@ -161,7 +163,7 @@ test("adds orbs and symbols as real timeline clips, supports undo and restores t
     saved.timeline.slice(-2).map((step: { state: string }) => step.state),
   ).toEqual(["orb-working", "symbol-loading"]);
   await page.reload();
-  await page.getByRole("button", { name: "Motion", exact: true }).click();
+  await page.getByRole("button", { name: "Mouvement", exact: true }).click();
   await expect(timeline.locator("article")).toHaveCount(6);
   await expect(timeline.locator("article").nth(4)).toContainText(
     "Orbe · Travail",

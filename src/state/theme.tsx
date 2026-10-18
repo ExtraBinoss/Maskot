@@ -53,19 +53,29 @@ export function useIsDark() {
 
 export function ThemeSync() {
   const dark = useIsDark();
+  const preference = useAtomValue(themeAtom);
   const initial = useRef(true);
   useLayoutEffect(() => {
+    // useSyncExternalStore intentionally hydrates from its server snapshot.
+    // Resolve system mode here so that snapshot never replaces the head's
+    // correct dark background with a light frame during initial hydration.
+    const resolvedDark =
+      preference === "system"
+        ? window.matchMedia("(prefers-color-scheme: dark)").matches
+        : dark;
     const apply = () => {
-      document.documentElement.classList.toggle("dark", dark);
-      document.documentElement.dataset.theme = dark ? "dark" : "light";
-      document.documentElement.style.colorScheme = dark ? "dark" : "light";
+      document.documentElement.classList.toggle("dark", resolvedDark);
+      document.documentElement.dataset.theme = resolvedDark ? "dark" : "light";
+      document.documentElement.style.colorScheme = resolvedDark
+        ? "dark"
+        : "light";
       document
         .querySelector('meta[name="theme-color"]')
-        ?.setAttribute("content", dark ? "#1c1c1e" : "#fbfbfd");
+        ?.setAttribute("content", resolvedDark ? "#1c1c1e" : "#fbfbfd");
     };
     if (
       initial.current ||
-      document.documentElement.classList.contains("dark") === dark ||
+      document.documentElement.classList.contains("dark") === resolvedDark ||
       window.matchMedia("(prefers-reduced-motion: reduce)").matches
     ) {
       initial.current = false;
@@ -88,6 +98,6 @@ export function ThemeSync() {
       window.clearTimeout(timer);
       delete root.dataset.themeTransition;
     };
-  }, [dark]);
+  }, [dark, preference]);
   return null;
 }

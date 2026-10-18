@@ -1,5 +1,10 @@
 import type { HtmlTagDescriptor, Plugin } from "vite";
-import { SITE_META, SITE_URL, SOCIAL_IMAGE } from "../src/site-meta.ts";
+import {
+  getStructuredData,
+  SITE_META,
+  SITE_URL,
+  SOCIAL_IMAGE,
+} from "../src/site-meta.ts";
 
 export function seo(): Plugin {
   const { title, description, imageAlt, locale, alternateLocale } =
@@ -16,6 +21,7 @@ export function seo(): Plugin {
         "og:locale": locale,
         "og:locale:alternate": alternateLocale,
         "og:image": SOCIAL_IMAGE,
+        "og:image:secure_url": SOCIAL_IMAGE,
         "og:image:type": "image/png",
         "og:image:width": "1200",
         "og:image:height": "630",
@@ -44,49 +50,7 @@ export function seo(): Plugin {
         {
           tag: "script",
           attrs: { type: "application/ld+json" },
-          children: JSON.stringify({
-            "@context": "https://schema.org",
-            "@graph": [
-              {
-                "@type": "WebSite",
-                "@id": `${SITE_URL}/#website`,
-                name: "Maskot",
-                url: `${SITE_URL}/`,
-                inLanguage: ["en", "fr"],
-                publisher: { "@id": "https://plinka.eu/#organization" },
-              },
-              {
-                "@type": "WebApplication",
-                "@id": `${SITE_URL}/#app`,
-                name: "Maskot",
-                url: `${SITE_URL}/`,
-                description,
-                image: SOCIAL_IMAGE,
-                applicationCategory: "DesignApplication",
-                operatingSystem: "Any",
-                inLanguage: ["en", "fr"],
-                isAccessibleForFree: true,
-                offers: {
-                  "@type": "Offer",
-                  price: "0",
-                  priceCurrency: "EUR",
-                },
-                featureList: [
-                  "Custom SVG mascots, shapes and expressive eyes",
-                  "Animated timelines and smooth morphing",
-                  "SVG, PNG and WebM exports",
-                ],
-                publisher: { "@id": "https://plinka.eu/#organization" },
-                isPartOf: { "@id": `${SITE_URL}/#website` },
-              },
-              {
-                "@type": "Organization",
-                "@id": "https://plinka.eu/#organization",
-                name: "Plinka",
-                url: "https://plinka.eu/",
-              },
-            ],
-          }),
+          children: JSON.stringify(getStructuredData("en")),
         },
       ];
       return tags.map((tag) => ({ ...tag, injectTo: "head" }));

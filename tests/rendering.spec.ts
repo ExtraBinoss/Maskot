@@ -22,7 +22,12 @@ test("paints the system scheme and saved theme before the application loads", as
       );
     await page.route(/\.(?:js|css)(?:\?|$)/, (route) => route.abort());
     await page.goto("/");
-    await expect(page.locator("#root")).toBeEmpty();
+    await expect(page.locator("#root")).toHaveAttribute(
+      "data-prerendered",
+      "true",
+    );
+    await expect(page.locator("#root main")).toHaveCount(1);
+    await expect(page.locator("[data-mascot-preview] svg")).toHaveCount(1);
     await expect(page.locator("html")).toHaveAttribute(
       "data-theme",
       options.expected,
@@ -51,7 +56,7 @@ test("keeps the properties panel and its scrolling area at their full available 
     { width: 320, height: 568 },
   ]) {
     await page.setViewportSize(viewport);
-    for (const view of ["Statique", "Motion"]) {
+    for (const view of ["Statique", "Mouvement"]) {
       await page.getByRole("button", { name: view, exact: true }).click();
       await expect(async () => {
         const geometry = await page.locator("#settings").evaluate((el) => {
@@ -171,7 +176,7 @@ test("opens Motion with no additional module request and animates the timeline i
 }) => {
   await page.emulateMedia({ reducedMotion: "no-preference" });
   await page.goto("/");
-  await page.getByRole("button", { name: "Motion", exact: true }).waitFor();
+  await page.getByRole("button", { name: "Mouvement", exact: true }).waitFor();
   const modules: string[] = [];
   page.on("request", (request) => {
     if (/\.js(?:\?|$)/.test(request.url())) modules.push(request.url());
@@ -179,7 +184,7 @@ test("opens Motion with no additional module request and animates the timeline i
   await page.route(/\.js(?:\?|$)/, (route) => route.abort());
   const frames = await page.evaluate(async () => {
     const button = document.querySelector<HTMLButtonElement>(
-      'nav [aria-label="Motion"]',
+      'nav [aria-label="Mouvement"]',
     )!;
     const start = performance.now();
     button.click();

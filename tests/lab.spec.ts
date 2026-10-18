@@ -49,7 +49,7 @@ test("keeps Static still, opens tools immediately and reserves the footer for Ab
   await page.evaluate(() => new Promise((resolve) => setTimeout(resolve, 550)));
   expect(await artwork(page)).toBe(still);
   await expect(page.locator("footer")).toHaveCount(0);
-  await page.getByRole("button", { name: "Motion", exact: true }).click();
+  await page.getByRole("button", { name: "Mouvement", exact: true }).click();
   await expect(
     page.getByLabel("Mouvements", { exact: true }).getByRole("button"),
   ).toHaveCount(29);
@@ -77,7 +77,7 @@ test("opens Motion with autoplay on a slower CPU without starving the controls",
   await cdp.send("Emulation.setCPUThrottlingRate", { rate: 4 });
   await page.emulateMedia({ reducedMotion: "no-preference" });
   await page.reload();
-  await page.getByRole("button", { name: "Motion", exact: true }).click();
+  await page.getByRole("button", { name: "Mouvement", exact: true }).click();
   await expect(
     page.getByLabel("Mouvements", { exact: true }).getByRole("button"),
   ).toHaveCount(29);
@@ -154,7 +154,7 @@ test("edits the real mascot in pause, persists settings, and restores defaults",
 test("plays, pauses, changes speed and protects interactive controls from Space", async ({
   page,
 }) => {
-  await page.getByRole("button", { name: "Motion", exact: true }).click();
+  await page.getByRole("button", { name: "Mouvement", exact: true }).click();
   await expect(
     page.getByLabel("Mouvements", { exact: true }).getByRole("button"),
   ).toHaveCount(29);
@@ -198,7 +198,7 @@ test("plays, pauses, changes speed and protects interactive controls from Space"
   await expect(color).toHaveAttribute("aria-invalid", "false");
   await page.getByRole("switch", { name: "Petites joues rosées" }).focus();
   await page.keyboard.press("Space");
-  await page.getByRole("button", { name: "Motion", exact: true }).click();
+  await page.getByRole("button", { name: "Mouvement", exact: true }).click();
   await page.getByRole("switch", { name: "Suivre le curseur" }).focus();
   await page.keyboard.press("Space");
   await expect(
@@ -221,7 +221,7 @@ test("plays, pauses, changes speed and protects interactive controls from Space"
 test("composes, reorders, seeks backward and forward, then plays the timeline", async ({
   page,
 }) => {
-  await page.getByRole("button", { name: "Motion", exact: true }).click();
+  await page.getByRole("button", { name: "Mouvement", exact: true }).click();
   const timeline = page.getByRole("region", {
     name: "Chorégraphie",
     exact: true,
@@ -288,7 +288,7 @@ test("composes, reorders, seeks backward and forward, then plays the timeline", 
 test("downloads standalone SVG and transparent 1024px PNG", async ({
   page,
 }) => {
-  await page.getByRole("button", { name: "Motion", exact: true }).click();
+  await page.getByRole("button", { name: "Mouvement", exact: true }).click();
   // Export a particle/orbit state to check local paint references in the actual file.
   await page
     .getByLabel("Mouvements", { exact: true })
@@ -362,7 +362,7 @@ test("restores legacy saved presets, validates saved data and enforces montage l
   await expect(
     page.getByRole("button", { name: "Triangle", exact: true }),
   ).toHaveAttribute("aria-pressed", "true");
-  await page.getByRole("button", { name: "Motion", exact: true }).click();
+  await page.getByRole("button", { name: "Mouvement", exact: true }).click();
   await expect(
     page.getByRole("button", {
       name: "Retirer le mouvement 1",
@@ -379,7 +379,7 @@ test("restores legacy saved presets, validates saved data and enforces montage l
       })),
     }),
   );
-  await page.getByRole("button", { name: "Motion", exact: true }).click();
+  await page.getByRole("button", { name: "Mouvement", exact: true }).click();
   await expect(
     page.getByRole("button", { name: "Ajouter un mouvement", exact: true }),
   ).toBeDisabled();
@@ -556,7 +556,7 @@ test("keeps About on one screen and follows the pointer without enabling Motion 
   const left = await eyes();
   await page.mouse.move(1400, 700);
   await expect.poll(eyes).not.toBe(left);
-  await page.getByRole("button", { name: "Motion", exact: true }).click();
+  await page.getByRole("button", { name: "Mouvement", exact: true }).click();
   await expect(
     page.getByRole("switch", { name: "Suivre le curseur" }),
   ).toHaveAttribute("aria-checked", "false");
@@ -573,7 +573,7 @@ test("expands the navigation itself with all labels and supports keyboard focus"
   await expect
     .poll(async () => (await nav.boundingBox())!.width)
     .toBeGreaterThan(150);
-  for (const name of ["Statique", "Motion", "À propos"]) {
+  for (const name of ["Statique", "Mouvement", "À propos"]) {
     await expect(
       nav.getByRole("button", { name, exact: true }).locator("span").last(),
     ).toHaveCSS("opacity", "1");
@@ -723,12 +723,15 @@ test("scrolls the complete eye and mood catalogs and persists the new styles", a
 test("drags and stretches timeline cards while keeping keyboard editing available", async ({
   page,
 }) => {
-  await page.getByRole("button", { name: "Motion", exact: true }).click();
+  await page.getByRole("button", { name: "Mouvement", exact: true }).click();
   const timeline = page.getByRole("region", {
     name: "Chorégraphie",
     exact: true,
   });
-  const first = timeline.locator('[data-card="0"]');
+  const first = timeline.getByRole("button", {
+    name: "Déplacer le mouvement 1",
+    exact: true,
+  });
   const third = timeline.locator('[data-card="2"]');
   const a = await first.boundingBox(),
     b = await third.boundingBox();
@@ -796,7 +799,7 @@ test("exports a real WebM with the complete montage and lazy-loads the encoder",
     key,
   );
   await page.reload();
-  await page.getByRole("button", { name: "Motion", exact: true }).click();
+  await page.getByRole("button", { name: "Mouvement", exact: true }).click();
   expect(
     (await resourceNames()).some((name) => /mascot-video-/.test(name)),
   ).toBe(false);
@@ -854,7 +857,7 @@ test("exports a real WebM with the complete montage and lazy-loads the encoder",
   expect(videoInfo.height).toBe(1024);
   expect(videoInfo.duration).toBeCloseTo(1.2, 1);
   expect(videoInfo.changed).toBe(true);
-  expect(videoInfo.corner[3]).toBe(255);
+  expect(videoInfo.corner[3]).toBe(0);
   await expect(page.getByRole("dialog")).not.toBeVisible();
   await expect(
     page.getByRole("status", { name: "Messages de l’atelier" }),
@@ -864,7 +867,7 @@ test("exports a real WebM with the complete montage and lazy-loads the encoder",
 test("cancels video export and reports a missing WebCodecs encoder", async ({
   page,
 }) => {
-  await page.getByRole("button", { name: "Motion", exact: true }).click();
+  await page.getByRole("button", { name: "Mouvement", exact: true }).click();
   await page
     .getByRole("button", { name: "Exporter le montage", exact: true })
     .click();
@@ -961,7 +964,7 @@ test("blinks naturally in Static and morphs eyes, silhouette and paint", async (
   expect(frames.middle.color).not.toBe(frames.before.color);
   expect(frames.middle.color).not.toBe("#8b5cf6");
   expect(frames.after.color).toBe("#8b5cf6");
-  const motion = page.getByRole("button", { name: "Motion", exact: true });
+  const motion = page.getByRole("button", { name: "Mouvement", exact: true });
   await motion.hover();
   await expect(motion.locator("span").last()).toHaveText("Motion");
   await expect(motion.locator("span").last()).toHaveCSS("opacity", "1");
@@ -1450,10 +1453,10 @@ test("previews a picker drag immediately and commits without repainting the cata
   await expect.poll(() => paint.getAttribute("fill")).toMatch(/^#80/i);
 });
 
-test("uses a glass add popover, centered playback, styled zoom and timeline undo/redo", async ({
+test("uses a glass add popover, centered playback and timeline undo/redo", async ({
   page,
 }) => {
-  await page.getByRole("button", { name: "Motion", exact: true }).click();
+  await page.getByRole("button", { name: "Mouvement", exact: true }).click();
   const timeline = page.getByRole("region", {
     name: "Chorégraphie",
     exact: true,
@@ -1511,15 +1514,9 @@ test("uses a glass add popover, centered playback, styled zoom and timeline undo
   await expect(duration).toHaveAttribute("aria-valuenow", "2");
   await redo.click();
   await expect(duration).toHaveAttribute("aria-valuenow", "3");
-  const zoom = page.getByRole("textbox", {
-    name: "Valeur — Zoom de la timeline",
-    exact: true,
-  });
-  await zoom.fill("150");
-  await zoom.press("Enter");
   await expect(
     page.getByRole("slider", { name: "Zoom de la timeline", exact: true }),
-  ).toHaveValue("150");
+  ).toHaveCount(0);
 });
 
 test("updates eyes throughout a drag without catalog churn, persistence or a trailing morph", async ({

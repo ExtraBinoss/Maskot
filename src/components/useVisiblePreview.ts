@@ -1,4 +1,8 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+
+const subscribeFallback = () => () => {};
+const needsObserverFallback = () => typeof IntersectionObserver === "undefined";
+const serverFallback = () => false;
 
 type Subscription = {
   observer: IntersectionObserver;
@@ -34,15 +38,15 @@ function observe(element: Element, callback: (visible: boolean) => void) {
 // inner-list root would keep sampling previews hidden above the inspector.
 export function useVisiblePreview<T extends Element>() {
   const ref = useRef<T>(null);
-  const [visible, setVisible] = useState(
-    () => typeof IntersectionObserver === "undefined",
+  const [visible, setVisible] = useState(false);
+  const fallback = useSyncExternalStore(
+    subscribeFallback,
+    needsObserverFallback,
+    serverFallback,
   );
-  useEffect(
-    () =>
-      typeof IntersectionObserver === "undefined"
-        ? undefined
-        : observe(ref.current!, setVisible),
-    [],
-  );
-  return { ref, visible };
+  useEffect(() => {
+    if (typeof IntersectionObserver === "undefined") return;
+    return observe(ref.current!, setVisible);
+  }, []);
+  return { ref, visible: visible || fallback };
 }

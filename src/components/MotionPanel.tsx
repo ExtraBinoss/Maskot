@@ -18,6 +18,7 @@ import { usePlayer } from "../mascot/PlayerProvider";
 import { MotionPicker } from "./MotionPicker";
 import { Switch } from "./ui/switch";
 import { WorkspaceActions } from "./WorkspaceActions";
+import { ResponsiveInspector } from "./ResponsiveInspector";
 import SequenceEditor from "./SequenceEditor";
 import s from "../styles/motion.module.css";
 import w from "../styles/workspace.module.css";
@@ -43,109 +44,116 @@ export default function MotionPanel({
   }, [player]);
   return (
     <>
-      <m.aside
-        className={w.inspector}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
-        id="settings"
-        aria-label={t("Réglages de Maskot")}
+      <ResponsiveInspector
+        triggerLabel={t("Réglages")}
+        title={t("Réglages de Maskot")}
+        closeLabel={t("Fermer les réglages")}
       >
-        <m.div
-          className={w.panelScroll}
-          initial={{ y: 6 }}
-          animate={{ y: 0 }}
-          transition={{ duration: 0.18 }}
+        <m.aside
+          data-inspector=""
+          className={w.inspector}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+          id="settings"
+          aria-label={t("Réglages de Maskot")}
         >
-          <header className={s.paletteHeader}>
-            <h2>{t("Animation")}</h2>
-            <div className={s.boardToggle}>
-              <button
-                title={t("Vue mascotte")}
-                aria-label={t("Vue mascotte")}
-                aria-pressed={!board}
-                onClick={() => setBoard(false)}
-              >
-                <Maximize2 size={14} />
-              </button>
-              <button
-                title={t("Planche des mouvements")}
-                aria-label={t("Planche des mouvements")}
-                aria-pressed={board}
-                onClick={() => setBoard(true)}
-              >
-                <Grid2X2 size={14} />
-              </button>
-            </div>
-          </header>
-          <div aria-label={t("Mouvements")}>
-            <MotionPicker
-              look={look}
-              selected={state}
-              onSelect={(id) => {
-                setBoard(false);
-                if (steps.length < 32) {
-                  const start = timelineDuration(steps);
-                  setSteps([...steps, { state: id, duration: 2 }]);
-                  player.seek(start);
-                } else player.choose(id);
-              }}
-            />
-          </div>
-          <p className={s.hint}>
-            {t(
-              "Un clic pour ajouter au montage. Glisse une vignette pour la déplacer.",
-            )}
-          </p>
-          <div className={s.options}>
-            <div className={s.optionRow}>
-              <span>{t("Lecture")}</span>
-              <div className={s.playbackOptions}>
+          <m.div
+            className={w.panelScroll}
+            initial={{ y: 6 }}
+            animate={{ y: 0 }}
+            transition={{ duration: 0.18 }}
+          >
+            <header className={s.paletteHeader}>
+              <h2>{t("Animation")}</h2>
+              <div className={s.boardToggle}>
                 <button
-                  aria-label={t("Mouvement précédent")}
-                  onClick={() => player.next(-1)}
+                  title={t("Vue mascotte")}
+                  aria-label={t("Vue mascotte")}
+                  aria-pressed={!board}
+                  onClick={() => setBoard(false)}
                 >
-                  <ChevronLeft size={15} />
+                  <Maximize2 size={14} />
                 </button>
                 <button
-                  aria-label={t("Mouvement suivant")}
-                  onClick={() => player.next(1)}
+                  title={t("Planche des mouvements")}
+                  aria-label={t("Planche des mouvements")}
+                  aria-pressed={board}
+                  onClick={() => setBoard(true)}
                 >
-                  <ChevronRight size={15} />
+                  <Grid2X2 size={14} />
                 </button>
-                <select
-                  value={speed}
-                  aria-label={t("Vitesse de lecture")}
-                  onChange={(e) => setSpeed(Number(e.currentTarget.value))}
-                >
-                  {[0.25, 0.5, 1, 1.5, 2].map((value) => (
-                    <option key={value} value={value}>
-                      {value.toLocaleString(i18n.resolvedLanguage)}×
-                    </option>
-                  ))}
-                </select>
               </div>
-            </div>
-            <label className={s.optionRow}>
-              {t("Suivre le curseur")}
-              <Switch
-                label={t("Suivre le curseur")}
-                checked={follow}
-                disabled={board}
-                onCheckedChange={setFollow}
+            </header>
+            <div aria-label={t("Mouvements")}>
+              <MotionPicker
+                look={look}
+                selected={state}
+                onSelect={(id) => {
+                  setBoard(false);
+                  if (steps.length < 32) {
+                    const start = timelineDuration(steps);
+                    setSteps([...steps, { state: id, duration: 2 }]);
+                    player.seek(start);
+                  } else player.choose(id);
+                }}
               />
-            </label>
-            {reduced && (
-              <p className={s.hint}>
-                {t(
-                  "La lecture démarre en pause selon ta préférence de mouvements réduits.",
-                )}
-              </p>
-            )}
-          </div>
-        </m.div>
-        <WorkspaceActions svgRef={svgRef} />
-      </m.aside>
+            </div>
+            <p className={s.hint}>
+              {t(
+                "Un clic pour ajouter au montage. Glisse une vignette pour la déplacer.",
+              )}
+            </p>
+            <div className={s.options}>
+              <div className={s.optionRow}>
+                <span>{t("Lecture")}</span>
+                <div className={s.playbackOptions}>
+                  <button
+                    aria-label={t("Mouvement précédent")}
+                    onClick={() => player.next(-1)}
+                  >
+                    <ChevronLeft size={15} />
+                  </button>
+                  <button
+                    aria-label={t("Mouvement suivant")}
+                    onClick={() => player.next(1)}
+                  >
+                    <ChevronRight size={15} />
+                  </button>
+                  <select
+                    value={speed}
+                    aria-label={t("Vitesse de lecture")}
+                    onChange={(e) => setSpeed(Number(e.currentTarget.value))}
+                  >
+                    {[0.25, 0.5, 1, 1.5, 2].map((value) => (
+                      <option key={value} value={value}>
+                        {value.toLocaleString(i18n.resolvedLanguage)}×
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <label className={s.optionRow}>
+                {t("Suivre le curseur")}
+                <Switch
+                  label={t("Suivre le curseur")}
+                  checked={follow}
+                  disabled={board}
+                  onCheckedChange={setFollow}
+                />
+              </label>
+              {reduced && (
+                <p className={s.hint}>
+                  {t(
+                    "La lecture démarre en pause selon ta préférence de mouvements réduits.",
+                  )}
+                </p>
+              )}
+            </div>
+          </m.div>
+          <WorkspaceActions svgRef={svgRef} />
+        </m.aside>
+      </ResponsiveInspector>
       <SequenceEditor />
     </>
   );

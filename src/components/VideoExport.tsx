@@ -1,21 +1,25 @@
 import { useTranslation } from "react-i18next";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useId } from "react";
 import { useStore } from "jotai";
 import { ArrowDownToLine, X } from "lucide-react";
 import { playingAtom, presetAtom, statusAtom } from "../state/lab";
+import { PreferenceGroup } from "./PreferenceGroup";
 import { downloadBlob } from "../mascot/mascot-export";
 import { timelineDuration } from "../mascot/mascot-catalog";
 import s from "../styles/motion.module.css";
 
+const loadVideoExporter = () => import("../mascot/mascot-video");
+
 export function VideoExport() {
   const { t, i18n } = useTranslation();
 
+  const titleId = useId();
   const store = useStore();
   const dialog = useRef<HTMLDialogElement>(null);
   const controller = useRef<AbortController | null>(null);
   const [progress, setProgress] = useState<number | null>(null);
   const [error, setError] = useState("");
-  const [background, setBackground] = useState("#f9f9f9");
+  const [background, setBackground] = useState("transparent");
   useEffect(() => () => controller.current?.abort(), []);
   const close = () => {
     if (controller.current) controller.current.abort();
@@ -30,7 +34,7 @@ export function VideoExport() {
     setError("");
     setProgress(0);
     try {
-      const { mascotWebm } = await import("../mascot/mascot-video");
+      const { mascotWebm } = await loadVideoExporter();
       const blob = await mascotWebm(
         preset,
         background,
@@ -50,10 +54,9 @@ export function VideoExport() {
         setError(
           error instanceof Error ? error.message : "L’export vidéo a échoué.",
         );
-    } finally {
-      controller.current = null;
-      setProgress(null);
     }
+    controller.current = null;
+    setProgress(null);
   };
   return (
     <>
@@ -70,14 +73,14 @@ export function VideoExport() {
       <dialog
         ref={dialog}
         className={s.exportDialog}
-        aria-labelledby="video-title"
+        aria-labelledby={titleId}
         onCancel={(e) => {
           e.preventDefault();
           close();
         }}
       >
         <header>
-          <h2 id="video-title">{t("Emporte le mouvement.")}</h2>
+          <h2 id={titleId}>{t("Emporte le mouvement.")}</h2>
           <button aria-label={t("Fermer l’export vidéo")} onClick={close}>
             <X size={18} />
           </button>
@@ -91,23 +94,18 @@ export function VideoExport() {
           )}{" "}
           {t("secondes, du début à la fin du montage.")}
         </p>
-        <fieldset disabled={progress !== null}>
+        <fieldset className={s.videoBackground} disabled={progress !== null}>
           <legend>{t("Fond de la vidéo")}</legend>
-          {[
-            { value: "#f9f9f9", label: t("Clair") },
-            { value: "#1c1c20", label: t("Sombre") },
-          ].map((option) => (
-            <label key={option.value}>
-              <input
-                type="radio"
-                name="video-background"
-                checked={background === option.value}
-                onChange={() => setBackground(option.value)}
-              />
-              <span style={{ background: option.value }} />
-              {option.label}
-            </label>
-          ))}
+          <PreferenceGroup
+            label={t("Fond de la vidéo")}
+            value={background}
+            onChange={setBackground}
+            options={[
+              { value: "transparent", label: t("Transparent") },
+              { value: "#ffffff", label: t("Blanc") },
+              { value: "#000000", label: t("Noir") },
+            ]}
+          />
         </fieldset>
         {error && (
           <p role="alert" className={s.exportError}>

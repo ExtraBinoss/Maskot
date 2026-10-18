@@ -1,4 +1,5 @@
-// Playback adapted from Beam's useMascotPlayer.ts (MPL-2.0).
+// SPDX-License-Identifier: MIT
+// Playback adapted from Beam's useMascotPlayer.ts.
 import { EXPRESSION_BY_ID } from "./engine/expressions";
 import { mixHex } from "./engine/skins";
 import { clamp } from "./engine/math";
@@ -242,6 +243,12 @@ export function createMascotPlayer(store: LabStore, env: PlayerEnvironment) {
   };
   const mount = () => {
     if (mounted) throw new Error("Le lecteur est déjà monté.");
+    // Saved preferences are restored after hydration, before subscriptions or
+    // persistence start. Initialize from that look without an entrance morph.
+    if (appliedLook !== store.get(lookAtom)) {
+      appliedLook = store.get(lookAtom);
+      engine = createMascotEngine(appliedLook);
+    }
     mounted = true;
     const cleanups = [
       store.sub(playingAtom, synchronize),

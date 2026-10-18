@@ -1,35 +1,32 @@
-import { StrictMode } from "react";
-import "./i18n";
-import { createRoot } from "react-dom/client";
-import { Provider } from "jotai";
-import { LazyMotion, domAnimation, MotionConfig } from "motion/react";
-import { App } from "./App";
-import { ThemeSync } from "./state/theme";
-import { createLabStore, PRESET_KEY } from "./state/lab";
+import { createRoot, hydrateRoot } from "react-dom/client";
+import { prepareDrawerGestures } from "./lib/prepare-drawer";
+import { Application } from "./Application";
+import { restoreClientLanguage } from "./i18n";
+import { createLabStore, restoreLabStore, PRESET_KEY } from "./state/lab";
+import { restoreCustomColorsAtom } from "./state/palette";
 import { browserEnvironment, createMascotPlayer } from "./mascot/player";
-import { PlayerProvider } from "./mascot/PlayerProvider";
-import { TooltipProvider } from "./components/ui/tooltip";
 import "./styles/global.css";
 
-const store = createLabStore(
-  () => localStorage.getItem(PRESET_KEY),
-  window.matchMedia("(prefers-reduced-motion: reduce)").matches,
-);
-const player = createMascotPlayer(store, browserEnvironment());
+prepareDrawerGestures();
 
-createRoot(document.getElementById("root")!).render(
-  <StrictMode>
-    <Provider store={store}>
-      <MotionConfig reducedMotion="user">
-        <ThemeSync />
-        <LazyMotion features={domAnimation} strict>
-          <PlayerProvider player={player}>
-            <TooltipProvider delay={250}>
-              <App />
-            </TooltipProvider>
-          </PlayerProvider>
-        </LazyMotion>
-      </MotionConfig>
-    </Provider>
-  </StrictMode>,
+const store = createLabStore(() => null, false);
+const player = createMascotPlayer(store, browserEnvironment());
+let restored = false;
+function restorePreferences() {
+  if (restored) return;
+  restored = true;
+  restoreLabStore(
+    store,
+    () => localStorage.getItem(PRESET_KEY),
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+  );
+  store.set(restoreCustomColorsAtom);
+  restoreClientLanguage();
+}
+
+const root = document.getElementById("root")!;
+const application = (
+  <Application store={store} player={player} beforeMount={restorePreferences} />
 );
+if (root.dataset.prerendered === "true") hydrateRoot(root, application);
+else createRoot(root).render(application);

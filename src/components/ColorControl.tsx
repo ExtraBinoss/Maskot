@@ -104,7 +104,7 @@ export function ColorControl() {
             aria-label={t("Couleur {{color}}", { color })}
             aria-pressed={look.color.toLowerCase() === color}
             onClick={() => select(color)}
-            initial={{ opacity: 0, scale: 0.8 }}
+            initial={false}
             animate={{ opacity: 1, scale: 1 }}
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.92 }}

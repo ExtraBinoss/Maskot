@@ -6,11 +6,16 @@ const PlayerContext = createContext<MascotPlayer | null>(null);
 export function PlayerProvider({
   player,
   children,
+  beforeMount,
 }: {
   player: MascotPlayer;
   children: ReactNode;
+  beforeMount?: () => void;
 }) {
-  useEffect(() => player.mount(), [player]);
+  useEffect(() => {
+    beforeMount?.();
+    return player.mount();
+  }, [player, beforeMount]);
   return <PlayerContext value={player}>{children}</PlayerContext>;
 }
 

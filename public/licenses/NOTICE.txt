@@ -1,30 +1,47 @@
 Maskot — https://github.com/ExtraBinoss/Maskot
 
-Atelier adapté de Beam (https://github.com/BeamRecorder/Beam), MPL-2.0.
-Le code source et les adaptations sont disponibles dans le dépôt Maskot.
-Texte de la licence : /licenses/Beam-MPL-2.0.txt
+Maskot's React port and original additions are released under the MIT License.
+Copyright (c) 2026 ExtraBinoss.
+License: /licenses/Maskot-MIT.txt
+Third-party code, fonts and assets retain their original licenses below.
 
-Moteur, disposition de l’interface et montage adaptés de Bloub par Jérémy Perret, MIT.
-Adaptations Maskot : React, styles d’yeux, expressions, contrôles de montage et export WebM.
+Grok bot: the original character idea and visual inspiration.
+https://x.ai/
+Maskot is an independent project, unaffiliated with xAI.
+
+Bloub by Jérémy Perret (MIT).
+The morphing engine, movements, editor layout and timeline are adapted from Bloub.
+Maskot adaptations include React, eye styles, expressions, timeline controls and WebM export.
 https://github.com/jeremy-prt/bloub
-Texte de la licence : /licenses/Bloub-MIT.txt
-Notice d’origine : /licenses/Bloub-NOTICE.txt
+License: /licenses/Bloub-MIT.txt
+Original notices: /licenses/Bloub-NOTICE.txt
 
-Polices : Space Grotesk et Source Sans 3 (SIL Open Font License).
-Fichiers de licences : /licenses/Space-Grotesk-OFL.txt et /licenses/Source-Sans-3-OFL.txt
-
-Encodage vidéo : Mediabunny par Vanilagy, MPL-2.0.
-Version 1.61.6, dépendance non modifiée : https://github.com/Vanilagy/mediabunny/tree/v1.61.6
-Texte de la licence : /licenses/Mediabunny-MPL-2.0.txt
-
-Color Picker: adapted from ReUI by Keenthemes Inc (MIT).
-https://reui.io/components/color-picker
-See ReUI-LICENSE.txt.
-
-GitHub mark: Octicons by GitHub, Inc. (MIT).
-https://github.com/primer/octicons
-See Octicons-MIT.txt.
+Beam: the original mascot workshop, ported to React for Maskot.
+The morphing engine originated in Bloub and retains its MIT license.
+The React port and Maskot additions by ExtraBinoss are distributed under MIT.
+https://github.com/BeamRecorder/Beam
 
 Thinking Orbs geometry and presets by Jakub Antalik (MIT).
 https://github.com/Jakubantalik/thinking-orbs
-License: Thinking-Orbs-MIT.txt
+License: /licenses/Thinking-Orbs-MIT.txt
+
+Video encoding: Mediabunny by Vanilagy (MPL-2.0).
+Version 1.61.6, unmodified dependency.
+https://github.com/Vanilagy/mediabunny/tree/v1.61.6
+License: /licenses/Mediabunny-MPL-2.0.txt
+
+Color picker: adapted from ReUI by Keenthemes Inc (MIT).
+https://reui.io/components/color-picker
+License: /licenses/ReUI-LICENSE.txt
+
+Typefaces: Space Grotesk and Source Sans 3 (SIL Open Font License 1.1).
+Licenses: /licenses/Space-Grotesk-OFL.txt and /licenses/Source-Sans-3-OFL.txt
+
+GitHub mark: Octicons by GitHub, Inc. (MIT).
+https://github.com/primer/octicons
+License: /licenses/Octicons-MIT.txt
+
+Built with React, shadcn/ui, Base UI, Motion, Jotai, Tailwind CSS and Lucide.
+Each project retains its own copyright and license.
+Class Variance Authority: Apache-2.0 (/licenses/CVA-Apache-2.0.txt).
+Lucide: ISC (/licenses/Lucide-ISC.txt).

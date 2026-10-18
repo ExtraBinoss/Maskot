@@ -7,6 +7,18 @@ import { DEFAULT_SHAPE, SHAPES, SHAPE_BY_ID } from "./skins";
 import { STATES } from "./states";
 
 const R = 100;
+type Point = { x: number; y: number };
+type Segment = { a: Point; b: Point };
+type Contour = {
+  points: Point[];
+  segments: Segment[];
+  minY: number;
+  maxY: number;
+  scale: number;
+  bands: Segment[][];
+};
+const BAND_COUNT = 32;
+const MAX_CONTOURS = 128;
 
 function contourDuCorps(d: string) {
   const pts: Array<{
@@ -21,18 +33,33 @@ function contourDuCorps(d: string) {
   return pts;
 }
 
-function dedans(
-  poly: Array<{
-    x: number;
-    y: number;
-  }>,
-  x: number,
-  y: number,
-) {
+function prepareContour(path: string): Contour {
+  const points = contourDuCorps(path);
+  const minY = Math.min(...points.map((point) => point.y));
+  const maxY = Math.max(...points.map((point) => point.y));
+  const scale = maxY > minY ? BAND_COUNT / (maxY - minY) : 0;
+  const bands = Array.from({ length: BAND_COUNT }, () => [] as Segment[]);
+  const segments = points.map((a, index) => ({
+    a,
+    b: points[(index + points.length - 1) % points.length],
+  }));
+  for (const segment of segments) {
+    const start = Math.max(
+      0,
+      Math.floor((Math.min(segment.a.y, segment.b.y) - minY) * scale),
+    );
+    const end = Math.min(
+      BAND_COUNT - 1,
+      Math.floor((Math.max(segment.a.y, segment.b.y) - minY) * scale),
+    );
+    for (let band = start; band <= end; band++) bands[band].push(segment);
+  }
+  return { points, segments, minY, maxY, scale, bands };
+}
+
+function raycast(segments: Segment[], x: number, y: number) {
   let on = false;
-  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
-    const a = poly[i]!;
-    const b = poly[j]!;
+  for (const { a, b } of segments) {
     if (
       a.y > y !== b.y > y &&
       x < ((b.x - a.x) * (y - a.y)) / (b.y - a.y) + a.x
@@ -40,6 +67,15 @@ function dedans(
       on = !on;
   }
   return on;
+}
+
+function dedans(contour: Contour, x: number, y: number) {
+  if (y < contour.minY || y >= contour.maxY) return false;
+  const band = Math.min(
+    BAND_COUNT - 1,
+    Math.floor((y - contour.minY) * contour.scale),
+  );
+  return raycast(contour.bands[band], x, y);
 }
 
 function contourDeLOeil(eye: RenderedEye, N = 32) {
@@ -91,19 +127,26 @@ function debordement(
   state: StateId,
   radii: number[],
   expr: (typeof EXPRESSIONS)[number] | null,
+  contours: Map<string, Contour>,
 ) {
   const e = new BotEngine(R, state, radii, expr);
   let pire = 0;
   for (let i = 0; i < INSTANTS; i++) {
     const f = e.sample(i * PAS);
-    const corps = contourDuCorps(f.bodyPath);
+    let corps = contours.get(f.bodyPath);
+    if (!corps) {
+      corps = prepareContour(f.bodyPath);
+      if (contours.size >= MAX_CONTOURS)
+        contours.delete(contours.keys().next().value!);
+      contours.set(f.bodyPath, corps);
+    }
     for (const eye of f.eyes) {
       for (const p of contourDeLOeil(eye)) {
         if (dedans(corps, p.x, p.y)) continue;
-        pire = Math.max(
-          pire,
-          Math.min(...corps.map((q) => Math.hypot(q.x - p.x, q.y - p.y))),
-        );
+        let distance = Infinity;
+        for (const q of corps.points)
+          distance = Math.min(distance, Math.hypot(q.x - p.x, q.y - p.y));
+        pire = Math.max(pire, distance);
       }
     }
   }
@@ -114,14 +157,36 @@ const CORPS_DE_BASE = STATES.filter((s) => s.baseBody).map((s) => s.id);
 
 const SILHOUETTE_MESUREE = STATES.filter((s) => !s.baseBody).map((s) => s.id);
 describe("formes du personnalisateur", () => {
-  // 680 combinaisons x 60 instants x deux contours : le test le plus lourd du depot, et le
-  // seul qui prouve ce que l'oeil voit.
+  it("le classement par bandes conserve le raycasting complet, y compris aux bords", () => {
+    const differences: string[] = [];
+    for (const forme of SHAPES) {
+      const contour = prepareContour(
+        new BotEngine(R, "idle", forme.radii, null).sample(0.7).bodyPath,
+      );
+      const probes = [...contour.points];
+      for (let y = -140; y <= 140; y += 7)
+        for (let x = -140; x <= 140; x += 7) probes.push({ x, y });
+      for (let band = 0; band <= BAND_COUNT; band++) {
+        const y = contour.minY + band / contour.scale;
+        for (const offset of [-1e-8, 0, 1e-8])
+          for (const x of [-100, -30, 0, 30, 100])
+            probes.push({ x, y: y + offset });
+      }
+      for (const { x, y } of probes)
+        if (dedans(contour, x, y) !== raycast(contour.segments, x, y))
+          differences.push(`${forme.id}/${x}/${y}`);
+    }
+    expect(differences).toEqual([]);
+  });
+  // Every state × shape × expression, 60 instants and both complete eye contours.
+  // Only repeated contour parsing and impossible ray intersections are skipped.
   it("aucune forme ne laisse un oeil sortir de la silhouette", () => {
     const fautifs: string[] = [];
     for (const state of CORPS_DE_BASE) {
       for (const forme of SHAPES) {
+        const contours = new Map<string, Contour>();
         for (const expr of [null, ...EXPRESSIONS]) {
-          const sortie = debordement(state, forme.radii, expr);
+          const sortie = debordement(state, forme.radii, expr, contours);
           if (sortie > 0.05) {
             fautifs.push(
               `${state}/${forme.id}/${expr?.id ?? "pose"} ${sortie.toFixed(1)}`,

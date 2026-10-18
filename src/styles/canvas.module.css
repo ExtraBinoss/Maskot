@@ -28,6 +28,21 @@
 .arrival {
   width: 100%;
   aspect-ratio: 1;
+  animation: arrive 950ms both;
+}
+@keyframes arrive {
+  0% {
+    opacity: 0;
+    transform: translateY(44px) rotate(-14deg) scale(0.55);
+  }
+  65% {
+    opacity: 1;
+    transform: translateY(-5px) rotate(2deg) scale(1.04);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) rotate(0deg) scale(1);
+  }
 }
 .arrival > svg {
   display: block;
@@ -123,5 +138,47 @@
 @media (max-width: 760px) {
   .canvas[data-view="static"] .caption {
     top: 37dvh;
+  }
+}
+
+@media (max-width: 760px) {
+  .mascot {
+    --avatar-size: min(360px, 52dvh, calc(100vw - 48px));
+    top: 43dvh;
+    left: 50%;
+  }
+  .canvas[data-view="motion"] .mascot {
+    --avatar-size: min(300px, 35dvh, calc(100vw - 48px));
+    top: 24dvh;
+  }
+  .caption,
+  .canvas[data-view="static"] .caption {
+    left: 16px;
+    right: 16px;
+    top: 73dvh;
+  }
+  .board {
+    inset: 70px 16px auto;
+    height: 31dvh;
+  }
+}
+
+@media (max-width: 760px) {
+  .canvas[data-view="about"] {
+    background: transparent;
+    overflow: visible;
+  }
+  .canvas[data-view="about"] .mascot {
+    --avatar-size: 100%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+@media (max-width: 760px) {
+  .canvas[data-view="motion"] .mascot {
+    --avatar-size: min(240px, 26dvh, calc(100vw - 48px));
+    top: 19dvh;
   }
 }

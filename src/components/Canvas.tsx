@@ -1,6 +1,5 @@
 import { useTranslation } from "react-i18next";
 import { useEffect, useRef, type RefObject } from "react";
-import { m, useReducedMotion } from "motion/react";
 import { useAtomValue, useSetAtom, useStore } from "jotai";
 import {
   boardAtom,
@@ -61,7 +60,6 @@ export function Canvas({
 }) {
   const { t } = useTranslation();
 
-  const reduced = useReducedMotion();
   const view = useAtomValue(viewAtom);
   const board = useAtomValue(boardAtom);
   const { color } = useAtomValue(lookAtom);
@@ -84,7 +82,7 @@ export function Canvas({
     };
     const follow = (event: PointerEvent) => {
       if (event.pointerType === "touch" || !svgRef.current) return;
-      rect.current ??= svgRef.current.getBoundingClientRect();
+      if (!rect.current) rect.current = svgRef.current.getBoundingClientRect();
       player.aim(event, rect.current);
     };
     window.addEventListener("pointermove", follow, { passive: true });
@@ -113,7 +111,8 @@ export function Canvas({
             store.get(playingAtom) &&
             event.pointerType !== "touch"
           ) {
-            rect.current ??= event.currentTarget.getBoundingClientRect();
+            if (!rect.current)
+              rect.current = event.currentTarget.getBoundingClientRect();
             player.aim(event, rect.current);
           }
         }}
@@ -122,28 +121,13 @@ export function Canvas({
           if (store.get(followAtom)) player.release();
         }}
       >
-        {board ? (
+        {board && view !== "about" ? (
           <Board />
         ) : (
           <div className={s.mascot}>
-            <m.div
-              className={s.arrival}
-              data-mascot-preview
-              initial={
-                reduced
-                  ? false
-                  : { opacity: 0, scale: 0.55, y: 44, rotate: -14 }
-              }
-              animate={{ opacity: 1, scale: 1, y: 0, rotate: 0 }}
-              transition={{
-                type: "spring",
-                stiffness: 145,
-                damping: 16,
-                mass: 0.85,
-              }}
-            >
+            <div className={s.arrival} data-mascot-preview>
               <LiveMascot svgRef={svgRef} />
-            </m.div>
+            </div>
           </div>
         )}
       </div>

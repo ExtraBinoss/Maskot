@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useSetAtom } from "jotai";
 import { m } from "motion/react";
 import { Plus } from "lucide-react";
@@ -45,6 +45,37 @@ export default function ColorPickerEditor({
 
   const preview = useSetAtom(previewColorAtom);
   const commit = useSetAtom(commitColorAtom);
+  const pickerI18n = useMemo(
+    () => ({
+      functions: {
+        getColorName: (color: Parameters<typeof formatColor>[0]) =>
+          formatColor(color, "hex"),
+      },
+      labels: {
+        placeholder: t("Choisir une couleur"),
+        panelLabel: t("Sélecteur de couleur"),
+        openPicker: t("Ouvrir le sélecteur de couleur"),
+        area: t("Couleur"),
+        hue: t("Teinte"),
+        saturation: t("Saturation"),
+        brightness: t("Luminosité"),
+        lightness: t("Clarté"),
+        chroma: t("Chroma"),
+        red: t("Rouge"),
+        green: t("Vert"),
+        blue: t("Bleu"),
+        alpha: t("Opacité"),
+        hex: t("Code hexadécimal"),
+        format: t("Format de couleur"),
+        eyeDropper: t("Prélever une couleur à l’écran"),
+        copy: t("Copier la couleur"),
+        copied: t("Couleur copiée"),
+        clear: t("Effacer"),
+        swatches: t("Palette de couleurs"),
+      },
+    }),
+    [t],
+  );
   useEffect(() => () => preview(null), [preview]);
   return (
     <div>
@@ -60,26 +91,7 @@ export default function ColorPickerEditor({
           const hex = value && normalizeHex(value);
           if (hex) commit(hex);
         }}
-        i18n={{
-          functions: { getColorName: (color) => formatColor(color, "hex") },
-          labels: {
-            area: t("Couleur"),
-            hue: t("Teinte"),
-            saturation: t("Saturation"),
-            brightness: t("Luminosité"),
-            lightness: t("Clarté"),
-            chroma: t("Chroma"),
-            red: t("Rouge"),
-            green: t("Vert"),
-            blue: t("Bleu"),
-            hex: t("Code hexadécimal"),
-            format: t("Format de couleur"),
-            eyeDropper: t("Prélever une couleur à l’écran"),
-            copy: t("Copier la couleur"),
-            copied: t("Couleur copiée"),
-            panelLabel: t("Sélecteur de couleur"),
-          },
-        }}
+        i18n={pickerI18n}
       >
         <ColorPickerPanel />
         <AddColor

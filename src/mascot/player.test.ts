@@ -22,6 +22,7 @@ import {
   timelineAtom,
   viewAtom,
   createLabStore,
+  restoreLabStore,
 } from "../state/lab";
 import { createMascotPlayer, type PlayerEnvironment } from "./player";
 import { createMascotEngine, DEFAULT_LOOK } from "./mascot-catalog";
@@ -73,6 +74,24 @@ describe("React/Jotai mascot playback", () => {
     callbacks.clear();
     pending.forEach((callback) => callback(ms));
   };
+  it("restores a saved look after hydration without saving defaults or morphing it", () => {
+    const store = createLabStore(() => null, false);
+    const player = createMascotPlayer(store, env);
+    const preset = defaultPreset();
+    preset.look.shape = "triangle";
+    preset.look.eyes = "star";
+    preset.look.color = "#123456";
+    restoreLabStore(store, () => JSON.stringify(preset), true);
+    const unmount = player.mount();
+    expect(store.get(frameAtom)).toEqual(
+      createMascotEngine(preset.look).sample(0),
+    );
+    expect(store.get(paintAtom).color).toBe(preset.look.color);
+    expect(store.get(playingAtom)).toBe(false);
+    expect(callbacks.size).toBe(0);
+    expect(save).not.toHaveBeenCalled();
+    unmount();
+  });
   it("previews eye geometry immediately without persisting or retargeting a morph on each drag", () => {
     const { store } = setup(true);
     const original = store.get(lookAtom);

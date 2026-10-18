@@ -2,6 +2,7 @@ import { useTranslation } from "react-i18next";
 import { useEffect, useRef } from "react";
 import { useAtomValue, useStore } from "jotai";
 import { m } from "motion/react";
+import { ResponsiveInspector } from "./ResponsiveInspector";
 import {
   boardAtom,
   playingAtom,
@@ -10,6 +11,7 @@ import {
   undoTimelineAtom,
   redoTimelineAtom,
 } from "../state/lab";
+import { RandomizeButton } from "./RandomizeButton";
 import { Sidebar } from "./Sidebar";
 import { Canvas } from "./Canvas";
 import StaticPanel from "./StaticPanel";
@@ -113,35 +115,51 @@ export function Workspace() {
   return (
     <main className={s.workspace} data-view={view}>
       <h1 className="sr-only">{t("Maskot — A little character studio")}</h1>
+      <p className="sr-only">
+        {t(
+          "Crée une mascotte inspirée du Grok bot. Formes, yeux, humeurs et mouvements. Un outil libre par Plinka.",
+        )}
+      </p>
       <a
         className={s.skipLink}
         href={view === "about" ? "#about" : "#settings"}
       >
         {t("Aller aux réglages")}
       </a>
-      <Canvas svgRef={svgRef} />
+      {view !== "about" && <Canvas svgRef={svgRef} />}
       <Sidebar />
+      <RandomizeButton />
+      {view !== "about" && <WorkspaceActions svgRef={svgRef} compact />}
       {view === "about" ? (
-        <About />
+        <About>
+          <Canvas svgRef={svgRef} />
+        </About>
       ) : view === "motion" ? (
         <MotionPanel svgRef={svgRef} />
       ) : (
-        <aside
-          className={s.inspector}
-          id="settings"
-          aria-label={t("Réglages de Maskot")}
+        <ResponsiveInspector
+          triggerLabel={t("Réglages")}
+          title={t("Réglages de Maskot")}
+          closeLabel={t("Fermer les réglages")}
         >
-          <div className={s.panelScroll} ref={panelRef}>
-            <m.div
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
-            >
-              <StaticPanel />
-            </m.div>
-          </div>
-          <WorkspaceActions svgRef={svgRef} />
-        </aside>
+          <aside
+            data-inspector=""
+            className={s.inspector}
+            id="settings"
+            aria-label={t("Réglages de Maskot")}
+          >
+            <div className={s.panelScroll} ref={panelRef}>
+              <m.div
+                initial={false}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+              >
+                <StaticPanel />
+              </m.div>
+            </div>
+            <WorkspaceActions svgRef={svgRef} />
+          </aside>
+        </ResponsiveInspector>
       )}
       <Feedback />
     </main>

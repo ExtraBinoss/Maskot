@@ -348,20 +348,7 @@
 .history button {
   border-radius: 8px;
 }
-.zoom {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 200px;
-  min-width: 140px;
-  margin-left: auto;
-}
-.zoom > div {
-  flex: 1;
-}
-.zoom label {
-  font-size: 10px;
-}
+
 .exportDialog {
   margin: auto;
   width: min(420px, calc(100vw - 32px));
@@ -468,9 +455,6 @@
   .timelineTools {
     gap: 10px;
   }
-  .zoom {
-    width: 180px;
-  }
 }
 @media (max-width: 760px) {
   .timeline {
@@ -517,13 +501,7 @@
     gap: 8px;
     font-size: 10px;
   }
-  .zoom {
-    width: 160px;
-    min-width: 0;
-  }
-  .zoom > svg {
-    display: none;
-  }
+
   :global([data-view="motion"]) > :global(#settings) {
     --inspector-top: 33dvh;
     --inspector-bottom: 276px;
@@ -560,4 +538,166 @@
 .cursor,
 .cursor i {
   background: var(--primary);
+}
+
+@media (max-width: 760px) {
+  .timeline {
+    left: 16px;
+    right: 16px;
+    bottom: calc(84px + env(safe-area-inset-bottom, 0px));
+    height: 210px;
+  }
+  .timelineTools {
+    gap: 6px;
+  }
+
+  .keyboardHint {
+    display: none;
+  }
+}
+
+@media (max-width: 760px) {
+  .timeline {
+    bottom: calc(144px + env(safe-area-inset-bottom, 0px));
+    height: 190px;
+  }
+}
+
+@media (max-width: 760px) {
+  .desktopVideoExport {
+    display: none;
+  }
+  .timeline {
+    height: 196px;
+  }
+  .timelineHeader {
+    height: 28px;
+  }
+  .timelineTools {
+    height: 36px;
+  }
+}
+
+/* One transport row, with a true circular central play control. */
+.playback {
+  top: -58px;
+  grid-template-columns: 44px 38px 44px 38px 44px;
+  gap: 6px;
+  height: 52px;
+  padding: 4px;
+}
+.playback > span {
+  text-align: center;
+  color: var(--muted-foreground);
+}
+.playback > button:not(.playButton) {
+  width: 44px;
+  height: 44px;
+}
+.playButton {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  max-width: 44px;
+  max-height: 44px;
+  aspect-ratio: 1;
+  border: 0;
+  padding: 0;
+  border-radius: 50%;
+  justify-self: center;
+  align-self: center;
+  line-height: 1;
+  box-sizing: border-box;
+}
+.playButton svg {
+  display: block;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+}
+.playButton .playIcon {
+  transform: translateX(-0.75px);
+}
+.step {
+  transition: none;
+}
+.card {
+  touch-action: pan-x;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+.reorder {
+  position: absolute;
+  left: 4px;
+  top: 4px;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted-foreground);
+  cursor: grab;
+  touch-action: none;
+}
+.reorder:hover {
+  background: var(--accent);
+  color: var(--foreground);
+}
+.reorder:active {
+  cursor: grabbing;
+}
+.floatingCard {
+  z-index: 80;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--popover);
+  color: var(--foreground);
+  box-shadow: 0 12px 30px rgb(0 0 0 / 18%);
+  font-size: 10px;
+  will-change: transform;
+}
+.timelineTools {
+  height: auto;
+}
+@media (pointer: coarse) {
+  .reorder {
+    display: none;
+  }
+}
+@media (max-width: 760px) {
+  .timeline {
+    left: 0;
+    right: 0;
+    height: 160px;
+    padding-inline: 0;
+  }
+  .timelineHeader {
+    padding-inline: 16px;
+  }
+  .track[data-axis="horizontal"] {
+    padding: 4px 16px 12px;
+    scroll-padding-inline: 16px;
+  }
+  .playback {
+    top: -58px;
+    grid-template-columns: 44px 38px 44px 38px 44px;
+  }
+  .timelineTools {
+    display: none;
+  }
+}
+
+.exportDialog .videoBackground {
+  display: block;
+}
+.videoBackground [data-slot="toggle-group"] {
+  width: 100%;
 }

@@ -1,19 +1,30 @@
-# Provenance et licences
+Maskot — provenance and licenses
 
-Maskot (anciennement MascotLab) porte en React l’atelier de mascottes de [Beam](https://github.com/BeamRecorder/Beam).
-Le modèle, la validation, l’export, le lecteur, le rendu SVG et l’organisation des contrôles
-proviennent de `apps/desktop/src/components/brand/lab/` et `brand/Beamy/BeamySvg.vue`.
-Les adaptations de ces sources sont distribuées sous MPL-2.0, dont le texte est conservé dans `LICENSE`.
+Maskot's React port and original additions by ExtraBinoss are released under
+MIT. See LICENSE.md. Third-party code, fonts and assets retain their own
+copyrights and licenses; the project's MIT license does not replace them.
 
-Le moteur dans `src/mascot/engine/` et ses tests proviennent de Beam et adaptent
-[Bloub](https://github.com/jeremy-prt/bloub), par Jérémy Perret (MIT).
-Les notices et le texte MIT d’origine sont conservés dans ce dossier.
-Les fichiers du moteur ont été repris sans changement de comportement.
+The mascot workshop was ported from Beam:
+https://github.com/BeamRecorder/Beam
+The SVG engine, measured radial profiles, shapes, expressions and original
+regression tests originate in Bloub by Jérémy Perret (MIT):
+https://github.com/jeremy-prt/bloub
+The original MIT license and notices are preserved in src/mascot/engine/.
+Maskot's React port and additions are MIT, as authorized by ExtraBinoss.
+The original Beam project retains its own license.
 
-La configuration React, les tokens de thème et le bouton shadcn/Base UI suivent le hub Plinka.
-Space Grotesk et Source Sans 3 sont servis localement via leurs packages Fontsource,
-avec leurs licences OFL fournies dans les dépendances.
+Grok bot is the original character idea and visual inspiration.
+Maskot is an independent project, unaffiliated with xAI.
 
-La présentation de Maskot fait référence à l’inspiration du Grok bot de xAI. Le projet est indépendant et n’est pas affilié à xAI.
+Thinking Orbs geometry and presets by Jakub Antalik retain their MIT license.
+See src/mascot/thinking-orbs/NOTICE.txt and public/licenses/Thinking-Orbs-MIT.txt.
 
-Le code source de Maskot est disponible sur https://github.com/ExtraBinoss/Maskot.
+Mediabunny 1.61.6 is an unmodified MPL-2.0 dependency used for video export.
+It retains MPL-2.0; Maskot's MIT license does not relicense this dependency.
+Source: https://github.com/Vanilagy/mediabunny/tree/v1.61.6
+License: public/licenses/Mediabunny-MPL-2.0.txt
+
+Complete application credits and bundled license texts:
+public/licenses/NOTICE.txt
+
+Maskot source: https://github.com/ExtraBinoss/Maskot
